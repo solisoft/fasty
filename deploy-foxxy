@@ -1,0 +1,9 @@
+#!/bin/sh
+cd foxxy
+yarn
+rm -Rf dist
+brunch b --production
+cd ..
+git add .
+git commit -am "Build Foxxy App"
+git push

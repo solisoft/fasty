@@ -1,0 +1,10 @@
+FROM buildkite/puppeteer:latest
+RUN apt-get update
+RUN apt-get -y install python2.7
+RUN ln -s /usr/bin/python2.7 /usr/bin/python2
+
+RUN mkdir /workspace
+
+ADD foxxy /workspace
+
+WORKDIR /workspace

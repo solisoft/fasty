@@ -1,0 +1,38 @@
+{
+  "name": "foxxy-app",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha specs/bootstrap.js --recursive specs && nyc report --reporter=html",
+    "start": "brunch watch --server --network -P 4001"
+  },
+  "author": "",
+  "license": "MIT",
+  "homepage": "",
+  "dependencies": {
+    "arangojs": "^6.10.0",
+    "auto-reload-brunch": "^2.7.1",
+    "brunch": "^2.10.17",
+    "chai": "^4.2.0",
+    "clean-css-brunch": "^2.0.0",
+    "css-brunch": "^2.6.1",
+    "digest-brunch": "^1.5.1",
+    "foxxy": "^0.6.15",
+    "html-pages-brunch": "^2.3.1",
+    "javascript-brunch": "^2.0.0",
+    "jquery": "^3.1.0",
+    "jszip": "^3.2.1",
+    "mocha": "^6.0.2",
+    "pretty-bytes": "^3.0.1",
+    "puppeteer": "^1.13.0",
+    "puppeteer-to-istanbul": "^1.2.2",
+    "riot": "^3.13.2",
+    "riot-brunch": "^0.1.1",
+    "riot-route": "^3.1.1",
+    "sass-brunch": "2.10.8",
+    "select2": "4.0.3",
+    "uglify-js": "^2.7.0",
+    "uglify-js-brunch": "^2.0.1"
+  }
+}

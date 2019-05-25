@@ -1,0 +1,16 @@
+{
+    "name": "Uploads",
+    "version": "0.0.7",
+    "description": "Uploads",
+    "engines": {
+        "arangodb": "^3.0.0"
+    },
+    "author": "OB",
+    "license": "MIT",
+    "main": "main.js",
+    "scripts": {
+        "setup": "scripts/setup.js"
+    },
+
+    "tests": "test/**/*.js"
+}

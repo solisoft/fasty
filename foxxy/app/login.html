@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html class="bg">
+  <head>
+    <meta charset="UTF-8">
+    <title>MyCMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.35/css/uikit.min.css">
+
+    <link rel="stylesheet" href="DIGEST(css/vendors.css)">
+    <link rel="stylesheet" href="DIGEST(css/css.css)">
+
+  </head>
+  <body>
+
+    <div id="app" class="login-block"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.35/js/uikit.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.35/js/uikit-icons.min.js"></script>
+    <script src="DIGEST(js/vendors.js)"></script>
+    <script src="DIGEST(js/js.js)"></script>
+    <script>
+      var hostname = document.location.hostname
+      var subdomain = hostname.split('.')[0]
+
+      var host = 'http://localhost:8530/_db'
+
+      if(hostname.indexOf('127.0.0.1') < 0) {
+        host = 'https://foxxy.ovh/fasty'
+      }
+      var url = host + "/db_" + subdomain + "/"
+
+      var common = require("js/common.js");
+      common.init();
+
+      require("widgets/login.html.tag");
+
+      // Start the app
+      require("js/js.js");
+    </script>
+  </body>
+
+</html>

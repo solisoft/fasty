@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json.schemastore.org/foxx-manifest",
+  "main": "index.js",
+  "engines": {
+    "arangodb": "^3.0.0"
+  },
+  "name": "datasets",
+  "version": "0.0.0",
+  "tests": "test/**/*.js",
+  "scripts": {
+    "setup": "scripts/setup.js"
+  }
+}

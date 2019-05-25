@@ -1,0 +1,10 @@
+FROM alpine:3.9
+LABEL Olivier Bonnaure <olivier@solisoft.net>
+
+RUN apk --no-cache add --virtual native-deps \
+  nodejs npm g++ gcc libgcc libstdc++ linux-headers make python bash && \
+  npm install --quiet yarn -g
+
+RUN mkdir /workspace
+
+WORKDIR /workspace

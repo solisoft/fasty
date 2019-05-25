@@ -1,0 +1,79 @@
+version: '3.1'
+
+services:
+
+  foxxy:
+    build:
+      context: .
+      dockerfile: Dockerfile_node
+    command: /bin/bash -c "yarn && yarn start"
+    ports:
+      - 4001:4001
+    volumes:
+      - ./foxxy/:/workspace
+      - node_modules:/workspace/node_modules
+    depends_on:
+      - arangodb
+    links:
+      - arangodb:arangodb
+    networks:
+      frontend:
+
+  cms:
+    build: .
+    command: /bin/bash -c "cd /var/www && lapis server"
+    ports:
+      - 8080:8080
+    volumes:
+      - ./:/var/www
+      - arangodb-uploads:/var/www/static/uploads
+    depends_on:
+      - arangodb
+      - foxxy
+    links:
+      - arangodb:arangodb
+    networks:
+      frontend:
+
+  cms_prod:
+    build: .
+    restart: always
+    command: /bin/bash -c "cd /var/www && moonc *.moon && moonc **/*.moon && lapis server production"
+    ports:
+      - 9090:80
+    volumes:
+      - ./:/var/www
+      - arangodb-uploads:/var/www/static/uploads
+    depends_on:
+      - arangodb
+    links:
+      - arangodb:arangodb
+    networks:
+      frontend:
+
+  arangodb:
+    image: arangodb/arangodb:3.4.5
+    restart: always
+    environment:
+      ARANGO_ROOT_PASSWORD: password
+    networks:
+      frontend:
+        ipv4_address: 172.31.0.6
+    ports:
+      - 8530:8529
+    volumes:
+      - arangodb-data:/var/lib/arangodb3
+      - arangodb-app:/var/lib/arangodb3-app
+      - arangodb-uploads:/home
+
+volumes:
+  arangodb-data:
+  arangodb-app:
+  arangodb-uploads:
+  node_modules:
+
+networks:
+  frontend:
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24

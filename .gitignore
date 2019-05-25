@@ -1,0 +1,13 @@
+*temp
+*.compiled
+logs/*.log
+logs/*.pid
+node_modules
+.DS_Store
+static/uploads/
+*_temp
+foxxy/yarn-error.log
+foxxy/specs/pictures/
+.nyc_output
+coverage
+foxxy/app/js/config.js
