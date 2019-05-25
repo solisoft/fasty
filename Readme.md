@@ -42,11 +42,7 @@ Create a database called `db_cms` and install services on it :
 
 # Benchmarks
 
-I used [weighttp](https://github.com/lighttpd/weighttp) for running some tests on my laptop. I was able to run 2000req/s without micro-caching.
-
-9000req/s with a 0.2s micro-caching enabled.
-
-`weighttp -n 10000 -c 100 -k -t 4 http://localhost:9090`
+It's fast enough ;)
 
 # License (MIT)
 
