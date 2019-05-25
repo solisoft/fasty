@@ -1,4 +1,12 @@
-# Lapis + ArangoDB
+# Fasty
+
+https://fasty.ovh
+
+A CMS built on top of openresty/lapis & arangodb
+
+# Installation
+
+You need to have `docker` & `docker-compose` installed properly.
 
 `docker-compose up --build`
 
