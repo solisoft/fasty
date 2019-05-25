@@ -38,7 +38,9 @@ Create a database called `db_cms` and install services on it :
 # Links
 
 * [ArangoDB](https://arangodb.com)
-* [Lapis](http://leafo.net/lapis/)
+* [Lapis](https://leafo.net/lapis/)
+* [Openresty](https://openresty.org/)
+* [Foxxy](https://foxxy.ovh/)
 
 # Benchmarks
 
