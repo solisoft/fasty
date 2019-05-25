@@ -1,2 +1,0 @@
-#!/bin/sh
-ssh root@163.172.178.84 -t "cd /home/apps/cms && sh ./deploy.sh"

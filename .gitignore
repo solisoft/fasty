@@ -11,3 +11,4 @@ foxxy/specs/pictures/
 .nyc_output
 coverage
 foxxy/app/js/config.js
+deploy-cms
