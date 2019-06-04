@@ -62,7 +62,6 @@ load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
 
   aql(db_name, request, { slug: slug, lang: lang })[1]
 
-
 --------------------------------------------------------------------------------
 
 -- dynamic_replace
@@ -98,7 +97,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         html = html\gsub(escape_pattern(widget), escape_pattern(output))
 
   for widget in string.gmatch(html, '{{.-}}') do
-
     output = ''
     action = ''
     item = ''
@@ -195,8 +193,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'tr'
       output = "Missing translation <em style='color:red'>#{item}</em>"
       aql(db_name, 'INSERT { key: @key, value: {} } IN trads', { key: item }) unless translations[item]
-      if translations[item] and
-         translations[item][params.lang] then
+      if translations[item] and translations[item][params.lang] then
         output = translations[item][params.lang]
 
     -- {{ external | url }}

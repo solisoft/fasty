@@ -42,9 +42,11 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 const model = function() {
   return {
     model: [
-      { r: true, c: "1-1", n: "name", t: "string", j: joi.string().required(), l: "Name" },
-
+      { r: true, c: "1-1", n: "name", t: "string", j: joi.string().regex((/^[a-z0-9\-]+$/)).required(), l: "Mount Point" },
+      { r: true, c: "1-1", n: "manifest", t: "code:json", j: joi.string().required(), l: "Manifest.json" },
+      { r: true, c: "1-1", n: "code", t: "code:javascript", j: joi.string().required(), l: "Main.js" }
     ],
+    columns: [{ name: "name" }],
     //columns: [
     //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
     //    values: { true: "online", false: "offline" },
@@ -72,6 +74,7 @@ const model = function() {
         ],
         singular: "api_route",
         key: "api_id",
+        columns: [{ name: "name" }]
     //    columns: [{ name: "name", tr: false, class: ""}, ...], // Displayed on listing
     //    includes: {
     //      conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
@@ -88,12 +91,18 @@ const model = function() {
         ],
         singular: "api_script",
         key: "api_id",
-    //    columns: [{ name: "name", tr: false, class: ""}, ...], // Displayed on listing
-    //    includes: {
-    //      conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
-    //      merges: "customer: c "
-    //    },
-    //    timestamps: true,
+        columns: [{ name: "name" }]
+      },
+
+      api_tests: {
+        fields: [
+          { r: true, c: "1-1", n: "api_id", t: "hidden", j: joi.string().required(), l: "Post ID" },
+          { r: true, c: "1-1", n: "name", t: "string", j: joi.string().required(), l: "Name" },
+          { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: joi.string().required(), l: "Code Javascript" },
+        ],
+        singular: "api_test",
+        key: "api_id",
+        columns: [{ name: "name" }]
       }
     }
   }

@@ -6,12 +6,13 @@ console = require 'lapis.console'
 config  = require('lapis.config').get!
 
 import cached from require 'lapis.cache'
-import hmac_sha1, encode_base64 from require "lapis.util.encoding"
+import check_valid_lang from require 'lib.utils'
+import install_service from require 'lib.service'
 import basic_auth, is_auth from require 'lib.basic_auth'
+import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
+import auth_arangodb, aql, list_databases from require 'lib.arango'
 import capture_errors, yield_error from require 'lapis.application'
 import parse_query_string, from_json, to_json from require 'lapis.util'
-import check_valid_lang from require 'lib.utils'
-import auth_arangodb, aql, list_databases from require 'lib.arango'
 import dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug from require 'lib.concerns'
 
 jwt = {}
@@ -146,6 +147,13 @@ class extends lapis.Application
           status: 404, render: 'error_404'
       else
         status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
+
+  -- install service
+  [service: '/service/:name']: =>
+    sub_domain = stringy.split(@req.headers.host, '.')[1]
+    load_settings(@, sub_domain)
+    install_service(sub_domain, @params.name)
+    -- 'service installed'
 
   -- console (kinda irb console)
   [console: '/console']: console.make!

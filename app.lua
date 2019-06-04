@@ -5,15 +5,24 @@ local console = require('lapis.console')
 local config = require('lapis.config').get()
 local cached
 cached = require('lapis.cache').cached
-local hmac_sha1, encode_base64
-do
-  local _obj_0 = require("lapis.util.encoding")
-  hmac_sha1, encode_base64 = _obj_0.hmac_sha1, _obj_0.encode_base64
-end
+local check_valid_lang
+check_valid_lang = require('lib.utils').check_valid_lang
+local install_service
+install_service = require('lib.service').install_service
 local basic_auth, is_auth
 do
   local _obj_0 = require('lib.basic_auth')
   basic_auth, is_auth = _obj_0.basic_auth, _obj_0.is_auth
+end
+local hmac_sha1, encode_base64
+do
+  local _obj_0 = require('lapis.util.encoding')
+  hmac_sha1, encode_base64 = _obj_0.hmac_sha1, _obj_0.encode_base64
+end
+local auth_arangodb, aql, list_databases
+do
+  local _obj_0 = require('lib.arango')
+  auth_arangodb, aql, list_databases = _obj_0.auth_arangodb, _obj_0.aql, _obj_0.list_databases
 end
 local capture_errors, yield_error
 do
@@ -24,13 +33,6 @@ local parse_query_string, from_json, to_json
 do
   local _obj_0 = require('lapis.util')
   parse_query_string, from_json, to_json = _obj_0.parse_query_string, _obj_0.from_json, _obj_0.to_json
-end
-local check_valid_lang
-check_valid_lang = require('lib.utils').check_valid_lang
-local auth_arangodb, aql, list_databases
-do
-  local _obj_0 = require('lib.arango')
-  auth_arangodb, aql, list_databases = _obj_0.auth_arangodb, _obj_0.aql, _obj_0.list_databases
 end
 local dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug
 do
@@ -177,6 +179,13 @@ do
           }
         end
       end
+    end,
+    [{
+      service = '/service/:name'
+    }] = function(self)
+      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+      load_settings(self, sub_domain)
+      return install_service(sub_domain, self.params.name)
     end,
     [{
       console = '/console'
