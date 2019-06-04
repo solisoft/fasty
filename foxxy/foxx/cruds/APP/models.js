@@ -17,6 +17,7 @@ const load_models = function() {
     aqls: require('./models/aqls.js')(),
     helpers: require('./models/helpers.js')(),
     helpers: require('./models/helpers.js')(),
+    apis: require('./models/apis.js')(),
     /*@{{models}}*/
     // Don't remove this models line ...
   }

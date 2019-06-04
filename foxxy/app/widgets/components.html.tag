@@ -200,16 +200,16 @@
         if(self.can_access)
           common.buildForm(self.component, fields, '#form_component', 'components', function() {
             $(".crud").each(function(i, c) {
-            var id = $(c).attr("id")
-            riot.mount("#" + id, "component_crud_index", { model: id,
-              fields: self.sub_models[id].fields,
-              key: self.sub_models[id].key,
-              singular: self.sub_models[id].singular,
-              columns: self.sub_models[id].columns,
-              parent_id: opts.component_id,
-              parent_name: "components" })
+              var id = $(c).attr("id")
+              riot.mount("#" + id, "component_crud_index", { model: id,
+                fields: self.sub_models[id].fields,
+                key: self.sub_models[id].key,
+                singular: self.sub_models[id].singular,
+                columns: self.sub_models[id].columns,
+                parent_id: opts.component_id,
+                parent_name: "components" })
+            })
           })
-        })
       })
     })
 

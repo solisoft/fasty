@@ -1,3 +1,148 @@
+<dataset_crud_index>
+
+  <a href="#" class="uk-button uk-button-small uk-button-default" onclick={ new_item }>
+    <i class="fas fa-plus"></i> New { opts.singular }
+  </a>
+
+  <table class="uk-table uk-table-striped" if={data.length > 0}>
+    <thead>
+      <tr>
+        <th each={ col in cols }>
+          {col.name == undefined ? col : col.label === undefined ? col.name : col.label}
+        </th>
+        <th width="70"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr each={ row in data } >
+        <td each={ col in cols } class="{col.class}">
+          <virtual if={ col.tr == true }>{_.get(row,col.name)[locale]}</virtual>
+          <virtual if={ col.tr != true }>{_.get(row,col.name)}</virtual>
+        </td>
+        <td class="uk-text-center" width="110">
+          <a onclick={edit} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a>
+          <a onclick={ destroy_object } class="uk-button uk-button-danger uk-button-small" ><i class="fas fa-trash-alt"></i></a>
+        </td>
+      </tr>
+    </tbody>
+
+  </table>
+
+  <ul class="uk-pagination">
+    <li if={ page > 0 } ><a onclick={ previousPage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+    <li if={ (page + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextPage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+  </ul>
+
+  <script>
+    var self = this
+    this.data = []
+    new_item(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "dataset_crud_new", opts)
+    }
+
+    this.loadPage = function(pageIndex) {
+      common.get(url + "datasets/"+opts.parent_name+"/"+ opts.parent_id + "/"+opts.model+"/page/"+pageIndex+"/"+per_page, function(d) {
+        self.data = d.data[0].data
+        let model = d.model.sub_models[opts.id]
+        self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
+        if(model.columns) self.cols = model.columns
+        self.count = d.data[0].count
+        self.update()
+      })
+    }
+    this.loadPage(1)
+
+    edit(e) {
+      e.preventDefault()
+      opts.element_id = e.item.row._key
+      riot.mount("#"+opts.id, "dataset_crud_edit", opts)
+    }
+
+    nextPage(e) {
+      e.preventDefault()
+      self.page += 1
+      self.loadPage(self.page + 1)
+    }
+
+    previousPage(e) {
+      e.preventDefault()
+      self.page -= 1
+      self.loadPage(self.page + 1)
+    }
+
+    destroy_object(e) {
+      e.preventDefault()
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.delete(url + "/datasets/datasets/" + e.item.row._key, function() {
+          self.loadPage(1)
+        })
+      }, function() {})
+    }
+  </script>
+</dataset_crud_index>
+
+<dataset_crud_edit>
+  <a href="#" class="uk-button uk-button-link" onclick={ goback }>Back to { opts.id }</a>
+  <form onsubmit="{ save_form }" class="uk-form" id="{opts.id}_crud_{opts.singular}">
+  </form>
+
+  <script>
+    goback(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "dataset_crud_index", opts)
+    }
+
+    save_form(e) {
+      e.preventDefault()
+      common.saveForm(opts.id+'_crud_'+opts.singular, "datasets/sub/"+opts.parent_name+"/"+ opts.id+"/"+opts.element_id, "")
+    }
+
+    var self = this;
+    common.get(url + "/datasets/" + opts.parent_name + "/sub/" + opts.id + "/" + opts.element_id, function(d) {
+      self.subdata = d.data
+
+      common.buildForm(self.subdata, opts.fields, '#'+opts.id+'_crud_' + opts.singular)
+    })
+    this.on('updated', function() {
+      $(".select_list").select2()
+      $(".select_mlist").select2()
+      $(".select_tag").select2({ tags: true })
+    })
+  </script>
+</dataset_crud_edit>
+
+<dataset_crud_new>
+  <a href="#" class="uk-button uk-button-link" onclick={ goback }>Back to { opts.id }</a>
+  <form onsubmit="{ save_form }" class="uk-form" id="{opts.id}_crud_dataset">
+  </form>
+
+  <script>
+    var self = this
+    this.crud = {}
+    this.crud[opts.key] = opts.parent_id
+
+    goback(e) {
+      e.preventDefault()
+
+      riot.mount("#"+opts.id, "dataset_crud_index", opts)
+    }
+
+    this.on('mount', function() {
+      common.buildForm(self.crud, opts.fields, '#'+opts.id+'_crud_dataset')
+    })
+
+    save_form(e) {
+      e.preventDefault()
+      console.log(opts)
+      common.saveForm(opts.id+'_crud_dataset', "datasets/"+ opts.parent_name +"/" + opts.parent_id + "/"+ opts.id, "", opts)
+    }
+
+
+  </script>
+</dataset_crud_new>
+
+
 <all_datatypes>
   <div class="rightnav uk-card uk-card-default uk-card-body">
     <ul class="uk-nav-default uk-nav-parent-icon" uk-nav>
@@ -22,6 +167,7 @@
   <virtual if={can_access}>
     <ul uk-tab>
       <li><a href="#">datasets</a></li>
+      <li each={ i, k in sub_models }><a href="#">{ k }</a></li>
     </ul>
 
     <ul class="uk-switcher uk-margin">
@@ -30,6 +176,9 @@
         <form onsubmit="{ save_form }" class="uk-form" id="form_dataset">
         </form>
         <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
+      </li>
+      <li each={ i, k in sub_models }>
+        <div id={ k } class="crud"></div>
       </li>
     </ul>
   </virtual>
@@ -41,6 +190,7 @@
     var self = this
     self.can_access = false
     self.loaded = false
+    self.sub_models = []
 
     save_form(e) {
       e.preventDefault()
@@ -64,6 +214,7 @@
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
       self.dataset = d.data
       self.fields = d.fields
+      self.sub_models = d.model.sub_models
 
       if(!_.isArray(self.fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
@@ -71,12 +222,20 @@
         self.loaded = true
         self.update()
         if(self.can_access)
-          common.buildForm(self.dataset, self.fields, '#form_dataset', 'datasets/' + opts.datatype,
-          function() {
+          console.log(self.fields)
+
+          common.buildForm(self.dataset, self.fields, '#form_dataset', 'datasets', function() {
             $(".crud").each(function(i, c) {
-            var id = $(c).attr("id")
+              var id = $(c).attr("id")
+              riot.mount("#" + id, "dataset_crud_index", { model: id,
+                fields: self.sub_models[id].fields,
+                key: self.sub_models[id].key,
+                singular: self.sub_models[id].singular,
+                columns: self.sub_models[id].columns,
+                parent_id: opts.dataset_id,
+                parent_name: opts.datatype })
+            })
           })
-        })
       })
     })
 

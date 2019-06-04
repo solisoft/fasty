@@ -302,6 +302,7 @@ router.put('/:service/orders/:from/:to', function (req, res) {
 router.get('/:service/:id/:subservice/:key/page/:page/:perpage', function (req, res) {
   let includes = ''
   let include_merge = ''
+  console.log(req.pathParams.service)
   if(models()[req.pathParams.service].sub_models[req.pathParams.subservice].includes) {
     includes = models()[req.pathParams.service].sub_models[req.pathParams.subservice].includes.conditions
     include_merge = models()[req.pathParams.service].sub_models[req.pathParams.subservice].includes.merges

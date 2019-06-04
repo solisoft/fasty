@@ -201,5 +201,9 @@ create_collection('helpers');
 
 create_collection('helpers');
 
+create_collection('apis');
+create_collection('api_routes');
+create_collection('api_scripts');
+
 /*@{{setup}}*/
 

@@ -70,6 +70,9 @@ $(function () {
   route('/helpers', function(name) {
     riot.mount('div#app', 'helpers')
   })
+  route('/apis', function(name) {
+    riot.mount('div#app', 'apis')
+  })
   /*@{{router}}*/
 
 
@@ -142,6 +145,11 @@ $(function () {
           riot.mount('div#app', 'helper_edit', { helper_id: id })
         }
       }
+      if(collection == "apis") {
+        if(action == "edit") {
+          riot.mount('div#app', 'api_edit', { api_id: id })  
+        }
+      } 
       /*@{{router_cia}}*/
     }
   })
@@ -179,6 +187,9 @@ $(function () {
     }
     if(collection == "helpers") {
       if(action == "new") riot.mount('div#app', 'helper_new')
+    }
+    if(collection == "apis") {
+      if(action == "new") riot.mount('div#app', 'api_new')
     }
     /*@{{router_ca}}*/
   })

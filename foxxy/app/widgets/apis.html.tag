@@ -1,15 +1,156 @@
+<api_crud_index>
 
-<datatype_edit>
+  <a href="#" class="uk-button uk-button-small uk-button-default" onclick={ new_item }>
+    <i class="fas fa-plus"></i> New { opts.singular }
+  </a>
+
+  <table class="uk-table uk-table-striped" if={data.length > 0}>
+    <thead>
+      <tr>
+        <th each={ col in cols }>
+          {col.name == undefined ? col : col.label === undefined ? col.name : col.label}
+        </th>
+        <th width="70"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr each={ row in data } >
+        <td each={ col in cols } class="{col.class}">
+          <virtual if={ col.tr == true }>{_.get(row,col.name)[locale]}</virtual>
+          <virtual if={ col.tr != true }>{_.get(row,col.name)}</virtual>
+        </td>
+        <td class="uk-text-center" width="110">
+          <a onclick={edit} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a>
+          <a onclick={ destroy_object } class="uk-button uk-button-danger uk-button-small" ><i class="fas fa-trash-alt"></i></a>
+        </td>
+      </tr>
+    </tbody>
+
+  </table>
+
+  <ul class="uk-pagination">
+    <li if={ page > 0 } ><a onclick={ previousPage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+    <li if={ (page + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextPage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+  </ul>
+
+  <script>
+    var self = this
+    this.data = []
+    new_item(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "api_crud_new", opts)
+    }
+
+    this.loadPage = function(pageIndex) {
+      console.log(opts)
+      common.get(url + "/cruds/" + opts.parent_name + "/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/page/"+pageIndex+"/"+per_page, function(d) {
+        self.data = d.data[0].data
+        self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
+        if(opts.columns) self.cols = opts.columns
+        self.count = d.data[0].count
+        self.update()
+      })
+    }
+    this.loadPage(1)
+
+    edit(e) {
+      e.preventDefault()
+      opts.element_id = e.item.row._key
+      riot.mount("#"+opts.id, "api_crud_edit", opts)
+    }
+
+    nextPage(e) {
+      e.preventDefault()
+      self.page += 1
+      self.loadPage(self.page + 1)
+    }
+
+    previousPage(e) {
+      e.preventDefault()
+      self.page -= 1
+      self.loadPage(self.page + 1)
+    }
+
+    destroy_object(e) {
+      e.preventDefault()
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.delete(url + "/cruds/" + opts.id + "/" + e.item.row._key, function() {
+          self.loadPage(1)
+        })
+      }, function() {})
+    }
+  </script>
+</api_crud_index>
+
+<api_crud_edit>
+  <a href="#" class="uk-button uk-button-link" onclick={ goback }>Back to { opts.id }</a>
+  <form onsubmit="{ save_form }" class="uk-form" id="{opts.id}_crud_api">
+  </form>
+
+  <script>
+    goback(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "api_crud_index", opts)
+    }
+
+    save_form(e) {
+      e.preventDefault()
+      common.saveForm(opts.id+'_crud_api', "cruds/sub/"+opts.parent_name+"/"+ opts.id+"/"+opts.element_id, "", opts)
+    }
+
+    var self = this;
+    common.get(url + "/cruds/" + opts.id + "/" + opts.element_id, function(d) {
+      self.api = d.data
+
+      common.buildForm(self.api, opts.fields, '#'+opts.id+'_crud_api')
+    })
+    this.on('updated', function() {
+      $(".select_list").select2()
+      $(".select_mlist").select2()
+      $(".select_tag").select2({ tags: true })
+    })
+  </script>
+</api_crud_edit>
+
+<api_crud_new>
+  <a href="#" class="uk-button uk-button-link" onclick={ goback }>Back to { opts.id }</a>
+  <form onsubmit="{ save_form }" class="uk-form" id="{opts.id}_crud_api">
+  </form>
+
+  <script>
+    var self = this
+    this.crud = {}
+    this.crud[opts.key] = opts.parent_id
+
+    goback(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "api_crud_index", opts)
+    }
+
+    this.on('mount', function() {
+      common.buildForm(self.crud, opts.fields, '#'+opts.id+'_crud_api')
+    })
+
+    save_form(e) {
+      e.preventDefault()
+      common.saveForm(opts.id+'_crud_api', "cruds/sub/apis/"+ opts.id, "", opts)
+    }
+
+
+  </script>
+</api_crud_new>
+
+<api_edit>
   <virtual if={can_access}>
     <ul uk-tab>
-      <li><a href="#">datatypes</a></li>
+      <li><a href="#">apis</a></li>
       <li each={ i, k in sub_models }><a href="#">{ k }</a></li>
     </ul>
 
     <ul class="uk-switcher uk-margin">
       <li>
-        <h3>Editing datatype</h3>
-        <form onsubmit="{ save_form }" class="uk-form" id="form_datatype">
+        <h3>Editing api</h3>
+        <form onsubmit="{ save_form }" class="uk-form" id="form_api">
         </form>
         <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
       </li>
@@ -17,8 +158,6 @@
         <div id={ k } class="crud"></div>
       </li>
     </ul>
-
-    <dataset_helper></dataset_helper>
   </virtual>
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this page...
@@ -31,13 +170,13 @@
 
     save_form(e) {
       e.preventDefault()
-      common.saveForm("form_datatype", "cruds/datatypes",opts.datatype_id)
+      common.saveForm("form_api", "cruds/apis",opts.api_id)
     }
 
     duplicate(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/datatypes/" + self.datatype._key + "/duplicate", function(data) {
-          route('/datatypes/' + data._key + '/edit')
+        common.get(url + "/cruds/apis/" + self.api._key + "/duplicate", function(data) {
+          route('/apis/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
             status  : 'success',
@@ -48,11 +187,10 @@
       }, function() {})
     }
 
-    common.get(url + "/cruds/datatypes/" + opts.datatype_id, function(d) {
-      self.datatype = d.data
+    common.get(url + "/cruds/apis/" + opts.api_id, function(d) {
+      self.api = d.data
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
-
       var fields = d.fields
 
       if(!_.isArray(fields)) fields = fields.model
@@ -61,16 +199,16 @@
         self.loaded = true
         self.update()
         if(self.can_access)
-          common.buildForm(self.datatype, fields, '#form_datatype', 'datatypes', function() {
+          common.buildForm(self.api, fields, '#form_api', 'apis', function() {
             $(".crud").each(function(i, c) {
             var id = $(c).attr("id")
-            riot.mount("#" + id, "datatype_crud_index", { model: id,
+            riot.mount("#" + id, "api_crud_index", { model: id,
               fields: self.sub_models[id].fields,
               key: self.sub_models[id].key,
               singular: self.sub_models[id].singular,
               columns: self.sub_models[id].columns,
-              parent_id: opts.datatype_id,
-              parent_name: "datatypes" })
+              parent_id: opts.api_id,
+              parent_name: "apis" })
           })
         })
       })
@@ -81,16 +219,13 @@
       $(".select_mlist").select2()
       $(".select_tag").select2({ tags: true })
     })
-</datatype_edit>
+</api_edit>
 
-<datatype_new>
+<api_new>
   <virtual if={can_access}>
-    <h3>Creating datatype</h3>
-    <form onsubmit="{ save_form }" class="uk-form" id="form_new_datatype">
+    <h3>Creating api</h3>
+    <form onsubmit="{ save_form }" class="uk-form" id="form_new_api">
     </form>
-
-    <dataset_helper></dataset_helper>
-
   </virtual>
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this page...
@@ -102,10 +237,10 @@
 
     save_form(e) {
       e.preventDefault()
-      common.saveForm("form_new_datatype", "cruds/datatypes")
+      common.saveForm("form_new_api", "cruds/apis")
     }
 
-    common.get(url + "/cruds/datatypes/fields", function(d) {
+    common.get(url + "/cruds/apis/fields", function(d) {
       common.get(url + "/auth/whoami", function(me) {
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
@@ -114,7 +249,7 @@
           // Ignore sub models if any
           var fields = d.fields
           if(!_.isArray(fields)) fields = fields.model
-          common.buildForm({}, fields, '#form_new_datatype', 'datatypes');
+          common.buildForm({}, fields, '#form_new_api', 'apis');
         }
       })
     })
@@ -125,15 +260,15 @@
       $(".select_tag").select2({ tags: true })
     })
   </script>
-</datatype_new>
+</api_new>
 
-<datatypes>
+<apis>
   <virtual if={can_access}>
     <div class="uk-float-right">
-      <a href="#datatypes/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New datatype</a>
+      <a href="#apis/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New api</a>
       <a if={ export } onclick="{ export_data }" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a>
     </div>
-    <h3>Listing datatypes</h3>
+    <h3>Listing apis</h3>
 
     <form onsubmit={filter} class="uk-margin-top">
       <div class="uk-inline uk-width-1-1">
@@ -206,7 +341,7 @@
 
     this.loadPage = function(pageIndex) {
       self.loaded = false
-      common.get(url + "/cruds/datatypes/page/"+pageIndex+"/"+this.perpage, function(d) {
+      common.get(url + "/cruds/apis/page/"+pageIndex+"/"+this.perpage, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -238,7 +373,7 @@
       e.preventDefault();
       if(self.refs.term.value != "") {
         $(".uk-form-icon i").attr("class", "uk-icon-spin uk-icon-spinner")
-        common.get(url + "/cruds/datatypes/search/"+self.refs.term.value, function(d) {
+        common.get(url + "/cruds/apis/search/"+self.refs.term.value, function(d) {
           self.data = d.data
           $(".uk-form-icon i").attr("class", "uk-icon-search")
           self.update()
@@ -251,7 +386,7 @@
 
     ////////////////////////////////////////////////////////////////////////////
     edit(e) {
-      route("/datatypes/" + e.item.row._key + "/edit")
+      route("/apis/" + e.item.row._key + "/edit")
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -269,8 +404,8 @@
     ////////////////////////////////////////////////////////////////////////////
     destroy_object(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.delete(url + "/cruds/datatypes/" + e.item.row._key, function() {
-          self.loadPage(self.page + 1)
+        common.delete(url + "/cruds/apis/" + e.item.row._key, function() {
+          self.loadPage(self.page)
         })
       }, function() {})
     }
@@ -278,7 +413,7 @@
     ////////////////////////////////////////////////////////////////////////////
     toggleField(e) {
       e.preventDefault()
-      common.patch(url + "/cruds/datatypes/" + e.target.dataset.key + "/" + e.item.col.name + "/toggle", "{}", function(data) {
+      common.patch(url + "/cruds/apis/" + e.target.dataset.key + "/" + e.item.col.name + "/toggle", "{}", function(data) {
         if(data.success) {
           e.target.innerText = data.data
         }
@@ -296,12 +431,12 @@
 
     ////////////////////////////////////////////////////////////////////////////
     export_data(e) {
-      common.get(url + '/cruds/datatypes/export', function(d) {
+      common.get(url + '/cruds/apis/export', function(d) {
         var csvContent = d.data
         var encodedUri = encodeURI(csvContent)
         var link = document.createElement("a")
         link.setAttribute("href", encodedUri)
-        link.setAttribute("download", "datatypes.csv")
+        link.setAttribute("download", "apis.csv")
         link.innerHTML= "Click Here to download"
         document.body.appendChild(link)
         link.click()
@@ -319,7 +454,7 @@
           handle: '.fa-grip-vertical',
           onSort: function (/**Event*/evt) {
             common.put(
-              url + 'cruds/datatypes/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              url + 'cruds/apis/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
               function() {}
             )
           },
@@ -327,64 +462,5 @@
       }
     })
   </script>
-</datatypes>
+</apis>
 
-
-
-<dataset_helper>
-  <hr>
-  <h4>Data definition sample</h4>
-  <pre><code class="json">\{
-    "model": [
-      \{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \},
-      \{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\},
-      \{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \},
-      \{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \},
-      \{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().format('YYYY-MM-DD').raw().required()", "l": "Published_at" \},
-      \{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \},
-      \{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \},
-      \{
-        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",
-        "d": "d": "FOR doc IN datasets FILTER doc.type == 'authors' RETURN [doc._key, CONCAT(doc.ln, ' ', doc.fn)]"
-      \},
-      \{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \},
-      \{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \},
-      \{
-        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",
-        "d": "LET tags = (FOR doc IN datasets FILTER doc.type=='books' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"
-      \},
-      \{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \},
-      \{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \},
-      \{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \},
-      \{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \},
-      \{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \},
-      \{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \},
-      \{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \}
-    ],
-    "columns": [
-      \{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,
-        "values": \{ "true": "online", "false": "offline" \},
-        "truncate": 20, "uppercase": true, "lowercase": true
-      \}
-    ],
-    "slug": ["title"],
-    "sort": "SORT doc.order ASC",
-    "search": ["title", "barcode", "desc"],
-    "includes": \{
-      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",
-      "merges": ", customer: c "
-    \},
-    "timestamps": true
-  \}
-  </code></pre>
-  <style>
-    dataset_helper pre { padding: 0; border: none; border-radius: 4px; }
-  </style>
-  <script>
-    this.on('updated', function() {
-      document.querySelectorAll('pre code').forEach(function(block) {
-        hljs.highlightBlock(block);
-      });
-    })
-  </script>
-</dataset_helper>

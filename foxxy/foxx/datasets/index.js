@@ -118,6 +118,45 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
 .header('X-Session-Id')
 .description('Returns all objects');
 // -----------------------------------------------------------------------------
+router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res) {
+  let model = JSON.parse(models()[req.pathParams.service].javascript)
+  const locale = req.headers['foxx-locale']
+  let order = model.sort || 'SORT doc._key DESC'
+  if(model.sortable) order = 'SORT doc.order ASC'
+  let includes = ''
+  let include_merge = ''
+  if(model.includes) {
+    includes = model.includes.conditions
+    include_merge = model.includes.merges
+  }
+  var bindVars = {
+    "datatype": req.pathParams.sub,
+    "parent": req.pathParams.service_key,
+    "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
+    "perpage": parseInt(req.pathParams.perpage)
+  }
+
+  var aql = `
+  LET count = LENGTH((FOR doc IN datasets FILTER doc.type == @datatype RETURN 1))
+  LET data = (
+    FOR doc IN datasets
+      FILTER doc.parent_id == @parent
+      FILTER doc.type == @datatype
+      LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
+      ${order}
+      ${includes}
+      LIMIT @offset, @perpage
+      RETURN MERGE(doc, { image: image ${include_merge} })
+  )
+  RETURN { count: count, data: data }
+  `
+  if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }); }
+
+  res.send({ model: model, data: db._query(aql, bindVars).toArray() });
+})
+.header('X-Session-Id')
+.description('Returns all objects');
+// -----------------------------------------------------------------------------
 router.get('/:service/search/:term', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   var locale = req.headers['foxx-locale']
@@ -154,11 +193,28 @@ router.get('/:service/:id', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.model
   _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d) } })
-  res.send({ fields: fields,
-             data: collection.document(req.pathParams.id) });
+  res.send({
+    fields: fields,
+    model: JSON.parse(models()[req.pathParams.service].javascript),
+    data: collection.document(req.pathParams.id)
+  });
 })
 .header('X-Session-Id')
 .description('Returns object within ID');
+// -----------------------------------------------------------------------------
+router.get('/:service/sub/:sub_service/:id', function (req, res) {
+  const collection = db._collection('datasets')
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  let fields = object.sub_models[req.pathParams.sub_service]
+  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d) } })
+  res.send({
+    fields: fields,
+    model: JSON.parse(models()[req.pathParams.service].javascript),
+    data: collection.document(req.pathParams.id)
+  });
+})
+.header('X-Session-Id')
+.description('Returns sub object within ID');
 // -----------------------------------------------------------------------------
 router.get('/:service/fields', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -216,6 +272,53 @@ router.post('/:service', function (req, res) {
 .header('X-Session-Id')
 .description('Create a new object.');
 // -----------------------------------------------------------------------------
+router.post('/:service/:service_key/:sub', function (req, res) {
+  const collection = db._collection('datasets')
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const body = JSON.parse(req.body.toString())
+  var obj = null
+  var errors = []
+  let fields = object.sub_models[req.pathParams.sub].fields
+  try {
+    var schema = {}
+    _.each(fields, function (f) {
+      schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
+    })
+    errors = joi.validate(body, schema, { abortEarly: false }).error.details
+  }
+  catch(e) {}
+  if(errors.length == 0) {
+    var data = fieldsToData(fields, body, req.headers)
+    data.type = req.pathParams.sub
+    if(object.search) {
+      var search_arr = []
+      _.each(object.search, function(s) {
+        if(_.isPlainObject(data[s])) {
+          search_arr.push(data[s][req.headers['foxx-locale']])
+        } else {
+          search_arr.push(data[s])
+        }
+      })
+      data.search = {}
+      data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+    }
+    if(object.timestamps === true) { data.created_at = +new Date() }
+    if(object.slug) {
+      var slug = _.map(object.slug, function(field_name) { return data[field_name] })
+      data['slug'] = _.kebabCase(slug)
+    }
+    data['order'] = db._query(
+      'LET docs = (FOR doc IN datasets FILTER doc.type == @type RETURN 1) RETURN LENGTH(docs)',
+      { type: req.pathParams.sub }
+    ).toArray()[0]
+    data['parent_id'] = req.pathParams.service_key
+    obj = collection.save(data, { waitForSync: true })
+  }
+  res.send({ success: errors.length == 0, data: obj, errors: errors });
+}).header('foxx-locale')
+.header('X-Session-Id')
+.description('Create a new object.');
+// -----------------------------------------------------------------------------
 router.post('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -225,6 +328,52 @@ router.post('/:service/:id', function (req, res) {
   var obj = null
   var errors = []
   if(!_.isArray(fields)) fields = fields.model
+  try {
+    var schema = {}
+    _.each(fields, function (f) {
+      schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
+    })
+    errors = joi.validate(body, schema, { abortEarly: false }).error.details
+  }
+  catch(e) {}
+  if(errors.length == 0) {
+    var doc = collection.document(req.pathParams.id)
+    var data = fieldsToData(fields, body, req.headers)
+    if(object.search) {
+      data.search = {}
+      var search_arr = []
+      _.each(object.search, function(s) {
+        if(_.isPlainObject(data[s])) {
+          search_arr.push(data[s][req.headers['foxx-locale']])
+        } else {
+          search_arr.push(data[s])
+        }
+      })
+      data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+    }
+    if(object.timestamps === true) { data.updated_at = +new Date() }
+    if(object.slug) {
+      var slug = _.map(object.slug, function(field_name) {
+        return data[field_name]
+      })
+      data['slug'] = _.kebabCase(slug)
+    }
+    obj = collection.update(doc, data)
+  }
+  res.send({ success: errors.length == 0, data: obj, errors: errors });
+})
+.header('foxx-locale')
+.header('X-Session-Id')
+.description('Update an object.');
+// -----------------------------------------------------------------------------
+router.post('/sub/:service/:sub_service/:id', function (req, res) {
+  const collection = db._collection('datasets')
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  let fields = object.sub_models[req.pathParams.sub_service].fields
+
+  const body = JSON.parse(req.body.toString())
+  var obj = null
+  var errors = []
   try {
     var schema = {}
     _.each(fields, function (f) {
