@@ -2568,9 +2568,12 @@ riot.tag2('components', '<virtual if="{can_access}"> <div class="uk-float-right"
 });
 
 require.register("widgets/datasets.html.tag", function(exports, require, module) {
-riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{page > 0}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
+riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th width="20" if="{sortable}"></th> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody id="sublist"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{page > 0}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
+    this.sortable = false
+    this.data     = []
+
     var self = this
-    this.data = []
+
     this.new_item = function(e) {
       e.preventDefault()
       riot.mount("#"+opts.id, "dataset_crud_new", opts)
@@ -2579,9 +2582,10 @@ riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk
     this.loadPage = function(pageIndex) {
       common.get(url + "datasets/"+opts.parent_name+"/"+ opts.parent_id + "/"+opts.model+"/page/"+pageIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
-        var model = d.model.sub_models[opts.id]
+        var model = d.model
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(model.columns) self.cols = model.columns
+        self.sortable = !!model.sortable
         self.count = d.data[0].count
         self.update()
       })
@@ -2614,6 +2618,23 @@ riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk
         })
       }, function() {})
     }.bind(this)
+
+    this.on('updated', function() {
+      if(self.sortable) {
+        var el = document.getElementById('sublist');
+        var sortable = new Sortable(el, {
+          animation: 150,
+          ghostClass: 'blue-background-class',
+          handle: '.fa-grip-vertical',
+          onSort: function ( evt) {
+            common.put(
+              url + 'datasets/'+ opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              function() {}
+            )
+          },
+        });
+      }
+    })
 });
 
 riot.tag2('dataset_crud_edit', '<a href="#" class="uk-button uk-button-link" onclick="{goback}">Back to {opts.id}</a> <form onsubmit="{save_form}" class="uk-form" id="{opts.id}_crud_{opts.singular}"> </form>', '', '', function(opts) {

@@ -7,14 +7,16 @@
   <table class="uk-table uk-table-striped" if={data.length > 0}>
     <thead>
       <tr>
+        <th width="20" if={sortable}></th>
         <th each={ col in cols }>
           {col.name == undefined ? col : col.label === undefined ? col.name : col.label}
         </th>
         <th width="70"></th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="sublist">
       <tr each={ row in data } >
+        <td if={sortable}><i class="fas fa-grip-vertical handle"></i></td>
         <td each={ col in cols } class="{col.class}">
           <virtual if={ col.tr == true }>{_.get(row,col.name)[locale]}</virtual>
           <virtual if={ col.tr != true }>{_.get(row,col.name)}</virtual>
@@ -34,43 +36,47 @@
   </ul>
 
   <script>
+    this.sortable = false
+    this.data     = []
+
     var self = this
-    this.data = []
+
     new_item(e) {
       e.preventDefault()
       riot.mount("#"+opts.id, "dataset_crud_new", opts)
     }
-
+    ////////////////////////////////////////////////////////////////////////////
     this.loadPage = function(pageIndex) {
       common.get(url + "datasets/"+opts.parent_name+"/"+ opts.parent_id + "/"+opts.model+"/page/"+pageIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
-        var model = d.model.sub_models[opts.id]
+        var model = d.model
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(model.columns) self.cols = model.columns
+        self.sortable = !!model.sortable
         self.count = d.data[0].count
         self.update()
       })
     }
     this.loadPage(1)
-
+    ////////////////////////////////////////////////////////////////////////////
     edit(e) {
       e.preventDefault()
       opts.element_id = e.item.row._key
       riot.mount("#"+opts.id, "dataset_crud_edit", opts)
     }
-
+    ////////////////////////////////////////////////////////////////////////////
     nextPage(e) {
       e.preventDefault()
       self.page += 1
       self.loadPage(self.page + 1)
     }
-
+    ////////////////////////////////////////////////////////////////////////////
     previousPage(e) {
       e.preventDefault()
       self.page -= 1
       self.loadPage(self.page + 1)
     }
-
+    ////////////////////////////////////////////////////////////////////////////
     destroy_object(e) {
       e.preventDefault()
       UIkit.modal.confirm("Are you sure?").then(function() {
@@ -79,6 +85,23 @@
         })
       }, function() {})
     }
+    ////////////////////////////////////////////////////////////////////////////
+    this.on('updated', function() {
+      if(self.sortable) {
+        var el = document.getElementById('sublist');
+        var sortable = new Sortable(el, {
+          animation: 150,
+          ghostClass: 'blue-background-class',
+          handle: '.fa-grip-vertical',
+          onSort: function (/**Event*/evt) {
+            common.put(
+              url + 'datasets/'+ opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              function() {}
+            )
+          },
+        });
+      }
+    })
   </script>
 </dataset_crud_index>
 

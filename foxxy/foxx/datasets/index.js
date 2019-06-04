@@ -119,7 +119,9 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
 .description('Returns all objects');
 // -----------------------------------------------------------------------------
 router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res) {
-  let model = JSON.parse(models()[req.pathParams.service].javascript)
+  let model = JSON.parse(
+    models()[req.pathParams.service].javascript
+  ).sub_models[req.pathParams.sub]
   const locale = req.headers['foxx-locale']
   let order = model.sort || 'SORT doc._key DESC'
   if(model.sortable) order = 'SORT doc.order ASC'
