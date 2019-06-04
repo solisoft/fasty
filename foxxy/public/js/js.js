@@ -2579,7 +2579,7 @@ riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk
     this.loadPage = function(pageIndex) {
       common.get(url + "datasets/"+opts.parent_name+"/"+ opts.parent_id + "/"+opts.model+"/page/"+pageIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
-        let model = d.model.sub_models[opts.id]
+        var model = d.model.sub_models[opts.id]
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(model.columns) self.cols = model.columns
         self.count = d.data[0].count
