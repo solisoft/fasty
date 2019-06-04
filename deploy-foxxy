@@ -2,7 +2,7 @@
 cd foxxy
 yarn
 rm -Rf dist
-brunch b --production
+LOGGY_STACKS=1 brunch b --production
 cd ..
 git add .
 git commit -am "Build Foxxy App"
