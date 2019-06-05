@@ -11,15 +11,15 @@ import install_service from require 'lib.service'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import capture_errors, yield_error from require 'lapis.application'
 import parse_query_string, from_json, to_json from require 'lapis.util'
+import capture_errors, yield_error, respond_to from require 'lapis.application'
 import dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug from require 'lib.concerns'
 
 jwt = {}
 global_data = {}
 settings = {}
 no_db = {}
-
+--------------------------------------------------------------------------------
 -- App
 class extends lapis.Application
   handle_error: (err, trace) =>
@@ -33,7 +33,7 @@ class extends lapis.Application
   @enable "etlua"
 
   layout: false -- we don't need a layout, it will be loaded dynamically
-
+  ------------------------------------------------------------------------------
   load_settings = (sub_domain) =>
     jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil
     no_db[sub_domain] = true if list_databases!["db_#{sub_domain}"] == nil
@@ -56,11 +56,11 @@ class extends lapis.Application
         trads: MERGE(g_trads), helpers: g_helpers }
     ')[1]
     settings[sub_domain] = global_data.settings[1]
-
+  ------------------------------------------------------------------------------
   -- need_a_db
   [need_a_db: '/need_a_db']: =>
     render: true
-
+  ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
@@ -78,7 +78,7 @@ class extends lapis.Application
 
       home = from_json(settings[sub_domain].home)
       redirect_to: "/#{@session.lang}/#{home['all']}/#{home['slug']}"
-
+  ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
@@ -89,7 +89,7 @@ class extends lapis.Application
       { "key": "#{@params.layout}" }
     )[1]
     content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
-
+  ------------------------------------------------------------------------------
   -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
@@ -101,7 +101,7 @@ class extends lapis.Application
     )[1]
     scss = sass.compile(css.scss, 'compressed')
     content_type: "text/css", dynamic_replace("db_#{sub_domain}", css.css .. "\n" .. scss, {}, {}, @params)
-
+  ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
@@ -110,7 +110,7 @@ class extends lapis.Application
       "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
       { "key": "#{@params.key}" }
     )[1]
-
+  ------------------------------------------------------------------------------
   -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>
     if @req.headers['x-forwarded-host'] then
@@ -123,7 +123,7 @@ class extends lapis.Application
       load_settings(@, sub_domain)
       unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
       redirect_to: "/#{@session.lang}/#{@params.all}/#{@params.slug}"
-
+  ------------------------------------------------------------------------------
   -- page
   [page: '/:lang/:all/:slug(/*)']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
@@ -147,13 +147,19 @@ class extends lapis.Application
           status: 404, render: 'error_404'
       else
         status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
-
+  ------------------------------------------------------------------------------
   -- install service
-  [service: '/service/:name']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
-    load_settings(@, sub_domain)
-    install_service(sub_domain, @params.name)
-    -- 'service installed'
+  [service: '/service/:name']: respond_to {
+    POST: =>
+      sub_domain = stringy.split(@req.headers.host, '.')[1]
+      load_settings(@, sub_domain)
 
+      if @params.token == settings[sub_domain].token
+        install_service(sub_domain, @params.name)
+        'service installed'
+      else
+        status: 401, 'Not authorized'
+  }
+  ------------------------------------------------------------------------------
   -- console (kinda irb console)
   [console: '/console']: console.make!

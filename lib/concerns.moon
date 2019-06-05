@@ -5,20 +5,13 @@ import aql from require 'lib.arango'
 import table_deep_merge from require 'lib.utils'
 import http_get from require 'lib.http_client'
 import from_json, to_json, trim from require 'lapis.util'
-
 --------------------------------------------------------------------------------
-
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
-
 --------------------------------------------------------------------------------
-
 escape_pattern = (text)->
   str, _ = text\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
-
 --------------------------------------------------------------------------------
-
--- prepare_headers
 prepare_headers = (html, data, params)->
   html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
   html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
@@ -35,24 +28,15 @@ prepare_headers = (html, data, params)->
     headers ..= "<meta property='og:type' content='#{data.item.og_type[params.lang]}' />"
 
   html\gsub('@headers', headers)
-
 --------------------------------------------------------------------------------
-
--- etlua2html
 etlua2html = (json, partial, lang) ->
   template = etlua.compile(partial.item.html)
   template({ 'dataset': json, 'to_json': to_json, 'lang': lang })
-
 --------------------------------------------------------------------------------
-
--- load an object by slug
 load_partial_by_slug = (db_name, slug, object)->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
   aql(db_name, request, { slug: slug })[1]
-
 --------------------------------------------------------------------------------
-
--- load an object by slug
 load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
   request = "FOR item IN #{object} FILTER item.slug[@lang] == @slug "
   if uselayout == true
@@ -61,10 +45,7 @@ load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
     request ..= 'RETURN { item }'
 
   aql(db_name, request, { slug: slug, lang: lang })[1]
-
 --------------------------------------------------------------------------------
-
--- dynamic_replace
 dynamic_replace = (db_name, html, global_data, history, params) ->
   translations = global_data.trads
   aqls = global_data.aqls
@@ -202,9 +183,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     html = html\gsub(escape_pattern(widget), escape_pattern(output))
 
   html
-
 --------------------------------------------------------------------------------
-
 -- dynamic_page : check all {{ .* }} and load layout
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
   html = to_json(data)
@@ -221,8 +200,6 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
     html = dynamic_replace(db_name, html, global_data, history, params)
   html
-
 --------------------------------------------------------------------------------
-
 -- expose methods
 { :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern, :dynamic_replace }

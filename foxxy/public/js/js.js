@@ -1816,7 +1816,7 @@ riot.tag2('api_new', '<virtual if="{can_access}"> <h3>Creating api</h3> <form on
     })
 });
 
-riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a href="#apis/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New api</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing apis</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{page > 0}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', 'apis .handle,[data-is="apis"] .handle{ cursor: move; }', '', function(opts) {
+riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a href="#apis/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New api</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing apis</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="110"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="160"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{install}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{page > 0}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', 'apis .handle,[data-is="apis"] .handle{ cursor: move; }', '', function(opts) {
 
     var self        = this
     this.page       = 0
@@ -1827,6 +1827,11 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
     this.can_access = false
     this.sortable   = false
     this.loaded     = false
+    this.settings   = {}
+
+    common.get(url + "/settings", function(settings) {
+      self.settings = settings.data
+    })
 
     this.loadPage = function(pageIndex) {
       self.loaded = false
@@ -1842,6 +1847,7 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
           self.can_access = d.model.roles === undefined || _.includes(d.model.roles.read, me.role)
           self.update()
         })
+
       })
     }
     this.loadPage(1)
@@ -1900,6 +1906,16 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
           e.target.innerText = data.data
         }
       })
+      return false
+    }.bind(this)
+
+    this.install = function(e) {
+      e.preventDefault()
+      var url = "/service/" + e.item.row.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        console.log(data)
+      })
+      return false
     }.bind(this)
 
     this.setPerPage = function(e) {

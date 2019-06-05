@@ -47,9 +47,18 @@ check_valid_lang = function(langs, lang)
   print("LANG " .. lang)
   return lang
 end
+local map
+map = function(tbl, f)
+  local data = { }
+  for k, v in pairs(tbl) do
+    data[k] = f(v)
+  end
+  return data
+end
 return {
   table_merge = table_merge,
   table_deep_merge = table_deep_merge,
   table_index = table_index,
-  check_valid_lang = check_valid_lang
+  check_valid_lang = check_valid_lang,
+  map = map
 }

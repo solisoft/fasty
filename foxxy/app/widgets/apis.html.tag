@@ -281,7 +281,7 @@
         <tr>
           <th if={sortable} width="20"></th>
           <th each={ col in cols }>{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th>
-          <th width="70"></th>
+          <th width="110"></th>
         </tr>
       </thead>
       <tbody id="list">
@@ -302,8 +302,9 @@
               </virtual>
             </virtual>
           </td>
-          <td class="uk-text-center" width="110">
+          <td class="uk-text-center" width="160">
             <a onclick={edit} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a>
+            <a onclick={install} class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a>
             <a onclick={ destroy_object } class="uk-button uk-button-danger uk-button-small" ><i class="fas fa-trash-alt"></i></a>
           </td>
         </tr>
@@ -338,6 +339,11 @@
     this.can_access = false
     this.sortable   = false
     this.loaded     = false
+    this.settings   = {}
+
+    common.get(url + "/settings", function(settings) {
+      self.settings = settings.data
+    })
 
     this.loadPage = function(pageIndex) {
       self.loaded = false
@@ -353,6 +359,8 @@
           self.can_access = d.model.roles === undefined || _.includes(d.model.roles.read, me.role)
           self.update()
         })
+
+
       })
     }
     this.loadPage(1)
@@ -418,6 +426,17 @@
           e.target.innerText = data.data
         }
       })
+      return false
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    install(e) {
+      e.preventDefault()
+      var url = "/service/" + e.item.row.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        console.log(data)
+      })
+      return false
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -106,7 +106,31 @@ document_delete = function(db_name, handle)
 end
 local transaction
 transaction = function(db_name, params)
-  local body, status_code, headers = http_request(db_config.url .. "_db/" .. tostring(db_name) .. "/_api/transaction", method, to_json(params), {
+  local body, status_code, headers = http_request(tostring(db_config.url) .. "/_db/" .. tostring(db_name) .. "/_api/transaction", method, to_json(params), {
+    Authorization = "bearer " .. tostring(jwt)
+  })
+  return body
+end
+local foxx_services
+foxx_services = function(db_name)
+  local body, status_code, headers = http_request(tostring(db_config.url) .. "/_db/" .. tostring(db_name) .. "/_api/foxx?excludeSystem=true", 'GET', { }, {
+    Authorization = "bearer " .. tostring(jwt)
+  })
+  return body
+end
+local foxx_install
+foxx_install = function(db_name, mount, data)
+  local body, status_code, headers = http_request(tostring(db_config.url) .. "/_db/" .. tostring(db_name) .. "/_api/foxx?mount=/" .. tostring(mount), 'POST', data, {
+    ['Content-Type'] = 'application/zip',
+    Authorization = "bearer " .. tostring(jwt)
+  })
+  print(to_json(body))
+  return body
+end
+local foxx_upgrade
+foxx_upgrade = function(db_name, mount, data)
+  local body, status_code, headers = http_request(tostring(db_config.url) .. "/_db/" .. tostring(db_name) .. "/_api/foxx/service?mount=/" .. tostring(mount), 'PATCH', data, {
+    ['Content-Type'] = 'application/zip',
     Authorization = "bearer " .. tostring(jwt)
   })
   return body
@@ -120,5 +144,8 @@ return {
   document_delete = document_delete,
   transaction = transaction,
   raw_aql = raw_aql,
-  list_databases = list_databases
+  list_databases = list_databases,
+  foxx_services = foxx_services,
+  foxx_install = foxx_install,
+  foxx_upgrade = foxx_upgrade
 }

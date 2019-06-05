@@ -17,7 +17,7 @@ For watching / compiling *.moon files : `dc exec cms moonc -w  **/*.moon`
 It will launch the lapis instance + an arangoDB one
 
 * To access ArangoDB UI : `http://localhost:8530`
-* To access Foxxy app : `http://demo.127.0.0.1.xip.io:4001`
+* To access Foxxy app : `http://demo.127.0.0.1.xip.io:8080/static/admin`
 * To access Lapis app (dev) : `http://demo.127.0.0.1.xip.io:8080`
 * To access Lapis app (prod) : `http://demo.127.0.0.1.xip.io:9090`
 

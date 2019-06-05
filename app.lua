@@ -24,15 +24,15 @@ do
   local _obj_0 = require('lib.arango')
   auth_arangodb, aql, list_databases = _obj_0.auth_arangodb, _obj_0.aql, _obj_0.list_databases
 end
-local capture_errors, yield_error
-do
-  local _obj_0 = require('lapis.application')
-  capture_errors, yield_error = _obj_0.capture_errors, _obj_0.yield_error
-end
 local parse_query_string, from_json, to_json
 do
   local _obj_0 = require('lapis.util')
   parse_query_string, from_json, to_json = _obj_0.parse_query_string, _obj_0.from_json, _obj_0.to_json
+end
+local capture_errors, yield_error, respond_to
+do
+  local _obj_0 = require('lapis.application')
+  capture_errors, yield_error, respond_to = _obj_0.capture_errors, _obj_0.yield_error, _obj_0.respond_to
 end
 local dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug
 do
@@ -182,11 +182,20 @@ do
     end,
     [{
       service = '/service/:name'
-    }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      load_settings(self, sub_domain)
-      return install_service(sub_domain, self.params.name)
-    end,
+    }] = respond_to({
+      POST = function(self)
+        local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+        load_settings(self, sub_domain)
+        if self.params.token == settings[sub_domain].token then
+          install_service(sub_domain, self.params.name)
+          return 'service installed'
+        else
+          return {
+            status = 401
+          }, 'Not authorized'
+        end
+      end
+    }),
     [{
       console = '/console'
     }] = console.make()
