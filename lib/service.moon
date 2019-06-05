@@ -49,6 +49,7 @@ install_service = (sub_domain, name)->
   -- Install the service
   os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
   os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
+
   is_existing = table_index(
     map(from_json(foxx_services("db_#{sub_domain}")), (item)-> item.name),
     name
