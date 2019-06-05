@@ -35,21 +35,21 @@ install_service = (sub_domain, name)->
   '
   api = aql("db_#{sub_domain}", request, { 'name': name })[1]
 
-  write_content(path .. '/APP/main.js', api.api.code)
-  write_content(path .. '/APP/manifest.json', api.api.manifest)
+  write_content("#{path}/APP/main.js", api.api.code)
+  write_content("#{path}/APP/manifest.json", api.api.manifest)
 
   for k, item in pairs api.routes
-    write_content(path .. '/APP/routes/' .. item.name .. '.js', item.javascript)
+    write_content("#{path}/APP/routes/#{item.name}.js", item.javascript)
 
   for k, item in pairs api.scripts
-    write_content(path .. '/APP/scripts/' .. item.name .. '.js', item.javascript)
+    write_content("#{path}/APP/scripts/#{item.name}.js", item.javascript)
 
   for k, item in pairs api.tests
-    write_content(path .. '/APP/tests/' .. item.name .. '.js', item.javascript)
+    write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
 
   -- Install the service
-  os.execute('cd install_service/' .. sub_domain .. ' && zip -rq ' .. name .. '.zip ' .. name .. '/')
-  os.execute('rm --recursive install_service/' .. sub_domain .. '/' .. name)
+  os.execute("cd install_service/#{sub_domain} && zip -rq #{name} .zip #{name}/")
+  os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
   is_existing = table_index(
     map(from_json(foxx_services("db_#{sub_domain}")), (item)-> item.name),
     name
