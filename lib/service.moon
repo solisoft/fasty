@@ -20,10 +20,10 @@ read_zipfile = (filename)->
   data
 --------------------------------------------------------------------------------
 install_service = (sub_domain, name)->
-  path = 'install_service/' .. sub_domain .. '/' .. name
-  os.execute('mkdir -p ' .. path .. '/APP/routes')
-  os.execute('mkdir -p ' .. path .. '/APP/scripts')
-  os.execute('mkdir -p ' .. path .. '/APP/tests')
+  path = "install_service/#{sub_domain}/#{name}"
+  os.execute("mkdir -p #{path}/APP/routes")
+  os.execute("mkdir -p #{path}/APP/scripts")
+  os.execute("mkdir -p #{path}/APP/tests")
 
   request = '
     FOR api IN apis
