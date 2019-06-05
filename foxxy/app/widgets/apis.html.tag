@@ -359,8 +359,6 @@
           self.can_access = d.model.roles === undefined || _.includes(d.model.roles.read, me.role)
           self.update()
         })
-
-
       })
     }
     this.loadPage(1)
@@ -434,7 +432,7 @@
       e.preventDefault()
       var url = "/service/" + e.item.row.name
       $.post(url, { token: self.settings.token }, function(data) {
-        if(data == "service deployed")
+        if(data == "service installed")
           UIkit.notification({
             message : 'Endpoint Deployed Successfully!',
             status  : 'success',
