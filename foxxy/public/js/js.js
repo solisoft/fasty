@@ -1913,7 +1913,13 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
       e.preventDefault()
       var url = "/service/" + e.item.row.name
       $.post(url, { token: self.settings.token }, function(data) {
-        console.log(data)
+        if(data == "service deployed")
+          UIkit.notification({
+            message : 'Endpoint Deployed Successfully!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
       })
       return false
     }.bind(this)
