@@ -28,9 +28,9 @@ install_service = (sub_domain, name)->
   request = '
     FOR api IN apis
       FILTER api.name == @name
-      LET routes = (FOR route IN api_routes FILTER route.api_id == api._key RETURN route)
-      LET scripts = (FOR script IN api_scripts FILTER script.api_id == api._key RETURN script)
-      LET tests = (FOR test IN api_tests FILTER test.api_id == api._key RETURN test)
+      LET routes = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)
+      LET scripts = (FOR s IN api_scripts FILTER s.api_id == api._key RETURN s)
+      LET tests = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)
       RETURN { api, routes, scripts, tests }
   '
   api = aql("db_#{sub_domain}", request, { 'name': name })[1]
@@ -48,7 +48,7 @@ install_service = (sub_domain, name)->
     write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
 
   -- Install the service
-  os.execute("cd install_service/#{sub_domain} && zip -rq #{name} .zip #{name}/")
+  os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
   os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
   is_existing = table_index(
     map(from_json(foxx_services("db_#{sub_domain}")), (item)-> item.name),
