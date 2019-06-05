@@ -34,5 +34,8 @@
     "select2": "4.0.3",
     "uglify-js": "^2.7.0",
     "uglify-js-brunch": "^2.0.1"
+  },
+  "devDependencies": {
+    "ws": ">=3.3.1"
   }
 }
