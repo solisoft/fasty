@@ -13,7 +13,6 @@ write_content = (filename, content)->
 --------------------------------------------------------------------------------
 read_zipfile = (filename)->
   file = io.open(filename, 'r')
-  print(filename)
   io.input(file)
   data = io.read('*all')
   io.close(file)
