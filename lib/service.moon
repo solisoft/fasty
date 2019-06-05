@@ -65,7 +65,6 @@ install_service = (sub_domain, name)->
       "db_#{sub_domain}", name,
       read_zipfile("install_service/#{sub_domain}/#{name}.zip")
     )
-  'done'
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service }
