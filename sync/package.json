@@ -1,0 +1,23 @@
+{
+  "name": "fasty-cli",
+  "version": "0.0.1",
+  "description": "CLI for Fasty",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "fasty": "./bin/fasty"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^2.0.4",
+    "colors": "^1.1.2",
+    "js-yaml": "^3.12.0",
+    "lodash": "^4.17.10",
+    "node-notifier": "^5.2.1",
+    "request": "^2.88.0",
+    "yargs": "^5.0.0"
+  }
+}

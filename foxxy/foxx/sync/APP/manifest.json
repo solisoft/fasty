@@ -1,0 +1,16 @@
+{
+    "name": "sync",
+    "version": "0.0.0",
+    "description": "sync",
+    "engines": {
+        "arangodb": "^3.0.0"
+    },
+    "author": "OB",
+    "license": "MIT",
+    "main": "main.js",
+    "scripts": {
+        "setup": "scripts/setup.js",
+        "teardown": "scripts/teardown.js"
+    },
+    "tests": "test/**/*.js"
+}
