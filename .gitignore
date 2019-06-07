@@ -13,4 +13,4 @@ coverage
 foxxy/app/js/config.js
 deploy-cms
 install_service
-
+sync/*.tgz
