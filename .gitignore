@@ -8,6 +8,7 @@ static/uploads/
 *_temp
 foxxy/yarn-error.log
 foxxy/specs/pictures/
+foxxy/*.sh
 .nyc_output
 coverage
 foxxy/app/js/config.js
