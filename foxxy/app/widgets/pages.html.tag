@@ -16,7 +16,7 @@
     this.folders = []
     this.folder = {}
     this.path = [ this.folder ]
-    this.folder_key = this.opts.folder_key || ''
+    this.folder_key = this.opts.folder_key || '';
     var self = this
 
     var loadFolder = function(folder_key) {
@@ -31,30 +31,31 @@
 
     addFolder(e) {
       var name = prompt("Folder's name");
-      common.post(url + "/cruds/folders/pages", JSON.stringify({ name, parent_id: self.folder._key }), function(d) {
+      common.post(url + "/cruds/folders/pages", JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
         loadFolder(self.folder._key)
       })
     }
 
     renameFolder(e) {
       var name = prompt("Update Folder's name");
-      common.patch(url + "/cruds/folders/pages", JSON.stringify({ name, id: self.folder._key }), function(d) {
+      common.patch(url + "/cruds/folders/pages", JSON.stringify({ name: name, id: self.folder._key }), function(d) {
         self.path = d.path
         self.update()
       })
     }
 
     deleteFolder(e) {
-      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content').then(function() {
-        var parent = _.last(_.initial(self.path))
-        common.delete(url + "/cruds/folders/pages/" + self.folder._key, function(d) {
-          common.get(url + "/cruds/folders/pages/" + parent._key, function(d) {
-            self.folders = d.folders
-            self.path = d.path
-            loadFolder(parent._key)
-            self.update()
+      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content')
+        .then(function() {
+          var parent = _.last(_.initial(self.path));
+          common.delete(url + "/cruds/folders/pages/" + self.folder._key, function(d) {
+            common.get(url + "/cruds/folders/pages/" + parent._key, function(d) {
+              self.folders = d.folders
+              self.path = d.path
+              loadFolder(parent._key)
+              self.update()
+            })
           })
-        })
       }, function () {
         console.log('Rejected.')
       });

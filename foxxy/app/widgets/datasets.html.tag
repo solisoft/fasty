@@ -31,14 +31,14 @@
 
     addFolder(e) {
       var name = prompt("Folder's name");
-      common.post(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name, parent_id: self.folder._key }), function(d) {
+      common.post(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
         loadFolder(self.folder._key)
       })
     }
 
     renameFolder(e) {
       var name = prompt("Update Folder's name");
-      common.patch(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name, id: self.folder._key }), function(d) {
+      common.patch(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name: name, id: self.folder._key }), function(d) {
         self.path = d.path
         self.update()
       })

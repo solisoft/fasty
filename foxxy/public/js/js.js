@@ -1466,31 +1466,56 @@ $(function () {
     })
   })
 
-  route('/layouts', function() { riot.mount('div#app', 'layouts') })
-  route('/pages', function () { riot.mount('div#app', 'pages') })
-  route('/pages/*', function (folder_key) {
-    riot.mount('div#app', 'pages', { folder_key })
+  route('/layouts', function(name) {
+    riot.mount('div#app', 'layouts')
   })
-  route('/partials', function() { riot.mount('div#app', 'partials') })
-  route('/components', function() { riot.mount('div#app', 'components') })
-  route('/spas', function() { riot.mount('div#app', 'spas') })
-  route('/redirections', function() { riot.mount('div#app', 'redirections') })
-  route('/trads', function() { riot.mount('div#app', 'trads') })
-  route('/settings', function() { riot.mount('div#app', 'settings') })
-  route('/datatypes', function() { riot.mount('div#app', 'datatypes') })
-  route('/users', function() { riot.mount('div#app', 'users') })
-  route('/aqls', function() { riot.mount('div#app', 'aqls') })
-  route('/helpers', function() { riot.mount('div#app', 'helpers') })
-  route('/apis', function() { riot.mount('div#app', 'apis') })
+  route('/pages', function(name) {
+    riot.mount('div#app', 'pages')
+  })
+  route('/partials', function(name) {
+    riot.mount('div#app', 'partials')
+  })
+  route('/components', function(name) {
+    riot.mount('div#app', 'components')
+  })
+  route('/spas', function(name) {
+    riot.mount('div#app', 'spas')
+  })
+  route('/redirections', function(name) {
+    riot.mount('div#app', 'redirections')
+  })
+  route('/trads', function(name) {
+    riot.mount('div#app', 'trads')
+  })
+  route('/settings', function(name) {
+    riot.mount('div#app', 'settings')
+  })
+  route('/datatypes', function(name) {
+    riot.mount('div#app', 'datatypes')
+  })
+  route('/users', function(name) {
+    riot.mount('div#app', 'users')
+  })
+  route('/aqls', function(name) {
+    riot.mount('div#app', 'aqls')
+  })
+  route('/helpers', function(name) {
+    riot.mount('div#app', 'helpers')
+  })
+  route('/apis', function(name) {
+    riot.mount('div#app', 'apis')
+  })
   /*@{{router}}*/
 
 
-  route('/datasets/*', function(type) { riot.mount('div#app', 'datasets', { datatype: type }) })
-  route('/datasets/*/*', function (type, folder_key) { riot.mount('div#app', 'datasets', { datatype: type, folder_key }) })
-  route('/datasets/*/new', function(type) { riot.mount('div#app', 'dataset_new', { datatype: type }) })
-  route('/datasets/*/new/*', function (type, folder_key) {
-    riot.mount('div#app', 'dataset_new', { datatype: type, folder_key })
+  route('/datasets/*', function(type) {
+    riot.mount('div#app', 'datasets', { datatype: type })
   })
+
+  route('/datasets/*/new', function(type) {
+    riot.mount('div#app', 'dataset_new', { datatype: type })
+  })
+
   route('/datasets/*/*/edit', function(type, id) {
     riot.mount('div#app', 'dataset_edit', { datatype: type, dataset_id: id })
   })
@@ -1505,9 +1530,6 @@ $(function () {
       if(collection == "pages") {
         if(action == "edit") {
           riot.mount('div#app', 'page_edit', { page_id: id })
-        }
-        if(action == "new") {
-          riot.mount('div#app', 'page_new', { folder_key: id })
         }
       }
       if(collection == "partials") {
@@ -1603,7 +1625,6 @@ $(function () {
     }
     /*@{{router_ca}}*/
   })
-
 
   route.start(true)
   //riot.mount("*")
@@ -2586,14 +2607,14 @@ riot.tag2('dataset_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in p
 
     this.addFolder = function(e) {
       var name = prompt("Folder's name");
-      common.post(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name, parent_id: self.folder._key }), function(d) {
+      common.post(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
         loadFolder(self.folder._key)
       })
     }.bind(this)
 
     this.renameFolder = function(e) {
       var name = prompt("Update Folder's name");
-      common.patch(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name, id: self.folder._key }), function(d) {
+      common.patch(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name: name, id: self.folder._key }), function(d) {
         self.path = d.path
         self.update()
       })
@@ -3886,7 +3907,7 @@ riot.tag2('page_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in path
     this.folders = []
     this.folder = {}
     this.path = [ this.folder ]
-    this.folder_key = this.opts.folder_key || ''
+    this.folder_key = this.opts.folder_key || '';
     var self = this
 
     var loadFolder = function(folder_key) {
@@ -3901,30 +3922,31 @@ riot.tag2('page_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in path
 
     this.addFolder = function(e) {
       var name = prompt("Folder's name");
-      common.post(url + "/cruds/folders/pages", JSON.stringify({ name, parent_id: self.folder._key }), function(d) {
+      common.post(url + "/cruds/folders/pages", JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
         loadFolder(self.folder._key)
       })
     }.bind(this)
 
     this.renameFolder = function(e) {
       var name = prompt("Update Folder's name");
-      common.patch(url + "/cruds/folders/pages", JSON.stringify({ name, id: self.folder._key }), function(d) {
+      common.patch(url + "/cruds/folders/pages", JSON.stringify({ name: name, id: self.folder._key }), function(d) {
         self.path = d.path
         self.update()
       })
     }.bind(this)
 
     this.deleteFolder = function(e) {
-      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content').then(function() {
-        var parent = _.last(_.initial(self.path))
-        common.delete(url + "/cruds/folders/pages/" + self.folder._key, function(d) {
-          common.get(url + "/cruds/folders/pages/" + parent._key, function(d) {
-            self.folders = d.folders
-            self.path = d.path
-            loadFolder(parent._key)
-            self.update()
+      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content')
+        .then(function() {
+          var parent = _.last(_.initial(self.path));
+          common.delete(url + "/cruds/folders/pages/" + self.folder._key, function(d) {
+            common.get(url + "/cruds/folders/pages/" + parent._key, function(d) {
+              self.folders = d.folders
+              self.path = d.path
+              loadFolder(parent._key)
+              self.update()
+            })
           })
-        })
       }, function () {
         console.log('Rejected.')
       });
