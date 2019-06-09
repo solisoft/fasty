@@ -47,21 +47,11 @@ install_service = (sub_domain, name)->
   os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
   os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
 
-  is_existing = table_index(
-    map(from_json(foxx_services("db_#{sub_domain}")), (item)-> item.name),
-    name
-  ) != nil
+  foxx_upgrade(
+    "db_#{sub_domain}", name,
+    read_zipfile("install_service/#{sub_domain}/#{name}.zip")
+  )
 
-  if is_existing
-    foxx_upgrade(
-      "db_#{sub_domain}", name,
-      read_zipfile("install_service/#{sub_domain}/#{name}.zip")
-    )
-  else
-    foxx_install(
-      "db_#{sub_domain}", name,
-      read_zipfile("install_service/#{sub_domain}/#{name}.zip")
-    )
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service }

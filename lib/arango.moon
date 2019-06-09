@@ -103,7 +103,7 @@ foxx_install = (db_name, mount, data)->
 --------------------------------------------------------------------------------
 foxx_upgrade = (db_name, mount, data)->
   body, status_code, headers = http_request(
-    "#{db_config.url}/_db/#{db_name}/_api/foxx/service?mount=/#{mount}", 'PATCH',
+    "#{db_config.url}/_db/#{db_name}/_api/foxx/service?mount=/#{mount}&force=true", 'PATCH',
     data, { 'Content-Type': 'application/zip', Authorization: "bearer #{jwt}" }
   )
   body

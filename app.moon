@@ -6,11 +6,11 @@ console = require 'lapis.console'
 config  = require('lapis.config').get!
 
 import cached from require 'lapis.cache'
-import check_valid_lang, map, table_index from require 'lib.utils'
+import check_valid_lang from require 'lib.utils'
 import install_service from require 'lib.service'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
-import auth_arangodb, aql, list_databases, foxx_services from require 'lib.arango'
+import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
 import dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug from require 'lib.concerns'
@@ -150,12 +150,6 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- install service
   [service: '/service/:name']: respond_to {
-    GET: =>
-      sub_domain = stringy.split(@req.headers.host, '.')[1]
-      table_index(
-        map(from_json(foxx_services("db_#{sub_domain}")), (item)-> item.name),
-        @params.name
-      )
     POST: =>
       sub_domain = stringy.split(@req.headers.host, '.')[1]
       load_settings(@, sub_domain)
