@@ -18,7 +18,6 @@ var Common = {
   },
   startEditor: function(name, mode, id) {
     var editor = ace.edit(name)
-    console.log(mode)
     editor.getSession().setMode(mode)
     editor.setOptions({
       maxLines: Infinity,
@@ -121,7 +120,6 @@ var Common = {
             _html += '<input type="hidden" id="'+l.n+'" name="'+ l.n +'" value="">'
             values.push([l.n, value])
             _html += '<div id="editor_'+l.n+'" class="editor" style="'+l.s+'"></div>'
-            console.log(l.t)
             editors.push(["editor_"+l.n, "ace/mode/" + l.t.split(":")[1], l.n])
           }
           if (l.t == 'html') {

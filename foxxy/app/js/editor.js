@@ -778,7 +778,6 @@
     ace_editor.session.setMode('ace/mode/html')
 
     var save_editor = function () {
-      console.log("Save")
       if (editObj) {
         var attributes = {
           'row-class': $('input[data-name=row-class]').val(),

@@ -10,9 +10,6 @@ http://${module.context.configuration.domain}/login#change_password/${params.uui
 Best,
 Foxxy App`
 
-console.log(`Sent to ${params.to}`);
-console.log(email_text);
-
 request({
   method: "POST",
   url: "https://api:"+ settings.mailgun_apikey +"@api.mailgun.net/v3/"+ settings.mailgun_domain +"/messages",

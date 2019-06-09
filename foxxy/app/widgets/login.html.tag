@@ -46,7 +46,6 @@
     save_form(e) {
       e.preventDefault()
       common.post(url + "auth/login", JSON.stringify({ "username": $("#username").val(), "password": $("#password").val() }) , function(data) {
-        console.log(data)
         if(data.success) document.location.href="index.html";
         else {
           $("#login_error").removeClass("uk-hidden")

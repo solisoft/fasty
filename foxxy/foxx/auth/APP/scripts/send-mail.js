@@ -13,10 +13,6 @@ If you don't know about this email, please ignore it
 Best,
 Foxxy app`
 
-
-console.log(`Sent to ${params.to}`);
-console.log(email_text);
-
 request({
   method: "POST",
   url: "https://api:"+ settings.mailgun_apikey +"@api.mailgun.net/v3/"+ settings.mailgun_domain +"/messages",

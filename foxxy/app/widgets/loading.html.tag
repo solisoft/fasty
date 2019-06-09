@@ -6,7 +6,6 @@
 
   <script>
     common.get(url + "auth/whoami", function(d) {
-      console.log(d)
       if(d.username === null) document.location.href="login.html";
       else {
         // Load the widget you want

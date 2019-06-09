@@ -54,8 +54,12 @@ $(function () {
 
 
   route('/datasets/*', function(type) { riot.mount('div#app', 'datasets', { datatype: type }) })
-  route('/datasets/*/*', function (type, folder_key) { riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key }) })
-  route('/datasets/*/new', function(type) { riot.mount('div#app', 'dataset_new', { datatype: type }) })
+  route('/datasets/*/*', function (type, folder_key) {
+    riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key })
+  })
+  route('/datasets/*/new', function (type) {
+    riot.mount('div#app', 'dataset_new', { datatype: type })
+  })
   route('/datasets/*/new/*', function (type, folder_key) {
     riot.mount('div#app', 'dataset_new', { datatype: type, folder_key: folder_key })
   })
@@ -66,109 +70,59 @@ $(function () {
   route(function(collection, id, action) {
     if(action != undefined) {
       if(collection == "layouts") {
-        if(action == "edit") {
-          riot.mount('div#app', 'layout_edit', { layout_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'layout_edit', { layout_id: id }) }
       }
       if(collection == "pages") {
-        if(action == "edit") {
-          riot.mount('div#app', 'page_edit', { page_id: id })
-        }
-        if(action == "new") {
-          riot.mount('div#app', 'page_new', { folder_key: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'page_edit', { page_id: id }) }
+        if(action == "new") { riot.mount('div#app', 'page_new', { folder_key: id }) }
       }
       if(collection == "partials") {
-        if(action == "edit") {
-          riot.mount('div#app', 'partial_edit', { partial_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
       }
       if(collection == "components") {
-        if(action == "edit") {
-          riot.mount('div#app', 'component_edit', { component_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
       }
       if(collection == "spas") {
-        if(action == "edit") {
-          riot.mount('div#app', 'spa_edit', { spa_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'spa_edit', { spa_id: id }) }
       }
       if(collection == "redirections") {
-        if(action == "edit") {
-          riot.mount('div#app', 'redirection_edit', { redirection_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'redirection_edit', { redirection_id: id }) }
       }
       if(collection == "trads") {
-        if(action == "edit") {
-          riot.mount('div#app', 'trad_edit', { trad_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'trad_edit', { trad_id: id }) }
       }
       if(collection == "datatypes") {
-        if(action == "edit") {
-          riot.mount('div#app', 'datatype_edit', { datatype_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'datatype_edit', { datatype_id: id }) }
       }
       if(collection == "users") {
-        if(action == "edit") {
-          riot.mount('div#app', 'user_edit', { user_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'user_edit', { user_id: id }) }
       }
       if(collection == "aqls") {
-        if(action == "edit") {
-          riot.mount('div#app', 'aql_edit', { aql_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'aql_edit', { aql_id: id }) }
       }
       if(collection == "helpers") {
-        if(action == "edit") {
-          riot.mount('div#app', 'helper_edit', { helper_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'helper_edit', { helper_id: id }) }
       }
       if(collection == "apis") {
-        if(action == "edit") {
-          riot.mount('div#app', 'api_edit', { api_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'api_edit', { api_id: id }) }
       }
       /*@{{router_cia}}*/
     }
   })
 
   route(function(collection, action) {
-    if(collection == "layouts") {
-      if(action == "new") riot.mount('div#app', 'layout_new')
-    }
-    if(collection == "pages") {
-      if(action == "new") riot.mount('div#app', 'page_new')
-    }
-    if(collection == "partials") {
-      if(action == "new") riot.mount('div#app', 'partial_new')
-    }
-    if(collection == "components") {
-      if(action == "new") riot.mount('div#app', 'component_new')
-    }
-    if(collection == "spas") {
-      if(action == "new") riot.mount('div#app', 'spa_new')
-    }
-    if(collection == "redirections") {
-      if(action == "new") riot.mount('div#app', 'redirection_new')
-    }
-    if(collection == "trads") {
-      if(action == "new") riot.mount('div#app', 'trad_new')
-    }
-    if(collection == "datatypes") {
-      if(action == "new") riot.mount('div#app', 'datatype_new')
-    }
-    if(collection == "users") {
-      if(action == "new") riot.mount('div#app', 'user_new')
-    }
-    if(collection == "aqls") {
-      if(action == "new") riot.mount('div#app', 'aql_new')
-    }
-    if(collection == "helpers") {
-      if(action == "new") riot.mount('div#app', 'helper_new')
-    }
-    if(collection == "apis") {
-      if(action == "new") riot.mount('div#app', 'api_new')
-    }
+    if(collection == "layouts" && action == "new") riot.mount('div#app', 'layout_new')
+    if(collection == "pages" && action == "new") riot.mount('div#app', 'page_new')
+    if(collection == "partials" && action == "new") riot.mount('div#app', 'partial_new')
+    if(collection == "components" && action == "new") riot.mount('div#app', 'component_new')
+    if(collection == "spas" && action == "new") riot.mount('div#app', 'spa_new')
+    if(collection == "redirections" && action == "new") riot.mount('div#app', 'redirection_new')
+    if(collection == "trads" && action == "new") riot.mount('div#app', 'trad_new')
+    if(collection == "datatypes" && action == "new") riot.mount('div#app', 'datatype_new')
+    if(collection == "users" && action == "new") riot.mount('div#app', 'user_new')
+    if(collection == "aqls" && action == "new") riot.mount('div#app', 'aql_new')
+    if(collection == "helpers" && action == "new") riot.mount('div#app', 'helper_new')
+    if(collection == "apis" && action == "new") riot.mount('div#app', 'api_new')
     /*@{{router_ca}}*/
   })
 

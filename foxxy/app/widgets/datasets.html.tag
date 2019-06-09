@@ -210,7 +210,6 @@
 
     goback(e) {
       e.preventDefault()
-
       riot.mount("#"+opts.id, "dataset_crud_index", opts)
     }
 
@@ -220,11 +219,8 @@
 
     save_form(e) {
       e.preventDefault()
-      console.log(opts)
       common.saveForm(opts.id+'_crud_dataset', "datasets/"+ opts.parent_name +"/" + opts.parent_id + "/"+ opts.id, "", opts)
     }
-
-
   </script>
 </dataset_crud_new>
 

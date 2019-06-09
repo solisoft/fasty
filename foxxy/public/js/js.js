@@ -173,7 +173,6 @@ var Common = {
   },
   startEditor: function(name, mode, id) {
     var editor = ace.edit(name)
-    console.log(mode)
     editor.getSession().setMode(mode)
     editor.setOptions({
       maxLines: Infinity,
@@ -276,7 +275,6 @@ var Common = {
             _html += '<input type="hidden" id="'+l.n+'" name="'+ l.n +'" value="">'
             values.push([l.n, value])
             _html += '<div id="editor_'+l.n+'" class="editor" style="'+l.s+'"></div>'
-            console.log(l.t)
             editors.push(["editor_"+l.n, "ace/mode/" + l.t.split(":")[1], l.n])
           }
           if (l.t == 'html') {
@@ -1391,7 +1389,6 @@ require.register("js/editor.js", function(exports, require, module) {
     ace_editor.session.setMode('ace/mode/html')
 
     var save_editor = function () {
-      console.log("Save")
       if (editObj) {
         var attributes = {
           'row-class': $('input[data-name=row-class]').val(),
@@ -1486,8 +1483,12 @@ $(function () {
 
 
   route('/datasets/*', function(type) { riot.mount('div#app', 'datasets', { datatype: type }) })
-  route('/datasets/*/*', function (type, folder_key) { riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key }) })
-  route('/datasets/*/new', function(type) { riot.mount('div#app', 'dataset_new', { datatype: type }) })
+  route('/datasets/*/*', function (type, folder_key) {
+    riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key })
+  })
+  route('/datasets/*/new', function (type) {
+    riot.mount('div#app', 'dataset_new', { datatype: type })
+  })
   route('/datasets/*/new/*', function (type, folder_key) {
     riot.mount('div#app', 'dataset_new', { datatype: type, folder_key: folder_key })
   })
@@ -1498,109 +1499,59 @@ $(function () {
   route(function(collection, id, action) {
     if(action != undefined) {
       if(collection == "layouts") {
-        if(action == "edit") {
-          riot.mount('div#app', 'layout_edit', { layout_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'layout_edit', { layout_id: id }) }
       }
       if(collection == "pages") {
-        if(action == "edit") {
-          riot.mount('div#app', 'page_edit', { page_id: id })
-        }
-        if(action == "new") {
-          riot.mount('div#app', 'page_new', { folder_key: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'page_edit', { page_id: id }) }
+        if(action == "new") { riot.mount('div#app', 'page_new', { folder_key: id }) }
       }
       if(collection == "partials") {
-        if(action == "edit") {
-          riot.mount('div#app', 'partial_edit', { partial_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
       }
       if(collection == "components") {
-        if(action == "edit") {
-          riot.mount('div#app', 'component_edit', { component_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
       }
       if(collection == "spas") {
-        if(action == "edit") {
-          riot.mount('div#app', 'spa_edit', { spa_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'spa_edit', { spa_id: id }) }
       }
       if(collection == "redirections") {
-        if(action == "edit") {
-          riot.mount('div#app', 'redirection_edit', { redirection_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'redirection_edit', { redirection_id: id }) }
       }
       if(collection == "trads") {
-        if(action == "edit") {
-          riot.mount('div#app', 'trad_edit', { trad_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'trad_edit', { trad_id: id }) }
       }
       if(collection == "datatypes") {
-        if(action == "edit") {
-          riot.mount('div#app', 'datatype_edit', { datatype_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'datatype_edit', { datatype_id: id }) }
       }
       if(collection == "users") {
-        if(action == "edit") {
-          riot.mount('div#app', 'user_edit', { user_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'user_edit', { user_id: id }) }
       }
       if(collection == "aqls") {
-        if(action == "edit") {
-          riot.mount('div#app', 'aql_edit', { aql_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'aql_edit', { aql_id: id }) }
       }
       if(collection == "helpers") {
-        if(action == "edit") {
-          riot.mount('div#app', 'helper_edit', { helper_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'helper_edit', { helper_id: id }) }
       }
       if(collection == "apis") {
-        if(action == "edit") {
-          riot.mount('div#app', 'api_edit', { api_id: id })
-        }
+        if(action == "edit") { riot.mount('div#app', 'api_edit', { api_id: id }) }
       }
       /*@{{router_cia}}*/
     }
   })
 
   route(function(collection, action) {
-    if(collection == "layouts") {
-      if(action == "new") riot.mount('div#app', 'layout_new')
-    }
-    if(collection == "pages") {
-      if(action == "new") riot.mount('div#app', 'page_new')
-    }
-    if(collection == "partials") {
-      if(action == "new") riot.mount('div#app', 'partial_new')
-    }
-    if(collection == "components") {
-      if(action == "new") riot.mount('div#app', 'component_new')
-    }
-    if(collection == "spas") {
-      if(action == "new") riot.mount('div#app', 'spa_new')
-    }
-    if(collection == "redirections") {
-      if(action == "new") riot.mount('div#app', 'redirection_new')
-    }
-    if(collection == "trads") {
-      if(action == "new") riot.mount('div#app', 'trad_new')
-    }
-    if(collection == "datatypes") {
-      if(action == "new") riot.mount('div#app', 'datatype_new')
-    }
-    if(collection == "users") {
-      if(action == "new") riot.mount('div#app', 'user_new')
-    }
-    if(collection == "aqls") {
-      if(action == "new") riot.mount('div#app', 'aql_new')
-    }
-    if(collection == "helpers") {
-      if(action == "new") riot.mount('div#app', 'helper_new')
-    }
-    if(collection == "apis") {
-      if(action == "new") riot.mount('div#app', 'api_new')
-    }
+    if(collection == "layouts" && action == "new") riot.mount('div#app', 'layout_new')
+    if(collection == "pages" && action == "new") riot.mount('div#app', 'page_new')
+    if(collection == "partials" && action == "new") riot.mount('div#app', 'partial_new')
+    if(collection == "components" && action == "new") riot.mount('div#app', 'component_new')
+    if(collection == "spas" && action == "new") riot.mount('div#app', 'spa_new')
+    if(collection == "redirections" && action == "new") riot.mount('div#app', 'redirection_new')
+    if(collection == "trads" && action == "new") riot.mount('div#app', 'trad_new')
+    if(collection == "datatypes" && action == "new") riot.mount('div#app', 'datatype_new')
+    if(collection == "users" && action == "new") riot.mount('div#app', 'user_new')
+    if(collection == "aqls" && action == "new") riot.mount('div#app', 'aql_new')
+    if(collection == "helpers" && action == "new") riot.mount('div#app', 'helper_new')
+    if(collection == "apis" && action == "new") riot.mount('div#app', 'api_new')
     /*@{{router_ca}}*/
   })
 
@@ -1621,7 +1572,6 @@ riot.tag2('api_crud_index', '<a href="#" class="uk-button uk-button-small uk-but
     }.bind(this)
 
     this.loadPage = function(pageIndex) {
-      console.log(opts)
       common.get(url + "/cruds/" + opts.parent_name + "/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/page/"+pageIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -2715,7 +2665,6 @@ riot.tag2('dataset_crud_new', '<a href="#" class="uk-button uk-button-link" oncl
 
     this.goback = function(e) {
       e.preventDefault()
-
       riot.mount("#"+opts.id, "dataset_crud_index", opts)
     }.bind(this)
 
@@ -2725,10 +2674,8 @@ riot.tag2('dataset_crud_new', '<a href="#" class="uk-button uk-button-link" oncl
 
     this.save_form = function(e) {
       e.preventDefault()
-      console.log(opts)
       common.saveForm(opts.id+'_crud_dataset', "datasets/"+ opts.parent_name +"/" + opts.parent_id + "/"+ opts.id, "", opts)
     }.bind(this)
-
 });
 
 
@@ -3839,7 +3786,6 @@ riot.tag2('layouts', '<virtual if="{can_access}"> <div class="uk-float-right"> <
 require.register("widgets/loading.html.tag", function(exports, require, module) {
 riot.tag2('loading', '<div class="uk-text-center"> Loading app ... <br><div uk-spinner></div> </div>', '', '', function(opts) {
     common.get(url + "auth/whoami", function(d) {
-      console.log(d)
       if(d.username === null) document.location.href="login.html";
       else {
 
@@ -3870,7 +3816,6 @@ riot.tag2('login', '<div class="uk-container uk-container-center"> <div uk-grid 
     this.save_form = function(e) {
       e.preventDefault()
       common.post(url + "auth/login", JSON.stringify({ "username": $("#username").val(), "password": $("#password").val() }) , function(data) {
-        console.log(data)
         if(data.success) document.location.href="index.html";
         else {
           $("#login_error").removeClass("uk-hidden")
