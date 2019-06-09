@@ -1469,7 +1469,7 @@ $(function () {
   route('/layouts', function() { riot.mount('div#app', 'layouts') })
   route('/pages', function () { riot.mount('div#app', 'pages') })
   route('/pages/*', function (folder_key) {
-    riot.mount('div#app', 'pages', { folder_key })
+    riot.mount('div#app', 'pages', { folder_key: folder_key })
   })
   route('/partials', function() { riot.mount('div#app', 'partials') })
   route('/components', function() { riot.mount('div#app', 'components') })
