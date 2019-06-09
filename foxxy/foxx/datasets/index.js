@@ -21,8 +21,8 @@ module.context.use(router);
 
 var typeCast = function(type, value) {
   var value = unescape(value)
-  if(type == "integer") value = parseInt(value)
-  if(type == "float")   value = parseFloat(value)
+  if (type == "integer") value = parseInt(value)
+  if (type == "float")   value = parseFloat(value)
   return value
 }
 
@@ -42,21 +42,21 @@ var list = function (aql) {
 var fieldsToData = function(fields, body, headers) {
   var data = {}
   _.each(fields, function(f) {
-    if(f.tr != true) {
-      if(_.isArray(body[f.n])) {
+    if (f.tr != true) {
+      if (_.isArray(body[f.n])) {
         data[f.n] = _.map(body[f.n], function(v) { return typeCast(f.t,v) })
       } else {
-        if(body[f.n] === undefined) {
-          if(f.t == "boolean") data[f.n] = false
+        if (body[f.n] === undefined) {
+          if (f.t == "boolean") data[f.n] = false
           else data[f.n] = null
         } else {
-          if(f.t == "boolean") data[f.n] = true
+          if (f.t == "boolean") data[f.n] = true
           else data[f.n] = typeCast(f.t, body[f.n])
         }
       }
     } else {
       data[f.n] = {}
-      if(_.isArray(body[f.n])) {
+      if (_.isArray(body[f.n])) {
         data[f.n][headers['foxx-locale']] = _.map(
           body[f.n], function(v) { return typeCast(f.t,v) }
         )
@@ -70,7 +70,7 @@ var fieldsToData = function(fields, body, headers) {
 
 // Comment this block if you want to avoid authorization
 module.context.use(function (req, res, next) {
-  if(!req.session.uid) res.throw('unauthorized')
+  if (!req.session.uid) res.throw('unauthorized')
   res.setHeader("Access-Control-Expose-Headers", "X-Session-Id")
   next();
 });
@@ -85,27 +85,39 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
   let model = JSON.parse(models()[req.pathParams.service].javascript)
   const locale = req.headers['foxx-locale']
   let order = model.sort || 'SORT doc._key DESC'
-  if(model.sortable) order = 'SORT doc.order ASC'
+  if (model.sortable) order = 'SORT doc.order ASC'
   let includes = ''
   let include_merge = ''
-  if(model.includes) {
+  if (model.includes) {
     includes = model.includes.conditions
     include_merge = model.includes.merges
   }
-  var bindVars = {
+
+  let folder = ''
+  let folder_params = {}
+  if (req.queryParams.folder && req.queryParams.is_root != 'true') {
+    folder = 'FILTER doc.folder_key == @folder'
+    folder_params = { folder: req.queryParams.folder }
+  }
+
+  if (req.queryParams.is_root == 'true') {
+    folder = 'FILTER !HAS(doc, "folder_key") || doc.folder_key == @folder'
+    folder_params = { folder: req.queryParams.folder }
+  }
+
+  var bindVars = _.merge({
     "datatype": req.pathParams.service,
     "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
     "perpage": parseInt(req.pathParams.perpage)
-  }
+  }, folder_params)
 
   var aql = `
-  LET count = LENGTH((FOR doc IN datasets FILTER doc.type == @datatype RETURN 1))
+  LET count = LENGTH((FOR doc IN datasets FILTER doc.type == @datatype ${folder} RETURN 1))
   LET data = (
     FOR doc IN datasets
       FILTER doc.type == @datatype
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
-      ${order}
-      ${includes}
+      ${folder} ${order} ${includes}
       LIMIT @offset, @perpage
       RETURN MERGE(doc, { image: image ${include_merge} })
   )
@@ -124,10 +136,10 @@ router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res
   ).sub_models[req.pathParams.sub]
   const locale = req.headers['foxx-locale']
   let order = model.sort || 'SORT doc._key DESC'
-  if(model.sortable) order = 'SORT doc.order ASC'
+  if (model.sortable) order = 'SORT doc.order ASC'
   let includes = ''
   let include_merge = ''
-  if(model.includes) {
+  if (model.includes) {
     includes = model.includes.conditions
     include_merge = model.includes.merges
   }
@@ -162,12 +174,12 @@ router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res
 router.get('/:service/search/:term', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   var locale = req.headers['foxx-locale']
-  if(locale.match(/[a-z]+/) == null) locale = 'en'
+  if (locale.match(/[a-z]+/) == null) locale = 'en'
   let order = object.sort || 'SORT doc._key DESC'
-  if(model.sortable) order = 'SORT doc.order ASC'
+  if (model.sortable) order = 'SORT doc.order ASC'
   let includes = ''
   let include_merge = ''
-  if(object.includes) {
+  if (object.includes) {
     includes = object.includes.conditions
     include_merge = object.includes.merges
   }
@@ -234,22 +246,25 @@ router.post('/:service', function (req, res) {
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
-  if(!_.isArray(fields)) fields = fields.model
+  if (!_.isArray(fields)) fields = fields.model
   try {
     var schema = {}
+    _.each(fields, function (f) { schema[f.n] = f.j })
+    if (object.act_as_tree) schema['folder_key'] = joi.string().required()
     _.each(fields, function (f) {
       schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
     })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
-  if(errors.length == 0) {
+  if (errors.length == 0) {
     var data = fieldsToData(fields, body, req.headers)
     data.type = req.pathParams.service
-    if(object.search) {
+    if (object.act_as_tree) data['folder_key'] = body.folder_key
+    if (object.search) {
       var search_arr = []
       _.each(object.search, function(s) {
-        if(_.isPlainObject(data[s])) {
+        if (_.isPlainObject(data[s])) {
           search_arr.push(data[s][req.headers['foxx-locale']])
         } else {
           search_arr.push(data[s])
@@ -258,8 +273,8 @@ router.post('/:service', function (req, res) {
       data.search = {}
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
     }
-    if(object.timestamps === true) { data.created_at = +new Date() }
-    if(object.slug) {
+    if (object.timestamps === true) { data.created_at = +new Date() }
+    if (object.slug) {
       var slug = _.map(object.slug, function(field_name) { return data[field_name] })
       data['slug'] = _.kebabCase(slug)
     }
@@ -289,13 +304,13 @@ router.post('/:service/:service_key/:sub', function (req, res) {
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
-  if(errors.length == 0) {
+  if (errors.length == 0) {
     var data = fieldsToData(fields, body, req.headers)
     data.type = req.pathParams.sub
-    if(object.search) {
+    if (object.search) {
       var search_arr = []
       _.each(object.search, function(s) {
-        if(_.isPlainObject(data[s])) {
+        if (_.isPlainObject(data[s])) {
           search_arr.push(data[s][req.headers['foxx-locale']])
         } else {
           search_arr.push(data[s])
@@ -304,8 +319,8 @@ router.post('/:service/:service_key/:sub', function (req, res) {
       data.search = {}
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
     }
-    if(object.timestamps === true) { data.created_at = +new Date() }
-    if(object.slug) {
+    if (object.timestamps === true) { data.created_at = +new Date() }
+    if (object.slug) {
       var slug = _.map(object.slug, function(field_name) { return data[field_name] })
       data['slug'] = _.kebabCase(slug)
     }
@@ -329,7 +344,7 @@ router.post('/:service/:id', function (req, res) {
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
-  if(!_.isArray(fields)) fields = fields.model
+  if (!_.isArray(fields)) fields = fields.model
   try {
     var schema = {}
     _.each(fields, function (f) {
@@ -338,14 +353,14 @@ router.post('/:service/:id', function (req, res) {
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
-  if(errors.length == 0) {
+  if (errors.length == 0) {
     var doc = collection.document(req.pathParams.id)
     var data = fieldsToData(fields, body, req.headers)
-    if(object.search) {
+    if (object.search) {
       data.search = {}
       var search_arr = []
       _.each(object.search, function(s) {
-        if(_.isPlainObject(data[s])) {
+        if (_.isPlainObject(data[s])) {
           search_arr.push(data[s][req.headers['foxx-locale']])
         } else {
           search_arr.push(data[s])
@@ -353,8 +368,8 @@ router.post('/:service/:id', function (req, res) {
       })
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
     }
-    if(object.timestamps === true) { data.updated_at = +new Date() }
-    if(object.slug) {
+    if (object.timestamps === true) { data.updated_at = +new Date() }
+    if (object.slug) {
       var slug = _.map(object.slug, function(field_name) {
         return data[field_name]
       })
@@ -384,14 +399,14 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
-  if(errors.length == 0) {
+  if (errors.length == 0) {
     var doc = collection.document(req.pathParams.id)
     var data = fieldsToData(fields, body, req.headers)
-    if(object.search) {
+    if (object.search) {
       data.search = {}
       var search_arr = []
       _.each(object.search, function(s) {
-        if(_.isPlainObject(data[s])) {
+        if (_.isPlainObject(data[s])) {
           search_arr.push(data[s][req.headers['foxx-locale']])
         } else {
           search_arr.push(data[s])
@@ -399,8 +414,8 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
       })
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
     }
-    if(object.timestamps === true) { data.updated_at = +new Date() }
-    if(object.slug) {
+    if (object.timestamps === true) { data.updated_at = +new Date() }
+    if (object.slug) {
       var slug = _.map(object.slug, function(field_name) {
         return data[field_name]
       })
@@ -419,12 +434,12 @@ router.patch('/:service/:id/:field/toggle', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   var item = collection.document(req.pathParams.id)
   let column = _.first(_.filter(object.columns, function(el) { return el.name == req.pathParams.field}))
-  if(item) {
+  if (item) {
     var data = {}
     data[req.pathParams.field] = !item[req.pathParams.field]
     collection.update(item, data)
     var returned_data = !item[req.pathParams.field]
-    if(column && column.values) returned_data = column.values[!item[req.pathParams.field]]
+    if (column && column.values) returned_data = column.values[!item[req.pathParams.field]]
     res.send({ success: true, data: returned_data })
   } else {
     res.send({ success: false })

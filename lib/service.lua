@@ -24,7 +24,6 @@ end
 local read_zipfile
 read_zipfile = function(filename)
   local file = io.open(filename, 'r')
-  print(filename)
   io.input(file)
   local data = io.read('*all')
   io.close(file)
@@ -32,36 +31,35 @@ read_zipfile = function(filename)
 end
 local install_service
 install_service = function(sub_domain, name)
-  local path = 'install_service/' .. sub_domain .. '/' .. name
-  os.execute('mkdir -p ' .. path .. '/APP/routes')
-  os.execute('mkdir -p ' .. path .. '/APP/scripts')
-  os.execute('mkdir -p ' .. path .. '/APP/tests')
-  local request = '\n    FOR api IN apis\n      FILTER api.name == @name\n      LET routes = (FOR route IN api_routes FILTER route.api_id == api._key RETURN route)\n      LET scripts = (FOR script IN api_scripts FILTER script.api_id == api._key RETURN script)\n      LET tests = (FOR test IN api_tests FILTER test.api_id == api._key RETURN test)\n      RETURN { api, routes, scripts, tests }\n  '
+  local path = "install_service/" .. tostring(sub_domain) .. "/" .. tostring(name)
+  os.execute("mkdir -p " .. tostring(path) .. "/APP/routes")
+  os.execute("mkdir -p " .. tostring(path) .. "/APP/scripts")
+  os.execute("mkdir -p " .. tostring(path) .. "/APP/tests")
+  local request = 'FOR api IN apis FILTER api.name == @name\n      LET routes = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)\n      LET scripts = (FOR s IN api_scripts FILTER s.api_id == api._key RETURN s)\n      LET tests = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)\n      RETURN { api, routes, scripts, tests }'
   local api = aql("db_" .. tostring(sub_domain), request, {
     ['name'] = name
   })[1]
-  write_content(path .. '/APP/main.js', api.api.code)
-  write_content(path .. '/APP/manifest.json', api.api.manifest)
+  write_content(tostring(path) .. "/APP/main.js", api.api.code)
+  write_content(tostring(path) .. "/APP/manifest.json", api.api.manifest)
   for k, item in pairs(api.routes) do
-    write_content(path .. '/APP/routes/' .. item.name .. '.js', item.javascript)
+    write_content(tostring(path) .. "/APP/routes/" .. tostring(item.name) .. ".js", item.javascript)
   end
   for k, item in pairs(api.scripts) do
-    write_content(path .. '/APP/scripts/' .. item.name .. '.js', item.javascript)
+    write_content(tostring(path) .. "/APP/scripts/" .. tostring(item.name) .. ".js", item.javascript)
   end
   for k, item in pairs(api.tests) do
-    write_content(path .. '/APP/tests/' .. item.name .. '.js', item.javascript)
+    write_content(tostring(path) .. "/APP/tests/" .. tostring(item.name) .. ".js", item.javascript)
   end
-  os.execute('cd install_service/' .. sub_domain .. ' && zip -rq ' .. name .. '.zip ' .. name .. '/')
-  os.execute('rm --recursive install_service/' .. sub_domain .. '/' .. name)
+  os.execute("cd install_service/" .. tostring(sub_domain) .. " && zip -rq " .. tostring(name) .. ".zip " .. tostring(name) .. "/")
+  os.execute("rm --recursive install_service/" .. tostring(sub_domain) .. "/" .. tostring(name))
   local is_existing = table_index(map(from_json(foxx_services("db_" .. tostring(sub_domain))), function(item)
     return item.name
   end), name) ~= nil
   if is_existing then
-    foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
+    return foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
   else
-    foxx_install("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
+    return foxx_install("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
   end
-  return 'done'
 end
 return {
   install_service = install_service

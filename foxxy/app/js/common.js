@@ -80,8 +80,7 @@ var Common = {
               title = "<strong>" + title + "*</strong>"
             }
           } else {
-
-            if (l.j._flags.presence === "required") {
+            if (l.j && l.j._flags.presence === "required") {
               title = "<strong>" + title + "*</strong>"
             }
           }

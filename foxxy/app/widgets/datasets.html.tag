@@ -1,3 +1,66 @@
+<dataset_folders>
+  <div>
+    <ul class="uk-breadcrumb">
+      <li each={ f in path }><a href="#datasets/{opts.slug}/{f._key}">{ f.name }</a></li>
+      <li>
+        <a if={ path.length > 1 } onclick={renameFolder}><i class="far fa-edit"></i></a>
+        <a onclick={addFolder}><i class="fas fa-plus"></i></a>
+        <a if={ path.length > 1 && folders.length == 0 } onclick={deleteFolder}><i class="fas fa-trash"></i></a>
+      </li>
+    </ul>
+    <ul class="uk-list">
+      <li each={f in folders}><a href="#datasets/{opts.slug}/{f._key}"><i class="far fa-folder" /> {f.name}</a></li>
+    </ul>
+  </div>
+  <script>
+    this.folders = []
+    this.folder = {}
+    this.path = [ this.folder ]
+    this.folder_key = this.opts.folder_key || ''
+    var self = this
+
+    var loadFolder = function(folder_key) {
+      common.get(url + "/cruds/folders/datasets_" + opts.slug + "/" + folder_key, function(d) {
+        self.folders = d.folders
+        self.path = d.path
+        self.folder = _.last(self.path)
+        self.parent.setFolder(self.folder)
+        self.update()
+      })
+    }
+
+    addFolder(e) {
+      var name = prompt("Folder's name");
+      common.post(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name, parent_id: self.folder._key }), function(d) {
+        loadFolder(self.folder._key)
+      })
+    }
+
+    renameFolder(e) {
+      var name = prompt("Update Folder's name");
+      common.patch(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name, id: self.folder._key }), function(d) {
+        self.path = d.path
+        self.update()
+      })
+    }
+
+    deleteFolder(e) {
+      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content').then(function() {
+        var parent = _.last(_.initial(self.path))
+        common.delete(url + "/cruds/folders/datasets_" + opts.slug + "/" + self.folder._key, function(d) {
+          common.get(url + "/cruds/folders/datasets_" + opts.slug + "/" + parent._key, function(d) {
+            route("/datasets/" + opts.slug + "/" + parent._key)
+          })
+        })
+      }, function () {
+        console.log('Rejected.')
+      });
+    }
+
+    loadFolder(this.folder_key)
+  </script>
+</dataset_folders>
+
 <dataset_crud_index>
 
   <a href="#" class="uk-button uk-button-small uk-button-default" onclick={ new_item }>
@@ -214,7 +277,7 @@
     self.can_access = false
     self.loaded = false
     self.sub_models = []
-
+    console.log("edit")
     save_form(e) {
       e.preventDefault()
       common.saveForm("form_dataset", "datasets/" + opts.datatype ,opts.dataset_id)
@@ -236,8 +299,10 @@
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
       self.dataset = d.data
+      console.log(d.data)
       self.fields = d.fields
       self.sub_models = d.model.sub_models
+      var act_as_tree = d.model.act_as_tree
 
       if(!_.isArray(self.fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
@@ -245,9 +310,9 @@
         self.loaded = true
         self.update()
         if(self.can_access)
-          console.log(self.fields)
-
-          common.buildForm(self.dataset, self.fields, '#form_dataset', 'datasets', function() {
+          var back_url = 'datasets/' + opts.datatype
+          if(act_as_tree && self.dataset.folder_key) { back_url += '/' + self.dataset.folder_key }
+          common.buildForm(self.dataset, self.fields, '#form_dataset', back_url, function() {
             $(".crud").each(function(i, c) {
               var id = $(c).attr("id")
               riot.mount("#" + id, "dataset_crud_index", { model: id,
@@ -295,7 +360,15 @@
         self.update()
         if(self.can_access) {
           var fields = d.fields
-          common.buildForm({}, fields, '#form_new_dataset', 'datasets/' + opts.datatype);
+          var obj = {}
+          var back_url = 'datasets/' + opts.datatype
+          if(self.opts.folder_key) {
+            fields.push({ r: true, c: "1-1", n: "folder_key", t: "hidden" })
+            obj['folder_key'] = opts.folder_key
+            back_url += '/' + opts.folder_key
+          }
+
+          common.buildForm(obj, fields, '#form_new_dataset', back_url);
         }
       })
     })
@@ -309,9 +382,12 @@
 </dataset_new>
 
 <datasets>
+  <dataset_folders show={loaded} if={act_as_tree} folder_key={folder_key} slug={opts.datatype} />
   <virtual if={can_access}>
     <div class="uk-float-right">
-      <a onclick="{ new_dataset }" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a>
+      <a if={act_as_tree} href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a>
+      <a if={!act_as_tree} href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a>
+
       <a if={ export } onclick="{ export_data }" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a>
     </div>
     <h3>Listing { opts.datatype }</h3>
@@ -350,7 +426,7 @@
           </td>
           <td class="uk-text-center" width="110">
             <a onclick={edit} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a>
-            <a onclick={ destroy_object } class="uk-button uk-button-danger uk-button-small" ><i class="fas fa-trash-alt"></i></a>
+            <a onclick={destroy_object} class="uk-button uk-button-danger uk-button-small" ><i class="fas fa-trash-alt"></i></a>
           </td>
         </tr>
       </tbody>
@@ -381,12 +457,19 @@
     this.can_access = false
     this.sortable   = false
     this.loaded     = false
+    this.folder_key = this.opts.folder_key || ''
+    this.folder     = {}
+    this.act_as_tree = true
 
     this.loadPage = function(pageIndex) {
       self.loaded = false
-      common.get(url + "/datasets/"+opts.datatype+"/page/"+pageIndex+"/"+this.perpage, function(d) {
+      var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
+
+      common.get(url + "/datasets/" + opts.datatype + "/page/" + pageIndex + "/" + this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         var model = d.model
+        self.act_as_tree = model.act_as_tree
+
         self.export = !!model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(model.columns) self.cols = model.columns
@@ -399,7 +482,14 @@
         })
       })
     }
-    this.loadPage(1)
+    //this.loadPage(1)
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    this.setFolder = function(folder) {
+      self.folder = folder
+      self.loadPage(1)
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     calc_value(row, col, locale) {

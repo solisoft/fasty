@@ -80,23 +80,35 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
     includes = models()[req.pathParams.service].includes.conditions
     include_merge = models()[req.pathParams.service].includes.merges
   }
+
+  let folder = ''
+  let folder_params = {}
+  if (req.queryParams.folder && req.queryParams.is_root != 'true') {
+    folder = 'FILTER doc.folder_key == @folder'
+    folder_params = { folder: req.queryParams.folder }
+  }
+
+  if (req.queryParams.is_root == 'true') {
+    folder = 'FILTER !HAS(doc, "folder_key") || doc.folder_key == @folder'
+    folder_params = { folder: req.queryParams.folder }
+  }
+
   res.send({
     model: models()[req.pathParams.service],
     data: db._query(`
-    LET count = LENGTH(@@collection)
+    LET count = LENGTH(FOR doc IN @@collection ${folder} RETURN 1)
     LET data = (
       FOR doc IN @@collection
         LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
-        ${order}
-        ${includes}
-        LIMIT @offset, @perpage
+        ${folder} ${order} ${includes} LIMIT @offset, @perpage
         RETURN MERGE(doc, { image: image ${include_merge} })
     )
-    RETURN { count: count, data: data }
-    `, { "@collection": req.pathParams.service,
-         "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
-         "perpage": parseInt(req.pathParams.perpage)
-    }).toArray()
+    RETURN { count, data }
+    `, _.merge({
+      "@collection": req.pathParams.service,
+      "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
+      "perpage": parseInt(req.pathParams.perpage)
+    }, folder_params)).toArray()
   });
 })
 .header('X-Session-Id')
@@ -149,12 +161,18 @@ router.post('/:service', function (req, res) {
   if(!_.isArray(fields)) fields = fields.model
   try {
     var schema = {}
-    _.each(fields, function(f) {schema[f.n] = f.j })
+    _.each(fields, function (f) { schema[f.n] = f.j })
+    if (models()[req.pathParams.service].act_as_tree) {
+      schema['folder_key'] = joi.string().required()
+    }
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
   if(errors.length == 0) {
     var data = fieldsToData(fields, body, req.headers)
+    if (models()[req.pathParams.service].act_as_tree) {
+      data['folder_key'] = body.folder_key
+    }
     if(models()[req.pathParams.service].search) {
       var search_arr = []
       _.each(models()[req.pathParams.service].search, function(s) {
@@ -375,3 +393,4 @@ router.post('/sub/:service/:subservice/:id', function (req, res) {
 .header('X-Session-Id')
   .description('Update a sub object.');
 
+module.context.use('/folders', require('./routes/folders.js'), 'folders');

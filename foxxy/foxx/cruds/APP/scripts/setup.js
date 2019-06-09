@@ -1,5 +1,6 @@
 'use strict';
 const db = require('@arangodb').db;
+var Graph = require('@arangodb/general-graph');
 
 function create_collection(collection) {
   if (!db._collection(collection)) {
@@ -206,5 +207,23 @@ create_collection('api_routes');
 create_collection('api_scripts');
 create_collection('api_tests');
 
+create_collection('folders');
+
+var create_edge_collection = function (collection) {
+  if (!db._collection(collection)) {
+    db._createEdgeCollection(collection);
+  }
+}
+
+var create_graph = function (graphName) {
+  if (!Graph._exists(graphName)) {
+    Graph._create(graphName,
+      [Graph._relation('folder_path', 'folders', 'folders')]
+    );
+  }
+}
+
+create_edge_collection('folder_path')
+create_graph('folderGraph')
 /*@{{setup}}*/
 

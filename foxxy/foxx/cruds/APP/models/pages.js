@@ -67,6 +67,7 @@ const model = function () {
       read: ['editor', 'developer', 'admin'],
       write: ['editor', 'developer', 'admin']
     },
+    act_as_tree: true,
     sortable: true,
     //sort: "SORT doc.order ASC",
     //search: ["title", "barcode", "desc"],

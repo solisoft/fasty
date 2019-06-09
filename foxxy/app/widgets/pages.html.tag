@@ -1,5 +1,70 @@
-<page_crud_index>
+<page_folders>
+  <div>
+    <ul class="uk-breadcrumb">
+      <li each={ f in path }><a href="#pages/{f._key}">{ f.name }</a></li>
+      <li>
+        <a if={ path.length > 1 } onclick={renameFolder}><i class="far fa-edit"></i></a>
+        <a onclick={addFolder}><i class="fas fa-plus"></i></a>
+        <a if={ path.length > 1 && folders.length == 0 } onclick={deleteFolder}><i class="fas fa-trash"></i></a>
+      </li>
+    </ul>
+    <ul class="uk-list">
+      <li each={f in folders}><a href="#pages/{f._key}"><i class="far fa-folder" /> {f.name}</a></li>
+    </ul>
+  </div>
+  <script>
+    this.folders = []
+    this.folder = {}
+    this.path = [ this.folder ]
+    this.folder_key = this.opts.folder_key || ''
+    var self = this
 
+    var loadFolder = function(folder_key) {
+      common.get(url + '/cruds/folders/pages/' + folder_key, function(d) {
+        self.folders = d.folders
+        self.path = d.path
+        self.folder = _.last(self.path)
+        self.parent.setFolder(self.folder)
+        self.update()
+      })
+    }
+
+    addFolder(e) {
+      var name = prompt("Folder's name");
+      common.post(url + "/cruds/folders/pages", JSON.stringify({ name, parent_id: self.folder._key }), function(d) {
+        loadFolder(self.folder._key)
+      })
+    }
+
+    renameFolder(e) {
+      var name = prompt("Update Folder's name");
+      common.patch(url + "/cruds/folders/pages", JSON.stringify({ name, id: self.folder._key }), function(d) {
+        self.path = d.path
+        self.update()
+      })
+    }
+
+    deleteFolder(e) {
+      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content').then(function() {
+        var parent = _.last(_.initial(self.path))
+        common.delete(url + "/cruds/folders/pages/" + self.folder._key, function(d) {
+          common.get(url + "/cruds/folders/pages/" + parent._key, function(d) {
+            self.folders = d.folders
+            self.path = d.path
+            loadFolder(parent._key)
+            self.update()
+          })
+        })
+      }, function () {
+        console.log('Rejected.')
+      });
+    }
+
+    loadFolder(this.folder_key)
+  </script>
+</page_folders>
+
+<page_crud_index>
   <a href="#" class="uk-button uk-button-small uk-button-default" onclick={ new_item }>
     <i class="fas fa-plus"></i> New { opts.singular }
   </a>
@@ -191,6 +256,7 @@
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
+      var act_as_tree = d.fields.act_as_tree
 
       if(!_.isArray(fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
@@ -198,8 +264,10 @@
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
+        var back_url = 'pages'
+        if(act_as_tree) { back_url = 'pages/' + self.page.folder_key }
         if(self.can_access)
-          common.buildForm(self.page, fields, '#form_page', 'pages', function() {
+          common.buildForm(self.page, fields, '#form_page', back_url, function() {
             $(".crud").each(function(i, c) {
             var id = $(c).attr("id")
             riot.mount("#" + id, "page_crud_index", { model: id,
@@ -208,7 +276,7 @@
               singular: self.sub_models[id].singular,
               columns: self.sub_models[id].columns,
               parent_id: opts.page_id,
-              parent_name: "pages" })
+              parent_name: back_url })
           })
         })
       })
@@ -242,15 +310,21 @@
 
     common.get(url + "/cruds/pages/fields", function(d) {
       common.get(url + "/auth/whoami", function(me) {
-        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
         if(self.can_access) {
           // Ignore sub models if any
           var fields = d.fields
+          var obj = {}
           if(!_.isArray(fields)) fields = fields.model
-          common.buildForm({}, fields, '#form_new_page', 'pages');
+          var back_url = 'pages'
+          if(self.opts.folder_key) {
+            fields.push({ r: true, c: "1-1", n: "folder_key", t: "hidden" })
+            obj['folder_key'] = opts.folder_key
+            back_url = 'pages/' + opts.folder_key
+          }
+          common.buildForm(obj, fields, '#form_new_page', back_url);
         }
       })
     })
@@ -264,11 +338,14 @@
 </page_new>
 
 <pages>
+  <page_folders show={loaded} folder_key={folder_key} />
   <virtual if={can_access}>
     <div class="uk-float-right">
-      <a href="#pages/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New page</a>
+      <a if={act_as_tree} href="#pages/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New page</a>
+      <a if={!act_as_tree} href="#pages/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New page</a>
       <a if={ export } onclick="{ export_data }" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a>
     </div>
+
     <h3>Listing pages</h3>
 
     <form onsubmit={filter} class="uk-margin-top">
@@ -339,10 +416,14 @@
     this.can_access = false
     this.sortable   = false
     this.loaded     = false
+    this.folder     = {}
+    this.folder_key = this.opts.folder_key || ''
+    this.act_as_tree = true
 
     this.loadPage = function(pageIndex) {
       self.loaded = false
-      common.get(url + "/cruds/pages/page/"+pageIndex+"/"+this.perpage, function(d) {
+      var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
+      common.get(url + "/cruds/pages/page/"+pageIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -356,7 +437,13 @@
         })
       })
     }
-    this.loadPage(1)
+
+    ////////////////////////////////////////////////////////////////////////////
+    this.setFolder = function(folder) {
+      self.folder = folder
+      self.act_as_tree = folder !== ''
+      self.loadPage(1)
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     calc_value(row, col, locale) {
@@ -406,7 +493,7 @@
     destroy_object(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/pages/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }
