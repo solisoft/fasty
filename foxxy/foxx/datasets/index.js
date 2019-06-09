@@ -16,6 +16,7 @@ const sessions = sessionsMiddleware({
   ttl: 60 * 60 * 24 * 365, // one year in seconds
   transport: 'header'
 });
+
 module.context.use(sessions);
 module.context.use(router);
 
@@ -74,18 +75,23 @@ module.context.use(function (req, res, next) {
   res.setHeader("Access-Control-Expose-Headers", "X-Session-Id")
   next();
 });
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/datatypes
 router.get('/datatypes', function (req, res) {
   res.send(db._query(`FOR doc IN datatypes SORT doc.name RETURN { name: doc.name, slug: doc.slug }`))
 })
 .header('X-Session-Id')
 .description('Returns all datatypes');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/page/:page/:perpage
 router.get('/:service/page/:page/:perpage', function (req, res) {
   let model = JSON.parse(models()[req.pathParams.service].javascript)
   const locale = req.headers['foxx-locale']
   let order = model.sort || 'SORT doc._key DESC'
   if (model.sortable) order = 'SORT doc.order ASC'
+
   let includes = ''
   let include_merge = ''
   if (model.includes) {
@@ -129,7 +135,9 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
 })
 .header('X-Session-Id')
 .description('Returns all objects');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/:service_key/:sub/page/:page/:perpage
 router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res) {
   let model = JSON.parse(
     models()[req.pathParams.service].javascript
@@ -137,12 +145,14 @@ router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res
   const locale = req.headers['foxx-locale']
   let order = model.sort || 'SORT doc._key DESC'
   if (model.sortable) order = 'SORT doc.order ASC'
+
   let includes = ''
   let include_merge = ''
   if (model.includes) {
     includes = model.includes.conditions
     include_merge = model.includes.merges
   }
+
   var bindVars = {
     "datatype": req.pathParams.sub,
     "parent": req.pathParams.service_key,
@@ -157,8 +167,7 @@ router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res
       FILTER doc.parent_id == @parent
       FILTER doc.type == @datatype
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
-      ${order}
-      ${includes}
+      ${order} ${includes}
       LIMIT @offset, @perpage
       RETURN MERGE(doc, { image: image ${include_merge} })
   )
@@ -170,27 +179,30 @@ router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res
 })
 .header('X-Session-Id')
 .description('Returns all objects');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/search/:term
 router.get('/:service/search/:term', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   var locale = req.headers['foxx-locale']
   if (locale.match(/[a-z]+/) == null) locale = 'en'
   let order = object.sort || 'SORT doc._key DESC'
   if (model.sortable) order = 'SORT doc.order ASC'
+
   let includes = ''
   let include_merge = ''
   if (object.includes) {
     includes = object.includes.conditions
     include_merge = object.includes.merges
   }
+
   if (locale.match(/[a-z]+/) == null) locale = 'en'
   var bindVars = { "type": req.pathParams.service, "term": req.pathParams.term }
   var aql = `
   FOR doc IN FULLTEXT(datasets, 'search.${locale}', @term)
     FILTER doc.type == @type
     LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
-    ${order}
-    ${includes}
+    ${order} ${includes}
     LIMIT 100
     RETURN MERGE(doc, { image: image ${include_merge} })
   `
@@ -201,7 +213,9 @@ router.get('/:service/search/:term', function (req, res) {
 .header('foxx-locale')
 .header('X-Session-Id')
 .description('Returns First 100 found objects');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/:id
 router.get('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -215,7 +229,9 @@ router.get('/:service/:id', function (req, res) {
 })
 .header('X-Session-Id')
 .description('Returns object within ID');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/sub/:sub_service/:id
 router.get('/:service/sub/:sub_service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -229,7 +245,9 @@ router.get('/:service/sub/:sub_service/:id', function (req, res) {
 })
 .header('X-Session-Id')
 .description('Returns sub object within ID');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/fields
 router.get('/:service/fields', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.model
@@ -238,7 +256,9 @@ router.get('/:service/fields', function (req, res) {
 })
 .header('X-Session-Id')
 .description('Get all fields to build form');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// POST /datasets/:service
 router.post('/:service', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -288,7 +308,9 @@ router.post('/:service', function (req, res) {
 }).header('foxx-locale')
 .header('X-Session-Id')
 .description('Create a new object.');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// POST /datasets/:service/:service_key/:sub
 router.post('/:service/:service_key/:sub', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -334,8 +356,10 @@ router.post('/:service/:service_key/:sub', function (req, res) {
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
 .header('X-Session-Id')
-.description('Create a new object.');
-// -----------------------------------------------------------------------------
+  .description('Create a new object.');
+
+////////////////////////////////////////////////////////////////////////////////
+// POST /datasets/:service/:id
 router.post('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -382,7 +406,9 @@ router.post('/:service/:id', function (req, res) {
 .header('foxx-locale')
 .header('X-Session-Id')
 .description('Update an object.');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// POST /datasets/sub/:service/:sub_service/:id
 router.post('/sub/:service/:sub_service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -428,7 +454,9 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
 .header('foxx-locale')
 .header('X-Session-Id')
 .description('Update an object.');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// PATCH /datasets/:service/:id/:field/toggl
 router.patch('/:service/:id/:field/toggle', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
@@ -448,7 +476,9 @@ router.patch('/:service/:id/:field/toggle', function (req, res) {
 .header('foxx-locale')
 .header('X-Session-Id')
 .description('Toggle boolean field.');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/:id/duplicate
 router.get('/:service/:id/duplicate', function (req, res) {
   var new_obj = db._query(`
     FOR doc IN datasets
@@ -459,7 +489,9 @@ router.get('/:service/:id/duplicate', function (req, res) {
 })
 .header('X-Session-Id')
 .description('duplicate an object.');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// DELET /datasets/:service/:id
 router.delete('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   collection.remove('datasets/' + req.pathParams.id)
@@ -467,7 +499,9 @@ router.delete('/:service/:id', function (req, res) {
 })
 .header('X-Session-Id')
 .description('delete an object.');
-// -----------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+// PUT /datasets/:service/orders/:from/:to
 router.put('/:service/orders/:from/:to', function (req, res) {
   const collection = db._collection('datasets')
   const from = parseInt(req.pathParams.from)

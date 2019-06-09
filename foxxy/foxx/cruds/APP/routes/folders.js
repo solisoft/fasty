@@ -64,7 +64,6 @@ router.get('/:type/:parent', function (req, res) {
 })
   .description('Get Root Folder');
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // POST /cruds/folders/:type
 router.post('/:type', function (req, res) {
