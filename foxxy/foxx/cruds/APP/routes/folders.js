@@ -68,10 +68,6 @@ router.get('/:type/:parent', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // POST /cruds/folders/:type
 router.post('/:type', function (req, res) {
-  var root = db.folders.firstExample({
-    is_root: true, object_type: req.pathParams.type
-  })
-
   var folder = db.folders.save({
     name: req.body.name
   })
