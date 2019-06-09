@@ -1466,56 +1466,31 @@ $(function () {
     })
   })
 
-  route('/layouts', function(name) {
-    riot.mount('div#app', 'layouts')
+  route('/layouts', function() { riot.mount('div#app', 'layouts') })
+  route('/pages', function () { riot.mount('div#app', 'pages') })
+  route('/pages/*', function (folder_key) {
+    riot.mount('div#app', 'pages', { folder_key })
   })
-  route('/pages', function(name) {
-    riot.mount('div#app', 'pages')
-  })
-  route('/partials', function(name) {
-    riot.mount('div#app', 'partials')
-  })
-  route('/components', function(name) {
-    riot.mount('div#app', 'components')
-  })
-  route('/spas', function(name) {
-    riot.mount('div#app', 'spas')
-  })
-  route('/redirections', function(name) {
-    riot.mount('div#app', 'redirections')
-  })
-  route('/trads', function(name) {
-    riot.mount('div#app', 'trads')
-  })
-  route('/settings', function(name) {
-    riot.mount('div#app', 'settings')
-  })
-  route('/datatypes', function(name) {
-    riot.mount('div#app', 'datatypes')
-  })
-  route('/users', function(name) {
-    riot.mount('div#app', 'users')
-  })
-  route('/aqls', function(name) {
-    riot.mount('div#app', 'aqls')
-  })
-  route('/helpers', function(name) {
-    riot.mount('div#app', 'helpers')
-  })
-  route('/apis', function(name) {
-    riot.mount('div#app', 'apis')
-  })
+  route('/partials', function() { riot.mount('div#app', 'partials') })
+  route('/components', function() { riot.mount('div#app', 'components') })
+  route('/spas', function() { riot.mount('div#app', 'spas') })
+  route('/redirections', function() { riot.mount('div#app', 'redirections') })
+  route('/trads', function() { riot.mount('div#app', 'trads') })
+  route('/settings', function() { riot.mount('div#app', 'settings') })
+  route('/datatypes', function() { riot.mount('div#app', 'datatypes') })
+  route('/users', function() { riot.mount('div#app', 'users') })
+  route('/aqls', function() { riot.mount('div#app', 'aqls') })
+  route('/helpers', function() { riot.mount('div#app', 'helpers') })
+  route('/apis', function() { riot.mount('div#app', 'apis') })
   /*@{{router}}*/
 
 
-  route('/datasets/*', function(type) {
-    riot.mount('div#app', 'datasets', { datatype: type })
+  route('/datasets/*', function(type) { riot.mount('div#app', 'datasets', { datatype: type }) })
+  route('/datasets/*/*', function (type, folder_key) { riot.mount('div#app', 'datasets', { datatype: type, folder_key }) })
+  route('/datasets/*/new', function(type) { riot.mount('div#app', 'dataset_new', { datatype: type }) })
+  route('/datasets/*/new/*', function (type, folder_key) {
+    riot.mount('div#app', 'dataset_new', { datatype: type, folder_key })
   })
-
-  route('/datasets/*/new', function(type) {
-    riot.mount('div#app', 'dataset_new', { datatype: type })
-  })
-
   route('/datasets/*/*/edit', function(type, id) {
     riot.mount('div#app', 'dataset_edit', { datatype: type, dataset_id: id })
   })
@@ -1530,6 +1505,9 @@ $(function () {
       if(collection == "pages") {
         if(action == "edit") {
           riot.mount('div#app', 'page_edit', { page_id: id })
+        }
+        if(action == "new") {
+          riot.mount('div#app', 'page_new', { folder_key: id })
         }
       }
       if(collection == "partials") {
@@ -1625,6 +1603,7 @@ $(function () {
     }
     /*@{{router_ca}}*/
   })
+
 
   route.start(true)
   //riot.mount("*")
