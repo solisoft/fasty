@@ -28,17 +28,16 @@ router.get('/:type', function (req, res) {
     is_root: true, object_type: req.pathParams.type
   })
 
-  var folders = []
-  if (root) {
-    var folders = db._query(`
-    FOR v IN 1..1 OUTBOUND @parent GRAPH 'folderGraph' SORT v.name RETURN v
-  `, { parent: root._id }).toArray()
-  } else {
+  if (!root) {
     root = db.folders.save({
       name: 'Root', is_root: true,
       object_type: req.pathParams.type, parent_id: null
     })
   }
+
+  var folders = db._query(`
+    FOR v IN 1..1 OUTBOUND @parent GRAPH 'folderGraph' SORT v.name RETURN v
+  `, { parent: root._id }).toArray()
 
   res.json({ folders, root, path: [ root ] })
 })
