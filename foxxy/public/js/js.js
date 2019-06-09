@@ -2529,6 +2529,7 @@ riot.tag2('dataset_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in p
         self.folders = d.folders
         self.path = d.path
         self.folder = _.last(self.path)
+        console.log(self.folder)
         self.parent.setFolder(self.folder)
         self.update()
       })
@@ -2693,7 +2694,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
     self.can_access = false
     self.loaded = false
     self.sub_models = []
-    console.log("edit")
+
     this.save_form = function(e) {
       e.preventDefault()
       common.saveForm("form_dataset", "datasets/" + opts.datatype ,opts.dataset_id)
@@ -2715,7 +2716,6 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
       self.dataset = d.data
-      console.log(d.data)
       self.fields = d.fields
       self.sub_models = d.model.sub_models
       var act_as_tree = d.model.act_as_tree

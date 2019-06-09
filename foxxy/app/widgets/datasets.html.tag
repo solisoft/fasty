@@ -24,6 +24,7 @@
         self.folders = d.folders
         self.path = d.path
         self.folder = _.last(self.path)
+        console.log(self.folder)
         self.parent.setFolder(self.folder)
         self.update()
       })
@@ -273,7 +274,7 @@
     self.can_access = false
     self.loaded = false
     self.sub_models = []
-    console.log("edit")
+
     save_form(e) {
       e.preventDefault()
       common.saveForm("form_dataset", "datasets/" + opts.datatype ,opts.dataset_id)
@@ -295,7 +296,6 @@
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
       self.dataset = d.data
-      console.log(d.data)
       self.fields = d.fields
       self.sub_models = d.model.sub_models
       var act_as_tree = d.model.act_as_tree
