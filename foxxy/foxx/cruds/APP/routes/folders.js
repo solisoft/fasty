@@ -29,10 +29,11 @@ router.get('/:type', function (req, res) {
   })
 
   if (!root) {
-    root = db.folders.save({
+    const doc = db.folders.save({
       name: 'Root', is_root: true,
       object_type: req.pathParams.type, parent_id: null
     })
+    root = db.folders.document(doc._key)
   }
 
   var folders = db._query(`
