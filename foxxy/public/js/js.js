@@ -3799,7 +3799,15 @@ riot.tag2('welcome', '<h1>Welcome aboard</h1> <p>This is a landing page ... Noth
 });
 
 riot.tag2('rightnav', '<ul class="uk-navbar-nav"> <li each="{lang in langs}" class="{lang == window.localStorage.getItem(\'foxx-locale\') ? \'uk-active\' : \'\'}"><a onclick="{changeLang}">{lang}</a></li> <li><a href="#logout"><i class="uk-icon-sign-out"></i> Logout</a></li> </ul>', '', '', function(opts) {
-    this.langs = ['en', 'fr']
+    this.settings   = {}
+    var self = this
+
+    common.get(url + "/settings", function(settings) {
+      self.settings = settings.data
+      self.langs = self.settings.langs.split(",")
+      self.update()
+    })
+
     this.changeLang = function(e) {
       window.localStorage.setItem('foxx-locale', e.item.lang)
       document.location.reload()

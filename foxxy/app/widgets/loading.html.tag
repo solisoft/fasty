@@ -31,7 +31,15 @@
   </ul>
 
   <script>
-    this.langs = ['en', 'fr']
+    this.settings   = {}
+    var self = this
+
+    common.get(url + "/settings", function(settings) {
+      self.settings = settings.data
+      self.langs = self.settings.langs.split(",")
+      self.update()
+    })
+
     changeLang(e) {
       window.localStorage.setItem('foxx-locale', e.item.lang)
       document.location.reload()
