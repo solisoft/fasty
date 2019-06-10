@@ -194,7 +194,7 @@ router.post('/:service', function (req, res) {
     }
     var filter_by_folder = ''
     var folder_params = {}
-    if (object.act_as_tree) {
+    if (models()[req.pathParams.service].act_as_tree) {
       filter_by_folder = 'FILTER doc.folder_key == @folder'
       folder_params['folder'] = body.folder_key
     }
@@ -222,7 +222,7 @@ router.post('/:service/:id', function (req, res) {
   if(!_.isArray(fields)) fields = fields.model
   try {
     var schema = {}
-    _.each(fields, function(f) {schema[f.n] = f.j })
+    _.each(fields, function(f) {schema[f.n] = f.ju ? f.ju : f.j })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
@@ -299,7 +299,6 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   const collection = db._collection(req.pathParams.service)
   const from = parseInt(req.pathParams.from)
   const to = parseInt(req.pathParams.to)
-
 
   var filter_by_folder = ''
   var folder_params = {}
@@ -396,7 +395,7 @@ router.post('/sub/:service/:subservice/:id', function (req, res) {
   var errors = []
   try {
     var schema = {}
-    _.each(fields, function(f) {schema[f.n] = f.j })
+    _.each(fields, function(f) {schema[f.n] = f.ju ? f.ju : f.j })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}

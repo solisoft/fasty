@@ -225,16 +225,19 @@ var Common = {
           if (l.r) _html += '<div class="uk-grid uk-grid-small">'
           if (l.c && l.c.indexOf("uk-width") == -1) l.c = "uk-width-" + l.c
 
+          var validation = l.j
+          if (obj['_key'] && l.ju) validation = l.ju
+
           var hidden = ''
           if(l.t === 'hidden') hidden = 'uk-hidden'
           _html += '<div class="'+ l.c + ' ' + hidden +'">'
           var title = l.l
-          if (_.isString(l.j)) {
-            if (l.j.indexOf('required') > 0) {
+          if (_.isString(validation)) {
+            if (validation.indexOf('required') > 0) {
               title = "<strong>" + title + "*</strong>"
             }
           } else {
-            if (l.j && l.j._flags.presence === "required") {
+            if (validation && validation._flags.presence === "required") {
               title = "<strong>" + title + "*</strong>"
             }
           }
@@ -1483,11 +1486,11 @@ $(function () {
 
 
   route('/datasets/*', function(type) { riot.mount('div#app', 'datasets', { datatype: type }) })
-  route('/datasets/*/*', function (type, folder_key) {
-    riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key })
-  })
   route('/datasets/*/new', function (type) {
     riot.mount('div#app', 'dataset_new', { datatype: type })
+  })
+  route('/datasets/*/*', function (type, folder_key) {
+    riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key })
   })
   route('/datasets/*/new/*', function (type, folder_key) {
     riot.mount('div#app', 'dataset_new', { datatype: type, folder_key: folder_key })
@@ -2825,7 +2828,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
     }
 
     this.setFolder = function(folder) {
-      self.folder = folder
+      self.folder = folder || {}
       self.loadPage(1)
     }
 

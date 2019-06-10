@@ -483,7 +483,7 @@
     ////////////////////////////////////////////////////////////////////////////
 
     this.setFolder = function(folder) {
-      self.folder = folder
+      self.folder = folder || {}
       self.loadPage(1)
     }
 

@@ -70,16 +70,19 @@ var Common = {
           if (l.r) _html += '<div class="uk-grid uk-grid-small">'
           if (l.c && l.c.indexOf("uk-width") == -1) l.c = "uk-width-" + l.c
 
+          var validation = l.j
+          if (obj['_key'] && l.ju) validation = l.ju
+
           var hidden = ''
           if(l.t === 'hidden') hidden = 'uk-hidden'
           _html += '<div class="'+ l.c + ' ' + hidden +'">'
           var title = l.l
-          if (_.isString(l.j)) {
-            if (l.j.indexOf('required') > 0) {
+          if (_.isString(validation)) {
+            if (validation.indexOf('required') > 0) {
               title = "<strong>" + title + "*</strong>"
             }
           } else {
-            if (l.j && l.j._flags.presence === "required") {
+            if (validation && validation._flags.presence === "required") {
               title = "<strong>" + title + "*</strong>"
             }
           }

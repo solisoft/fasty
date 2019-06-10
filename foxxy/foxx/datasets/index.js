@@ -330,7 +330,8 @@ router.post('/:service/:service_key/:sub', function (req, res) {
   try {
     var schema = {}
     _.each(fields, function (f) {
-      schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
+      let validate = f.ju ? f.ju : f.j
+      schema[f.n] = _.isString(validate) ? eval(validate) : validate
     })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
@@ -381,7 +382,8 @@ router.post('/:service/:id', function (req, res) {
   try {
     var schema = {}
     _.each(fields, function (f) {
-      schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
+      let validate = f.ju ? f.ju : f.j
+      schema[f.n] = _.isString(validate) ? eval(validate) : validate
     })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
@@ -429,7 +431,11 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
   try {
     var schema = {}
     _.each(fields, function (f) {
-      schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
+      if (f.ju) {
+        schema[f.n] = _.isString(f.ju) ? eval(f.ju) : f.ju
+      } else {
+        schema[f.n] = _.isString(f.j) ? eval(f.j) : f.j
+      }
     })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }

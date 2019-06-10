@@ -54,11 +54,11 @@ $(function () {
 
 
   route('/datasets/*', function(type) { riot.mount('div#app', 'datasets', { datatype: type }) })
-  route('/datasets/*/*', function (type, folder_key) {
-    riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key })
-  })
   route('/datasets/*/new', function (type) {
     riot.mount('div#app', 'dataset_new', { datatype: type })
+  })
+  route('/datasets/*/*', function (type, folder_key) {
+    riot.mount('div#app', 'datasets', { datatype: type, folder_key: folder_key })
   })
   route('/datasets/*/new/*', function (type, folder_key) {
     riot.mount('div#app', 'dataset_new', { datatype: type, folder_key: folder_key })
