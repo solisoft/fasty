@@ -267,6 +267,7 @@ router.post('/:service', function (req, res) {
   var obj = null
   var errors = []
   if (!_.isArray(fields)) fields = fields.model
+
   try {
     var schema = {}
     _.each(fields, function (f) { schema[f.n] = f.j })
@@ -276,7 +277,8 @@ router.post('/:service', function (req, res) {
     })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
-  catch(e) {}
+  catch (e) { }
+
   if (errors.length == 0) {
     var data = fieldsToData(fields, body, req.headers)
     data.type = req.pathParams.service
@@ -298,9 +300,16 @@ router.post('/:service', function (req, res) {
       var slug = _.map(object.slug, function(field_name) { return data[field_name] })
       data['slug'] = _.kebabCase(slug)
     }
-    data['order'] = db._query(
-      'LET docs = (FOR doc IN datasets FILTER doc.type == @type RETURN 1) RETURN LENGTH(docs)',
-      { type: req.pathParams.service }
+    var filter_by_folder = ''
+    var folder_params = {}
+    if (object.act_as_tree) {
+      filter_by_folder = 'FILTER doc.folder_key == @folder'
+      folder_params['folder'] = body.folder_key
+    }
+    data['order'] = db._query(`
+      LET docs = (FOR doc IN datasets FILTER doc.type == @type ${filter_by_folder} RETURN 1)
+      RETURN LENGTH(docs)
+    `, _.merge({ type: req.pathParams.service }, folder_params)
     ).toArray()[0]
     obj = collection.save(data, { waitForSync: true })
   }
@@ -507,24 +516,33 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   const from = parseInt(req.pathParams.from)
   const to = parseInt(req.pathParams.to)
 
+  var filter_by_folder = ''
+  var folder_params = {}
+  if (req.queryParams.folder_key != 'undefined') {
+    filter_by_folder = 'FILTER doc.folder_key == @folder'
+    folder_params['folder'] = req.queryParams.folder_key
+  }
+
   var doc = db._query(
-    `FOR doc IN datasets FILTER doc.type == @type SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
-    { "type": req.pathParams.service, pos: parseInt(req.pathParams.from) }
+    `FOR doc IN datasets FILTER doc.type == @type ${filter_by_folder} SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
+    _.merge({ "type": req.pathParams.service, pos: parseInt(req.pathParams.from) }, folder_params)
   ).toArray()[0]
 
   if (from < to) {
     db._query(
       `FOR doc IN datasets
-        FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
+      ${filter_by_folder}
+      FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
         UPDATE({ _key: doc._key, order: doc.order - 1 }) IN datasets`,
-      { "type": req.pathParams.service, from, to, key: doc._key }
+      _.merge({ "type": req.pathParams.service, from, to, key: doc._key }, folder_params)
     )
   } else {
     db._query(
       `FOR doc IN datasets
+        ${filter_by_folder}
         FILTER doc.type == @type AND doc.order <= @from and doc.order >= @to and doc._key != @key
         UPDATE({ _key: doc._key, order: doc.order + 1 }) IN datasets`,
-      { "type": req.pathParams.service, from, to, key: doc._key }
+      _.merge({ "type": req.pathParams.service, from, to, key: doc._key }, folder_params)
     )
   }
 

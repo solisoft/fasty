@@ -2920,7 +2920,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
           handle: '.fa-grip-vertical',
           onSort: function ( evt) {
             common.put(
-              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + self.folder._key, {},
               function() {}
             )
           },
@@ -4205,7 +4205,7 @@ riot.tag2('pages', '<page_folders show="{loaded}" folder_key="{folder_key}"></pa
           handle: '.fa-grip-vertical',
           onSort: function ( evt) {
             common.put(
-              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + self.folder._key, {},
               function() {}
             )
           },

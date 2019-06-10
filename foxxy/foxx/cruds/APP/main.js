@@ -192,7 +192,19 @@ router.post('/:service', function (req, res) {
       })
       data['slug'] = _.kebabCase(slug)
     }
-    data['order'] = collection.count()
+    var filter_by_folder = ''
+    var folder_params = {}
+    if (object.act_as_tree) {
+      filter_by_folder = 'FILTER doc.folder_key == @folder'
+      folder_params['folder'] = body.folder_key
+    }
+    data['order'] = db._query(`
+      LET docs = (FOR doc IN @@collection ${filter_by_folder} RETURN 1)
+      RETURN LENGTH(docs)
+    `, _.merge({ "@collection": req.pathParams.service }, folder_params)
+    ).toArray()[0]
+
+    //data['order'] = collection.count()
     obj = collection.save(data, { waitForSync: true })
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
@@ -288,22 +300,30 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   const from = parseInt(req.pathParams.from)
   const to = parseInt(req.pathParams.to)
 
+
+  var filter_by_folder = ''
+  var folder_params = {}
+  if (req.queryParams.folder_key != 'undefined') {
+    filter_by_folder = 'FILTER doc.folder_key == @folder'
+    folder_params['folder'] = req.queryParams.folder_key
+  }
+
   var doc = db._query(
-    `FOR doc IN @@collection SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
-    { "@collection": req.pathParams.service, pos: parseInt(req.pathParams.from) }
+    `FOR doc IN @@collection ${filter_by_folder} SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
+    _.merge({ "@collection": req.pathParams.service, pos: parseInt(req.pathParams.from) }, folder_params)
   ).toArray()[0]
 
   if (from < to) {
     db._query(
-      `FOR doc IN @@collection FILTER doc.order <= @to and doc.order >= @from and doc._key != @key
+      `FOR doc IN @@collection ${filter_by_folder} FILTER doc.order <= @to and doc.order >= @from and doc._key != @key
       UPDATE({ _key: doc._key, order: doc.order - 1 }) IN @@collection`,
-      { "@collection": req.pathParams.service, from, to, key: doc._key }
+      _.merge({ "@collection": req.pathParams.service, from, to, key: doc._key }, folder_params)
     )
   } else {
     db._query(
-      `FOR doc IN @@collection FILTER doc.order <= @from and doc.order >= @to and doc._key != @key
+      `FOR doc IN @@collection ${filter_by_folder} FILTER doc.order <= @from and doc.order >= @to and doc._key != @key
       UPDATE({ _key: doc._key, order: doc.order + 1 }) IN @@collection`,
-      { "@collection": req.pathParams.service, from, to, key: doc._key }
+      _.merge({ "@collection": req.pathParams.service, from, to, key: doc._key }, folder_params)
     )
   }
 

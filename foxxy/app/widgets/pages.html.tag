@@ -543,7 +543,7 @@
           handle: '.fa-grip-vertical',
           onSort: function (/**Event*/evt) {
             common.put(
-              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + self.folder._key, {},
               function() {}
             )
           },
