@@ -208,6 +208,12 @@ create_collection('api_scripts');
 create_collection('api_tests');
 
 create_collection('folders');
+create_collection('revisions');
+
+db._collection('revisions').ensureIndex({
+  type: 'hash',
+  fields: ['object_id']
+});
 
 var create_edge_collection = function (collection) {
   if (!db._collection(collection)) {

@@ -41,6 +41,20 @@ var list = function (aql) {
   return db._query(aql).toArray()
 }
 
+var save_revision = function (uid, object, data, max) {
+  db.revisions.save({
+    data: data, object_id: object._id, c_at: (+new Date()), user_key: uid
+  })
+  db._query(`
+  LET rev_ids = (
+    FOR doc IN revisions FILTER doc.object_id == @id
+    SORT doc.c_at LIMIT @max, 100 RETURN doc._key
+  )
+  FOR id IN rev_ids
+  REMOVE { _key: id } IN revisions
+  `, { id: object._id, max: max })
+}
+
 var fieldsToData = function(fields, body, headers) {
   var data = {}
   _.each(fields, function(f) {
@@ -313,6 +327,8 @@ router.post('/:service', function (req, res) {
     `, _.merge({ type: req.pathParams.service }, folder_params)
     ).toArray()[0]
     obj = collection.save(data, { waitForSync: true })
+    save_revision(req.session.uid, obj, data, 10)
+
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -363,6 +379,7 @@ router.post('/:service/:service_key/:sub', function (req, res) {
     ).toArray()[0]
     data['parent_id'] = req.pathParams.service_key
     obj = collection.save(data, { waitForSync: true })
+    save_revision(req.session.uid, object, data, 10)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -412,6 +429,7 @@ router.post('/:service/:id', function (req, res) {
       data['slug'] = _.kebabCase(slug)
     }
     obj = collection.update(doc, data)
+    save_revision(req.session.uid, doc, data, 10)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
@@ -464,6 +482,7 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
       data['slug'] = _.kebabCase(slug)
     }
     obj = collection.update(doc, data)
+    save_revision(req.session.uid, doc, data, 10)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
@@ -511,6 +530,7 @@ router.get('/:service/:id/duplicate', function (req, res) {
 router.delete('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   collection.remove('datasets/' + req.pathParams.id)
+  db.revisions.removeByExample({ object_id: 'datasets/' + req.pathParams.id })
   res.send({success: true });
 })
 .header('X-Session-Id')

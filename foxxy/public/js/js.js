@@ -2532,7 +2532,6 @@ riot.tag2('dataset_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in p
         self.folders = d.folders
         self.path = d.path
         self.folder = _.last(self.path)
-        console.log(self.folder)
         self.parent.setFolder(self.folder)
         self.update()
       })
@@ -2829,6 +2828,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
 
     this.setFolder = function(folder) {
       self.folder = folder || {}
+      self.folder_key = self.folder._key
       self.loadPage(1)
     }
 

@@ -24,7 +24,6 @@
         self.folders = d.folders
         self.path = d.path
         self.folder = _.last(self.path)
-        console.log(self.folder)
         self.parent.setFolder(self.folder)
         self.update()
       })
@@ -484,6 +483,7 @@
 
     this.setFolder = function(folder) {
       self.folder = folder || {}
+      self.folder_key = self.folder._key
       self.loadPage(1)
     }
 

@@ -63,12 +63,28 @@ var fieldsToData = function(fields, body, headers) {
   return data
 }
 
+var save_revision = function (uid, object, data, max) {
+  db.revisions.save({
+    data: data, object_id: object._id, c_at: (+new Date()), user_key: uid
+  })
+  db._query(`
+  LET rev_ids = (
+    FOR doc IN revisions FILTER doc.object_id == @id
+    SORT doc.c_at LIMIT @max, 100 RETURN doc._key
+  )
+  FOR id IN rev_ids
+  REMOVE { _key: id } IN revisions
+  `, { id: object._id, max: max })
+}
+
 // Comment this block if you want to avoid authorization
 module.context.use(function (req, res, next) {
   if(!req.session.uid) res.throw('unauthorized')
   res.setHeader("Access-Control-Expose-Headers", "X-Session-Id")
   next();
 });
+
+
 
 // -----------------------------------------------------------------------------
 router.get('/:service/page/:page/:perpage', function (req, res) {
@@ -204,8 +220,8 @@ router.post('/:service', function (req, res) {
     `, _.merge({ "@collection": req.pathParams.service }, folder_params)
     ).toArray()[0]
 
-    //data['order'] = collection.count()
     obj = collection.save(data, { waitForSync: true })
+    save_revision(req.session.uid, obj, data, 10)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -250,6 +266,7 @@ router.post('/:service/:id', function (req, res) {
     }
 
     obj = collection.update(object, data)
+    save_revision(req.session.uid, object, data, 10)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
@@ -289,7 +306,10 @@ router.get('/:service/:id/duplicate', function (req, res) {
 // -----------------------------------------------------------------------------
 router.delete('/:service/:id', function (req, res) {
   const collection = db._collection(req.pathParams.service)
-  collection.remove(req.pathParams.service+"/"+req.pathParams.id)
+  collection.remove(req.pathParams.service + "/" + req.pathParams.id)
+  db.revisions.removeByExample(
+    { object_id: req.pathParams.service + "/" + req.pathParams.id }
+  )
   res.send({success: true });
 })
 .header('X-Session-Id')
@@ -381,6 +401,7 @@ router.post('/sub/:service/:subservice', function (req, res) {
     if(models()[req.pathParams.service].sub_models[req.pathParams.subservice].timestamps === true) { data.created_at = +new Date() }
 
     obj = collection.save(data, { waitForSync: true })
+    save_revision(req.session.uid, obj, data, 10)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -405,6 +426,7 @@ router.post('/sub/:service/:subservice/:id', function (req, res) {
     if(models()[req.pathParams.service].sub_models[req.pathParams.subservice].timestamps === true) { data.updated_at = +new Date() }
 
     obj = collection.update(object, data)
+    save_revision(req.session.uid, object, data, 10)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
