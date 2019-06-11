@@ -23,7 +23,8 @@ module.context.use(router);
 var typeCast = function(type, value) {
   var value = unescape(value)
   if (type == "integer") value = parseInt(value)
-  if (type == "float")   value = parseFloat(value)
+  if (type == "float") value = parseFloat(value)
+  if (type == "html") value = JSON.parse(value)
   return value
 }
 
