@@ -367,6 +367,8 @@
         "truncate": 20, "uppercase": true, "lowercase": true
       \}
     ],
+    "act_as_tree": true,
+    "revisions": 10,
     "slug": ["title"],
     "sort": "SORT doc.order ASC",
     "search": ["title", "barcode", "desc"],

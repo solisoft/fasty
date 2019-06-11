@@ -29,12 +29,10 @@ var typeCast = function(type, value) {
 }
 
 var models = function () {
-  return db._query(
-    `
+  return db._query(`
     LET ds = (FOR doc IN datatypes SORT doc.name RETURN ZIP([doc.slug], [doc]))
     RETURN MERGE(ds)
-    `
-  ).toArray()[0]
+  `).toArray()[0]
 }
 
 var list = function (aql) {
@@ -277,6 +275,7 @@ router.get('/:service/fields', function (req, res) {
 router.post('/:service', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  object.revisions = object.revisions || 10
   let fields = object.model
   const body = JSON.parse(req.body.toString())
   var obj = null
@@ -327,8 +326,7 @@ router.post('/:service', function (req, res) {
     `, _.merge({ type: req.pathParams.service }, folder_params)
     ).toArray()[0]
     obj = collection.save(data, { waitForSync: true })
-    save_revision(req.session.uid, obj, data, 10)
-
+    save_revision(req.session.uid, obj, data, object.revisions)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -340,6 +338,7 @@ router.post('/:service', function (req, res) {
 router.post('/:service/:service_key/:sub', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  object.revisions = object.revisions || 10
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
@@ -379,7 +378,7 @@ router.post('/:service/:service_key/:sub', function (req, res) {
     ).toArray()[0]
     data['parent_id'] = req.pathParams.service_key
     obj = collection.save(data, { waitForSync: true })
-    save_revision(req.session.uid, object, data, 10)
+    save_revision(req.session.uid, object, data, object.revisions)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -391,8 +390,8 @@ router.post('/:service/:service_key/:sub', function (req, res) {
 router.post('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  object.revisions = object.revisions || 10
   let fields = object.model
-
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
@@ -429,7 +428,7 @@ router.post('/:service/:id', function (req, res) {
       data['slug'] = _.kebabCase(slug)
     }
     obj = collection.update(doc, data)
-    save_revision(req.session.uid, doc, data, 10)
+    save_revision(req.session.uid, doc, data, object.revisions)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
@@ -442,8 +441,8 @@ router.post('/:service/:id', function (req, res) {
 router.post('/sub/:service/:sub_service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  object.revisions = object.revisions || 10
   let fields = object.sub_models[req.pathParams.sub_service].fields
-
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
@@ -482,7 +481,7 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
       data['slug'] = _.kebabCase(slug)
     }
     obj = collection.update(doc, data)
-    save_revision(req.session.uid, doc, data, 10)
+    save_revision(req.session.uid, doc, data, object.revisions)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
