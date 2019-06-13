@@ -53,7 +53,7 @@ class extends lapis.Application
       )
       RETURN { components: g_components, settings: g_settings,
         redirections: g_redirections, aqls: g_aqls,
-        trads: MERGE(g_trads), helpers: g_helpers }
+        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
     ')[1]
     settings[sub_domain] = global_data.settings[1]
   ------------------------------------------------------------------------------
