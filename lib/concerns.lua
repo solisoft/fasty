@@ -96,7 +96,6 @@ dynamic_replace = function(db_name, html, global_data, history, params)
   local helpers = global_data.helpers
   html = html:gsub('{{ lang }}', params.lang)
   if helpers then
-    helpers = helpers[1]
     for widget in string.gmatch(html, '{{.-}}') do
       local output = ''
       local action = ''

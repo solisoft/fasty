@@ -304,7 +304,7 @@
       set_empty_rows <function>
       add Class .empty_row to all empty .cms_row
     */
-   var set_empty_rows = function () {
+    var set_empty_rows = function () {
       $(self).find('.cms_row').removeClass('empty_row')
       $(self).find('.cms_row').each(function (y, col) {
         if ($(col).text().trim() === '') {
@@ -481,7 +481,6 @@
     /*
       run_export <function(base)>
       Export base element as json structure
-      (saved to localstorage for now)
     */
     var run_export = function (base) {
 
@@ -497,7 +496,6 @@
         $(row).find('> .cms_col').each(function (y, col) {
           var data_col = []
           $(col).find('[data-type]').each(function (z, widget) {
-            widget = $(widget.outerHTML) // force refresh
             if($(widget).data('exported') == undefined) {
               $(widget).data('exported', true)
 

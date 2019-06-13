@@ -918,7 +918,7 @@ require.register("js/editor.js", function(exports, require, module) {
       set_empty_rows <function>
       add Class .empty_row to all empty .cms_row
     */
-   var set_empty_rows = function () {
+    var set_empty_rows = function () {
       $(self).find('.cms_row').removeClass('empty_row')
       $(self).find('.cms_row').each(function (y, col) {
         if ($(col).text().trim() === '') {
@@ -1095,7 +1095,6 @@ require.register("js/editor.js", function(exports, require, module) {
     /*
       run_export <function(base)>
       Export base element as json structure
-      (saved to localstorage for now)
     */
     var run_export = function (base) {
 
@@ -1111,7 +1110,6 @@ require.register("js/editor.js", function(exports, require, module) {
         $(row).find('> .cms_col').each(function (y, col) {
           var data_col = []
           $(col).find('[data-type]').each(function (z, widget) {
-            widget = $(widget.outerHTML) // force refresh
             if($(widget).data('exported') == undefined) {
               $(widget).data('exported', true)
 
@@ -2937,8 +2935,10 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
           ghostClass: 'blue-background-class',
           handle: '.fa-grip-vertical',
           onSort: function ( evt) {
+            var folder_key = "?folder_key=" + self.folder._key
+            if(!self.act_as_tree) folder_key = ''
             common.put(
-              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + self.folder._key, {},
+              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
               function() {}
             )
           },
@@ -4235,8 +4235,10 @@ riot.tag2('pages', '<page_folders show="{loaded}" folder_key="{folder_key}"></pa
           ghostClass: 'blue-background-class',
           handle: '.fa-grip-vertical',
           onSort: function ( evt) {
+            var folder_key = "?folder_key=" + self.folder._key
+            if(!self.act_as_tree) folder_key = ''
             common.put(
-              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + self.folder._key, {},
+              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
               function() {}
             )
           },
