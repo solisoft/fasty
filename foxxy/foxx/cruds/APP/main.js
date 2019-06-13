@@ -320,7 +320,7 @@ router.put('/:service/orders/:from/:to', function (req, res) {
 
   var filter_by_folder = ''
   var folder_params = {}
-  if (req.queryParams.folder_key != 'undefined') {
+  if (req.queryParams) {
     filter_by_folder = 'FILTER doc.folder_key == @folder'
     folder_params['folder'] = req.queryParams.folder_key
   }

@@ -556,8 +556,10 @@
           ghostClass: 'blue-background-class',
           handle: '.fa-grip-vertical',
           onSort: function (/**Event*/evt) {
+            var folder_key = "?folder_key=" + self.folder._key
+            if(!self.act_as_tree) folder_key = ''
             common.put(
-              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + self.folder._key, {},
+              url + 'cruds/pages/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
               function() {}
             )
           },
