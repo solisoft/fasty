@@ -65,7 +65,29 @@ services:
       - arangodb-data:/var/lib/arangodb3
       - arangodb-app:/var/lib/arangodb3-app
       - arangodb-uploads:/home
-
+  e2e:
+    image: cypress/base:10
+    depends_on:
+      - cms
+    # note: inside e2e container, the network allows accessing
+    # "web" host under name "web"
+    # so "curl http://web" would return whatever the webserver
+    # in the "web" container is cooking
+    # see https://docs.docker.com/compose/networking/
+    environment:
+      - CYPRESS_baseUrl=http://cms
+    command: npx cypress run
+    # mount the host directory e2e/cypress and the file e2e/cypress.json as
+    # volumes within the container
+    # this means that:
+    #  1. anything that Cypress writes to these folders (e.g., screenshots,
+    #     videos) appears also on the Docker host's filesystem
+    #  2. any change that the developer applies to Cypress files on the host
+    #     machine immediately takes effect within the e2e container (no docker
+    #     rebuild required).
+    volumes:
+      - ./cypress:/app/cypress
+      - ./cypress.json:/app/cypress.json
 volumes:
   arangodb-data:
   arangodb-app:

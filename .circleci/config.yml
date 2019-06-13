@@ -2,8 +2,15 @@
 version: 2.1
 orbs:
   cypress: cypress-io/cypress@1.0.0
+jobs:
+  machine:
+      docker_layer_caching: false
+  steps:
+  - checkout
+  - run: docker-compose build
+  - run: docker-compose up --abort-on-container-exit --exit-code-from e2e
 workflows:
   build:
     jobs:
-      - cypress/run:
-          executor: cypress/base-8
+    - build
+  version: 2
