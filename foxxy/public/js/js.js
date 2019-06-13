@@ -2691,11 +2691,12 @@ riot.tag2('all_datatypes', '<div class="rightnav uk-card uk-card-default uk-card
     })
 });
 
-riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {opts.datatype}</h3> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {opts.datatype}</h3> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a if="{publishable}" class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
     self.sub_models = []
+    self.publishable = false
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -2730,6 +2731,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
     }.bind(this)
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
+      self.publishable = d.model.publishable
       self.dataset = d.data
       self.fields = d.fields
       self.sub_models = d.model.sub_models

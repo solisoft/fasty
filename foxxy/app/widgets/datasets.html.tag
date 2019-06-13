@@ -257,7 +257,7 @@
         <h3>Editing {opts.datatype}</h3>
         <form onsubmit="{ save_form }" class="uk-form" id="form_dataset">
         </form>
-        <a class="uk-button uk-button-primary" onclick="{ publish }">Publish</a>
+        <a if={publishable} class="uk-button uk-button-primary" onclick="{ publish }">Publish</a>
         <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
       </li>
       <li each={ i, k in sub_models }>
@@ -274,6 +274,7 @@
     self.can_access = false
     self.loaded = false
     self.sub_models = []
+    self.publishable = false
 
     save_form(e) {
       e.preventDefault()
@@ -308,6 +309,7 @@
     }
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
+      self.publishable = d.model.publishable
       self.dataset = d.data
       self.fields = d.fields
       self.sub_models = d.model.sub_models
