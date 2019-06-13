@@ -5,4 +5,4 @@ workflows:
   build:
     jobs:
       - cypress/run:
-        executor: cypress/base-8
+          executor: cypress/base-8
