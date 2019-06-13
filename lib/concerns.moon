@@ -63,7 +63,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
   -- helpers
   if helpers
-    helpers = helpers[1]
     for widget in string.gmatch(html, '{{.-}}') do
 
       output = ''
