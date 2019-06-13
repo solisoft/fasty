@@ -257,6 +257,7 @@
         <h3>Editing {opts.datatype}</h3>
         <form onsubmit="{ save_form }" class="uk-form" id="form_dataset">
         </form>
+        <a class="uk-button uk-button-primary" onclick="{ publish }">Publish</a>
         <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
       </li>
       <li each={ i, k in sub_models }>
@@ -291,6 +292,19 @@
           });
         })
       }, function() {})
+    }
+
+    publish(e) {
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.post(url + "/datasets/" + self.dataset._key + "/publish", JSON.stringify({}), function(data) {
+          UIkit.notification({
+            message : 'Successfully published!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+        })
+      })
     }
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {

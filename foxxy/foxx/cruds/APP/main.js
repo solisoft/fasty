@@ -84,8 +84,6 @@ module.context.use(function (req, res, next) {
   next();
 });
 
-
-
 // -----------------------------------------------------------------------------
 router.get('/:service/page/:page/:perpage', function (req, res) {
   let order = models()[req.pathParams.service].sort || 'SORT doc._key DESC'
@@ -433,5 +431,30 @@ router.post('/sub/:service/:subservice/:id', function (req, res) {
 .header('foxx-locale')
 .header('X-Session-Id')
   .description('Update a sub object.');
+
+////////////////////////////////////////////////////////////////////////////////
+// POST /cruds/:service/:id/publish
+router.post('/:service/:id/publish', function (req, res) {
+  var data = db._collection(req.pathParams.service).document(req.pathParams.id)
+  db.publications.save(
+    { _key: req.pathParams.service + '_' + data._key, data },
+    { overwrite: true }
+  )
+  db._query(`
+    FOR data IN @@collection FILTER data.parent_id == @key
+    UPSERT { _id: @id }
+      INSERT { data: data }
+      UPDATE { data: data }
+    IN publications
+  `, {
+      '@collection': req.pathParams.service,
+      key: req.pathParams.id,
+      id: 'publications/' + req.pathParams.id
+    })
+  res.send({ success: true });
+})
+.header('X-Session-Id')
+.description('publish an object.');
+
 
 module.context.use('/folders', require('./routes/folders.js'), 'folders');

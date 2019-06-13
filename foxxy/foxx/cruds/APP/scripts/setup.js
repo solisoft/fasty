@@ -2,7 +2,7 @@
 const db = require('@arangodb').db;
 var Graph = require('@arangodb/general-graph');
 
-function create_collection(collection) {
+var create_collection = function(collection) {
   if (!db._collection(collection)) {
     db._createDocumentCollection(collection);
     if(collection == 'layouts') {
@@ -170,6 +170,19 @@ function create_collection(collection) {
 
 }
 
+var create_edge_collection = function (collection) {
+  if (!db._collection(collection)) { db._createEdgeCollection(collection); }
+}
+
+var create_graph = function (graphName) {
+  if (!Graph._exists(graphName)) {
+    Graph._create(graphName,
+      [Graph._relation('folder_path', 'folders', 'folders')]
+    );
+  }
+}
+
+
 create_collection('layouts');
 
 create_collection('pages');
@@ -209,25 +222,10 @@ create_collection('api_tests');
 
 create_collection('folders');
 create_collection('revisions');
+create_collection('publications');
 
-db._collection('revisions').ensureIndex({
-  type: 'hash',
-  fields: ['object_id']
-});
-
-var create_edge_collection = function (collection) {
-  if (!db._collection(collection)) {
-    db._createEdgeCollection(collection);
-  }
-}
-
-var create_graph = function (graphName) {
-  if (!Graph._exists(graphName)) {
-    Graph._create(graphName,
-      [Graph._relation('folder_path', 'folders', 'folders')]
-    );
-  }
-}
+db._collection('revisions').ensureIndex({ type: 'hash', fields: ['object_id'] });
+db._collection('publications').ensureIndex({ type: 'hash', fields: ['object_id'] });
 
 create_edge_collection('folder_path')
 create_graph('folderGraph')

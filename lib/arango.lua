@@ -129,7 +129,7 @@ foxx_install = function(db_name, mount, data)
 end
 local foxx_upgrade
 foxx_upgrade = function(db_name, mount, data)
-  local body, status_code, headers = http_request(tostring(db_config.url) .. "/_db/" .. tostring(db_name) .. "/_api/foxx/service?mount=/" .. tostring(mount), 'PATCH', data, {
+  local body, status_code, headers = http_request(tostring(db_config.url) .. "/_db/" .. tostring(db_name) .. "/_api/foxx/service?mount=/" .. tostring(mount) .. "&force=true", 'PATCH', data, {
     ['Content-Type'] = 'application/zip',
     Authorization = "bearer " .. tostring(jwt)
   })

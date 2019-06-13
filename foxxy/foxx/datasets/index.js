@@ -525,6 +525,24 @@ router.get('/:service/:id/duplicate', function (req, res) {
 .description('duplicate an object.');
 
 ////////////////////////////////////////////////////////////////////////////////
+// POST /datasets/:id/publish
+router.post('/:id/publish', function (req, res) {
+  var dataset = db.datasets.document(req.pathParams.id)
+  db.publications.save({ _key: 'datasets_' + dataset._key, data: dataset }, { overwrite: true })
+  db._query(`
+    FOR dataset IN datasets FILTER dataset.parent_id == @key
+    UPSERT { _id: @id }
+      INSERT { data: dataset }
+      UPDATE { data: dataset }
+    IN publications
+    RETURN dataset._key
+  `, { key: req.pathParams.id, id: 'publications/' + req.pathParams.id })
+  res.send({ success: true });
+})
+.header('X-Session-Id')
+.description('publish a dataset.');
+
+////////////////////////////////////////////////////////////////////////////////
 // DELET /datasets/:service/:id
 router.delete('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')

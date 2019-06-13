@@ -217,6 +217,7 @@
         <h3>Editing page</h3>
         <form onsubmit="{ save_form }" class="uk-form" id="form_page">
         </form>
+        <a class="uk-button uk-button-primary" onclick="{ publish }">Publish</a>
         <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
       </li>
       <li each={ i, k in sub_models }>
@@ -240,7 +241,7 @@
 
     duplicate(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/pages/" + self.page._key + "/duplicate", function(data) {
+        common.get(url + "/cruds/pages/" + opts.page_id + "/duplicate", function(data) {
           route('/pages/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
@@ -250,6 +251,19 @@
           });
         })
       }, function() {})
+    }
+
+    publish(e) {
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.post(url + "/cruds/pages/" + opts.page_id + "/publish", JSON.stringify({}), function(data) {
+          UIkit.notification({
+            message : 'Successfully published!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+        })
+      })
     }
 
     common.get(url + "/cruds/pages/" + opts.page_id, function(d) {

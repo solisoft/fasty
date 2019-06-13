@@ -52,14 +52,7 @@ install_service = function(sub_domain, name)
   end
   os.execute("cd install_service/" .. tostring(sub_domain) .. " && zip -rq " .. tostring(name) .. ".zip " .. tostring(name) .. "/")
   os.execute("rm --recursive install_service/" .. tostring(sub_domain) .. "/" .. tostring(name))
-  local is_existing = table_index(map(from_json(foxx_services("db_" .. tostring(sub_domain))), function(item)
-    return item.name
-  end), name) ~= nil
-  if is_existing then
-    return foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
-  else
-    return foxx_install("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
-  end
+  return foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
 end
 return {
   install_service = install_service

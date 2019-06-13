@@ -1,7 +1,7 @@
 etlua   = require 'etlua'
 stringy = require 'stringy'
 
-import aql from require 'lib.arango'
+import aql, document_get from require 'lib.arango'
 import table_deep_merge from require 'lib.utils'
 import http_get from require 'lib.http_client'
 import from_json, to_json, trim from require 'lapis.util'
@@ -44,7 +44,14 @@ load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
   else
     request ..= 'RETURN { item }'
 
-  aql(db_name, request, { slug: slug, lang: lang })[1]
+  page = aql(db_name, request, { slug: slug, lang: lang })[1]
+
+  publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
+  if publication.code ~= 404
+    page.item = publication.data
+
+  page
+
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
   translations = global_data.trads

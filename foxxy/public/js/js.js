@@ -2691,7 +2691,7 @@ riot.tag2('all_datatypes', '<div class="rightnav uk-card uk-card-default uk-card
     })
 });
 
-riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {opts.datatype}</h3> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {opts.datatype}</h3> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -2714,6 +2714,19 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
           });
         })
       }, function() {})
+    }.bind(this)
+
+    this.publish = function(e) {
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.post(url + "/datasets/" + self.dataset._key + "/publish", JSON.stringify({}), function(data) {
+          UIkit.notification({
+            message : 'Successfully published!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+        })
+      })
     }.bind(this)
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
@@ -3982,7 +3995,7 @@ riot.tag2('page_crud_new', '<a href="#" class="uk-button uk-button-link" onclick
 
 });
 
-riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">pages</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing page</h3> <form onsubmit="{save_form}" class="uk-form" id="form_page"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">pages</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing page</h3> <form onsubmit="{save_form}" class="uk-form" id="form_page"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -3994,7 +4007,7 @@ riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">
 
     this.duplicate = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/pages/" + self.page._key + "/duplicate", function(data) {
+        common.get(url + "/cruds/pages/" + opts.page_id + "/duplicate", function(data) {
           route('/pages/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
@@ -4004,6 +4017,19 @@ riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">
           });
         })
       }, function() {})
+    }.bind(this)
+
+    this.publish = function(e) {
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.post(url + "/cruds/pages/" + opts.page_id + "/publish", JSON.stringify({}), function(data) {
+          UIkit.notification({
+            message : 'Successfully published!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+        })
+      })
     }.bind(this)
 
     common.get(url + "/cruds/pages/" + opts.page_id, function(d) {

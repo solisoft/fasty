@@ -1,7 +1,10 @@
 local etlua = require('etlua')
 local stringy = require('stringy')
-local aql
-aql = require('lib.arango').aql
+local aql, document_get
+do
+  local _obj_0 = require('lib.arango')
+  aql, document_get = _obj_0.aql, _obj_0.document_get
+end
 local table_deep_merge
 table_deep_merge = require('lib.utils').table_deep_merge
 local http_get
@@ -76,10 +79,15 @@ load_page_by_slug = function(db_name, slug, object, lang, uselayout)
   else
     request = request .. 'RETURN { item }'
   end
-  return aql(db_name, request, {
+  local page = aql(db_name, request, {
     slug = slug,
     lang = lang
   })[1]
+  local publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
+  if publication.code ~= 404 then
+    page.item = publication.data
+  end
+  return page
 end
 local dynamic_replace
 dynamic_replace = function(db_name, html, global_data, history, params)
