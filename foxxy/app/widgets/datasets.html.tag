@@ -603,9 +603,10 @@
           ghostClass: 'blue-background-class',
           handle: '.fa-grip-vertical',
           onSort: function (/**Event*/evt) {
-            if(!self.sortable) self.folder._key = ''
+            var folder_key = self.folder._key
+            if(!self.act_as_tree) folder_key = ''
             common.put(
-              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + self.folder._key, {},
+              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + "?folder_key=" + folder_key, {},
               function() {}
             )
           },
