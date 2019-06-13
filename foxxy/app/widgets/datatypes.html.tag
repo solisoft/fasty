@@ -369,6 +369,7 @@
     ],
     "act_as_tree": true,
     "revisions": 10,
+    "publishable": true,
     "slug": ["title"],
     "sort": "SORT doc.order ASC",
     "search": ["title", "barcode", "desc"],
