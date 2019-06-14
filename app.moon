@@ -13,7 +13,7 @@ import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
-import dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug from require 'lib.concerns'
+import dynamic_replace, dynamic_page, load_page_by_slug from require 'lib.concerns'
 
 jwt = {}
 global_data = {}

@@ -17,6 +17,7 @@ var Common = {
     }
   },
   startEditor: function(name, mode, id) {
+    console.log("Editor", name)
     var editor = ace.edit(name)
     editor.getSession().setMode(mode)
     editor.setOptions({

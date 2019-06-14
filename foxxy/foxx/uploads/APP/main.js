@@ -91,6 +91,7 @@ router.post('/:key/:type/:field', function (req, res) {
             key: _settings.resize_ovh
           }
         })
+        console.log(http_req.body)
         var _uuid = JSON.parse(http_req.body).filename
         urldest = `https://resize.ovh/o/${_uuid}`
       }
