@@ -41,14 +41,12 @@ load_dataset_by_slug = (db_name, slug, object, lang)->
   request = "
     FOR item IN datasets FILTER item.slug == @slug && item.type == '#{object}' RETURN item
   "
-  print(request)
   item = aql(db_name, request, { slug: slug })[1]
 
   publication = document_get(db_name, 'publications/' .. object .. '_' .. item._key)
-  print(to_json(publication))
   if publication.code ~= 404
     item = publication.data
-  print(to_json(item))
+
   item
 --------------------------------------------------------------------------------
 load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
@@ -126,6 +124,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             params, global_data, history, false
           )
         else
+          dataset = 'datasets'
           output ..= dynamic_page(
             db_name,
             load_dataset_by_slug(db_name, item, dataset, params.lang),
