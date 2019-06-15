@@ -160,6 +160,7 @@ do
         self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
         self.session.lang = self.params.lang
         local html = dynamic_page("db_" .. tostring(sub_domain), load_page_by_slug("db_" .. tostring(sub_domain), self.params.slug, 'pages', self.params.lang), self.params, global_data)
+        html = dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params)
         basic_auth(self, settings[sub_domain])
         if is_auth(self, settings[sub_domain]) then
           if html ~= 'null' then

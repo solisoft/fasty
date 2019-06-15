@@ -51,7 +51,35 @@ load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
     page.item = publication.data
 
   page
+--------------------------------------------------------------------------------
+load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
+  request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
+  request ..= 'RETURN { item }'
+  print(request)
+  page = aql(db_name, request, { slug: slug })[1]
 
+  publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
+  if publication.code ~= 404
+    page.item = publication.data
+
+  page
+--------------------------------------------------------------------------------
+-- dynamic_page : check all {{ .* }} and load layout
+dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
+  html = to_json(data)
+  if data
+    page_partial = load_partial_by_slug(db_name, 'page', 'partials')
+    if uselayout
+      html = data.layout.html\gsub(
+        '@yield',
+        escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang))
+      )
+      html = prepare_headers(html, data, params)
+    else
+      html = data.item.html
+
+    -- html = dynamic_replace(db_name, html, global_data, history, params)
+  html
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
   translations = global_data.trads
@@ -104,11 +132,21 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        output ..= dynamic_page(
-          db_name,
-          load_page_by_slug(db_name, item, 'pages', params.lang, false),
-          params, global_data, history, false
-        )
+        obj = {}
+        if dataset == ''
+          obj = dynamic_page(
+            db_name,
+            load_page_by_slug(db_name, item, 'pages', params.lang, false),
+            params, global_data, history, false
+          )
+        else
+          obj = dynamic_page(
+            db_name,
+            load_dataset_by_slug(db_name, item, dataset, params.lang),
+            params, global_data, history, false
+          )
+
+        output ..= dynamic_replace(db_name, obj.html, global_data, history, params)
 
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
@@ -188,23 +226,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output))
 
-  html
---------------------------------------------------------------------------------
--- dynamic_page : check all {{ .* }} and load layout
-dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
-  html = to_json(data)
-  if data
-    page_partial = load_partial_by_slug(db_name, 'page', 'partials')
-    if uselayout
-      html = data.layout.html\gsub(
-        '@yield',
-        escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang))
-      )
-      html = prepare_headers(html, data, params)
-    else
-      html = data.item.html
-
-    html = dynamic_replace(db_name, html, global_data, history, params)
   html
 --------------------------------------------------------------------------------
 -- expose methods

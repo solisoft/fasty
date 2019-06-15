@@ -68,18 +68,6 @@ load_partial_by_slug = function(db_name, slug, object)
     slug = slug
   })[1]
 end
-local load_dataset_by_slug
-load_dataset_by_slug = function(db_name, slug, object, lang)
-  local request = "\n    FOR item IN datasets FILTER item.slug == @slug && item.type == '" .. tostring(object) .. "' RETURN item\n  "
-  local item = aql(db_name, request, {
-    slug = slug
-  })[1]
-  local publication = document_get(db_name, 'publications/' .. object .. '_' .. item._key)
-  if publication.code ~= 404 then
-    item = publication.data
-  end
-  return item
-end
 local load_page_by_slug
 load_page_by_slug = function(db_name, slug, object, lang, uselayout)
   if uselayout == nil then
@@ -101,6 +89,23 @@ load_page_by_slug = function(db_name, slug, object, lang, uselayout)
   end
   return page
 end
+local load_dataset_by_slug
+load_dataset_by_slug = function(db_name, slug, object, lang, uselayout)
+  if uselayout == nil then
+    uselayout = true
+  end
+  local request = "FOR item IN datasets FILTER item.type == '" .. tostring(object) .. "' FILTER item.slug == @slug "
+  request = request .. 'RETURN { item }'
+  print(request)
+  local page = aql(db_name, request, {
+    slug = slug
+  })[1]
+  local publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
+  if publication.code ~= 404 then
+    page.item = publication.data
+  end
+  return page
+end
 local dynamic_page
 dynamic_page = function(db_name, data, params, global_data, history, uselayout)
   if history == nil then
@@ -109,7 +114,6 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
   if uselayout == nil then
     uselayout = true
   end
-  print("----------------------------------------------------------------------")
   local html = to_json(data)
   if data then
     local page_partial = load_partial_by_slug(db_name, 'page', 'partials')
@@ -119,7 +123,6 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
     else
       html = data.item.html
     end
-    html = dynamic_replace(db_name, html, global_data, history, params)
   end
   return html
 end
@@ -178,14 +181,13 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'page' then
       if history[widget] == nil then
         history[widget] = true
-        if dataset == nil then
-          dataset = 'pages'
-          output = output .. dynamic_page(db_name, load_page_by_slug(db_name, item, dataset, params.lang, false), params, global_data, history, false)
+        local obj = { }
+        if dataset == '' then
+          obj = dynamic_page(db_name, load_page_by_slug(db_name, item, 'pages', params.lang, false), params, global_data, history, false)
         else
-          item = load_dataset_by_slug(db_name, item, dataset, params.lang)
-          print(to_json(item))
-          output = output .. dynamic_page(db_name, item, params, global_data, history, false)
+          obj = dynamic_page(db_name, load_dataset_by_slug(db_name, item, dataset, params.lang), params, global_data, history, false)
         end
+        output = output .. dynamic_replace(db_name, obj.html, global_data, history, params)
       end
     end
     if action == 'partial' then

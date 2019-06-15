@@ -138,6 +138,7 @@ class extends lapis.Application
         load_page_by_slug("db_#{sub_domain}", @params.slug, 'pages', @params.lang),
         @params, global_data
       )
+      html = dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
 
       basic_auth(@, settings[sub_domain]) -- check if website need a basic auth
       if is_auth(@, settings[sub_domain])
