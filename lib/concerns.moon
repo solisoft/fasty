@@ -39,7 +39,7 @@ load_partial_by_slug = (db_name, slug, object)->
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang)->
   request = "
-    FOR item IN dataset FILTER item.slug == @slug && item.type == '#{object}' RETURN item
+    FOR item IN datasets FILTER item.slug == @slug && item.type == '#{object}' RETURN item
   "
   print(request)
   item = aql(db_name, request, { slug: slug })[1]
