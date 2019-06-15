@@ -101,6 +101,28 @@ load_page_by_slug = function(db_name, slug, object, lang, uselayout)
   end
   return page
 end
+local dynamic_page
+dynamic_page = function(db_name, data, params, global_data, history, uselayout)
+  if history == nil then
+    history = { }
+  end
+  if uselayout == nil then
+    uselayout = true
+  end
+  print("----------------------------------------------------------------------")
+  local html = to_json(data)
+  if data then
+    local page_partial = load_partial_by_slug(db_name, 'page', 'partials')
+    if uselayout then
+      html = data.layout.html:gsub('@yield', escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang)))
+      html = prepare_headers(html, data, params)
+    else
+      html = data.item.html
+    end
+    html = dynamic_replace(db_name, html, global_data, history, params)
+  end
+  return html
+end
 local dynamic_replace
 dynamic_replace = function(db_name, html, global_data, history, params)
   local translations = global_data.trads
@@ -254,29 +276,6 @@ dynamic_replace = function(db_name, html, global_data, history, params)
       output = http_get(item, { })
     end
     html = html:gsub(escape_pattern(widget), escape_pattern(output))
-  end
-  return html
-end
-local dynamic_page
-dynamic_page = function(db_name, data, params, global_data, history, uselayout)
-  if history == nil then
-    history = { }
-  end
-  if uselayout == nil then
-    uselayout = true
-  end
-  print("----------------------------------------------------------------------")
-  local html = to_json(data)
-  print(html)
-  if data then
-    local page_partial = load_partial_by_slug(db_name, 'page', 'partials')
-    if uselayout then
-      html = data.layout.html:gsub('@yield', escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang)))
-      html = prepare_headers(html, data, params)
-    else
-      html = data.item.html
-    end
-    html = dynamic_replace(db_name, html, global_data, history, params)
   end
   return html
 end

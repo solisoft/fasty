@@ -143,7 +143,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         else
           item = load_dataset_by_slug(db_name, item, dataset, params.lang)
           print(to_json(item))
-          output ..= dynamic_page(db_name, item, params, global_data, history, false)
+          output ..= item.html -- dynamic_page(db_name, item, params, global_data, history, false)
 
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
