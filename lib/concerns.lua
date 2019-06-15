@@ -144,7 +144,10 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'page' then
       if history[widget] == nil then
         history[widget] = true
-        output = output .. dynamic_page(db_name, load_page_by_slug(db_name, item, 'pages', params.lang, false), params, global_data, history, false)
+        if dataset == nil then
+          dataset = 'pages'
+        end
+        output = output .. dynamic_page(db_name, load_page_by_slug(db_name, item, dataset, params.lang, false), params, global_data, history, false)
       end
     end
     if action == 'partial' then

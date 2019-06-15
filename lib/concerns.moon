@@ -99,14 +99,15 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if keywords[3] then dataset = keywords[3]
     if keywords[4] then args    = splat_to_table(keywords[4], '#')
 
-    -- {{ page | slug }}
+    -- {{ page | slug (| name) }}
     -- e.g. {{ page | home }}
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
+        if dataset == nil then dataset = 'pages'
         output ..= dynamic_page(
           db_name,
-          load_page_by_slug(db_name, item, 'pages', params.lang, false),
+          load_page_by_slug(db_name, item, dataset, params.lang, false),
           params, global_data, history, false
         )
 

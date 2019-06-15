@@ -14,5 +14,8 @@
     "mocha": "^4.0.1",
     "mocha-junit-reporter": "^1.13.0",
     "mocha-multi-reporters": "^1.1.4"
+  },
+  "dependencies": {
+    "arangojs": "^6.10.0"
   }
 }
