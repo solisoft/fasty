@@ -42,7 +42,7 @@ load_dataset_by_slug = (db_name, slug, object, lang)->
     FOR item IN dataset FILTER item.slug == @slug && item.type == '#{object}' RETURN item
   "
   print(request)
-  item = aql(db_name, request, { slug: slug, lang: lang })[1]
+  item = aql(db_name, request, { slug: slug })[1]
 
   publication = document_get(db_name, 'publications/' .. object .. '_' .. item._key)
   if publication.code ~= 404
