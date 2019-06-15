@@ -32,7 +32,6 @@ check_valid_lang = (langs, lang) ->
 
   if allowed_lang[lang] == nil then
     lang = stringy.split(langs, ',')[1]
-  print("LANG " .. lang)
   lang
 --------------------------------------------------------------------------------
 map = (tbl, f)->

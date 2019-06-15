@@ -55,7 +55,6 @@ load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
   request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
   request ..= 'RETURN { item }'
-  print(request)
   page = aql(db_name, request, { slug: slug })[1]
 
   publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
