@@ -43,8 +43,9 @@ load_dataset_by_slug = (db_name, slug, object, lang)->
   "
   print(request)
   item = aql(db_name, request, { slug: slug })[1]
-
+  print(to_json(item))
   publication = document_get(db_name, 'publications/' .. object .. '_' .. item._key)
+  print(to_json(publication))
   if publication.code ~= 404
     item = publication.data
 
