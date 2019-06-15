@@ -34,10 +34,10 @@ do
   local _obj_0 = require('lapis.application')
   capture_errors, yield_error, respond_to = _obj_0.capture_errors, _obj_0.yield_error, _obj_0.respond_to
 end
-local dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug
+local dynamic_replace, dynamic_page, load_page_by_slug
 do
   local _obj_0 = require('lib.concerns')
-  dynamic_replace, splat_to_table, dynamic_page, load_page_by_slug = _obj_0.dynamic_replace, _obj_0.splat_to_table, _obj_0.dynamic_page, _obj_0.load_page_by_slug
+  dynamic_replace, dynamic_page, load_page_by_slug = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.load_page_by_slug
 end
 local jwt = { }
 local global_data = { }

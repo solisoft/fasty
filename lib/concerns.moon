@@ -213,6 +213,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 --------------------------------------------------------------------------------
 -- dynamic_page : check all {{ .* }} and load layout
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
+  print("----------------------------------------------------------------------")
   html = to_json(data)
   print(html)
   if data
