@@ -63,7 +63,24 @@ load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
     page.item = publication.data
 
   page
+--------------------------------------------------------------------------------
+-- dynamic_page : check all {{ .* }} and load layout
+dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
+  print("----------------------------------------------------------------------")
+  html = to_json(data)
+  if data
+    page_partial = load_partial_by_slug(db_name, 'page', 'partials')
+    if uselayout
+      html = data.layout.html\gsub(
+        '@yield',
+        escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang))
+      )
+      html = prepare_headers(html, data, params)
+    else
+      html = data.item.html
 
+    html = dynamic_replace(db_name, html, global_data, history, params)
+  html
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
   translations = global_data.trads
@@ -126,7 +143,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         else
           item = load_dataset_by_slug(db_name, item, dataset, params.lang)
           print(to_json(item))
-          output ..= dynamic_page(db_name,item,params, global_data, history, false)
+          output ..= dynamic_page(db_name, item, params, global_data, history, false)
 
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
@@ -206,25 +223,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output))
 
-  html
---------------------------------------------------------------------------------
--- dynamic_page : check all {{ .* }} and load layout
-dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
-  print("----------------------------------------------------------------------")
-  html = to_json(data)
-  print(html)
-  if data
-    page_partial = load_partial_by_slug(db_name, 'page', 'partials')
-    if uselayout
-      html = data.layout.html\gsub(
-        '@yield',
-        escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang))
-      )
-      html = prepare_headers(html, data, params)
-    else
-      html = data.item.html
-
-    html = dynamic_replace(db_name, html, global_data, history, params)
   html
 --------------------------------------------------------------------------------
 -- expose methods

@@ -156,12 +156,13 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'page' then
       if history[widget] == nil then
         history[widget] = true
-        print("DATASET : " .. tostring(dataset))
         if dataset == nil then
           dataset = 'pages'
           output = output .. dynamic_page(db_name, load_page_by_slug(db_name, item, dataset, params.lang, false), params, global_data, history, false)
         else
-          output = output .. dynamic_page(db_name, load_dataset_by_slug(db_name, item, dataset, params.lang), params, global_data, history, false)
+          item = load_dataset_by_slug(db_name, item, dataset, params.lang)
+          print(to_json(item))
+          output = output .. dynamic_page(db_name, item, params, global_data, history, false)
         end
       end
     end
