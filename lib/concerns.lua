@@ -71,7 +71,6 @@ end
 local load_dataset_by_slug
 load_dataset_by_slug = function(db_name, slug, object, lang)
   local request = "\n    FOR item IN datasets FILTER item.slug == @slug && item.type == '" .. tostring(object) .. "' RETURN item\n  "
-  print(request)
   local item = aql(db_name, request, {
     slug = slug
   })[1]
@@ -161,6 +160,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
           dataset = 'pages'
           output = output .. dynamic_page(db_name, load_page_by_slug(db_name, item, dataset, params.lang, false), params, global_data, history, false)
         else
+          dataset = 'datasets'
           output = output .. dynamic_page(db_name, load_dataset_by_slug(db_name, item, dataset, params.lang), params, global_data, history, false)
         end
       end
@@ -264,6 +264,7 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
   if uselayout == nil then
     uselayout = true
   end
+  print("----------------------------------------------------------------------")
   local html = to_json(data)
   print(html)
   if data then

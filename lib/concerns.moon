@@ -116,6 +116,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
+        print("DATASET : #{dataset}")
         if dataset == nil
           dataset = 'pages'
           output ..= dynamic_page(
