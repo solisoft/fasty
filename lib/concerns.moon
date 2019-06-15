@@ -37,6 +37,18 @@ load_partial_by_slug = (db_name, slug, object)->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
   aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
+load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
+  request = "
+    FOR item IN dataset FILTER item.slug == @slug && item.type == '#{object}' RETURN item
+  "
+  item = aql(db_name, request, { slug: slug, lang: lang })[1]
+
+  publication = document_get(db_name, 'publications/' .. object .. '_' .. item._key)
+  if publication.code ~= 404
+    item = publication.data
+
+  item
+--------------------------------------------------------------------------------
 load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
   request = "FOR item IN #{object} FILTER item.slug[@lang] == @slug "
   if uselayout == true
@@ -104,12 +116,19 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        if dataset == nil then dataset = 'pages'
-        output ..= dynamic_page(
-          db_name,
-          load_page_by_slug(db_name, item, dataset, params.lang, false),
-          params, global_data, history, false
-        )
+        if dataset == nil
+          dataset = 'pages'
+          output ..= dynamic_page(
+            db_name,
+            load_page_by_slug(db_name, item, dataset, params.lang, false),
+            params, global_data, history, false
+          )
+        else
+          output ..= dynamic_page(
+            db_name,
+            load_dataset_by_slug(db_name, item, dataset, params.lang, false),
+            params, global_data, history, false
+          )
 
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
