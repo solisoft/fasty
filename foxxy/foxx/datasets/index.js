@@ -310,10 +310,6 @@ router.post('/:service', function (req, res) {
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
     }
     if (object.timestamps === true) { data.created_at = +new Date() }
-    if (object.slug) {
-      var slug = _.map(object.slug, function(field_name) { return data[field_name] })
-      data['slug'] = _.kebabCase(slug)
-    }
     var filter_by_folder = ''
     var folder_params = {}
     if (object.act_as_tree) {
@@ -326,6 +322,19 @@ router.post('/:service', function (req, res) {
     `, _.merge({ type: req.pathParams.service }, folder_params)
     ).toArray()[0]
     obj = collection.save(data, { waitForSync: true })
+    if (object.slug) {
+      var slug = _.map(object.slug, function(field_name) {
+        var value = ""
+        if (_.isPlainObject(data[field_name])) {
+          value = data[field_name][req.headers['foxx-locale']]
+        } else {
+          value = data[field_name]
+        }
+        return field_name == '_key' ? obj._key : value
+      })
+      slug = _.kebabCase(slug)
+      collection.update(obj, { slug: slug })
+    }
     save_revision(req.session.uid, obj, data, object.revisions)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
@@ -368,16 +377,26 @@ router.post('/:service/:service_key/:sub', function (req, res) {
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
     }
     if (object.timestamps === true) { data.created_at = +new Date() }
-    if (object.slug) {
-      var slug = _.map(object.slug, function(field_name) { return data[field_name] })
-      data['slug'] = _.kebabCase(slug)
-    }
+
     data['order'] = db._query(
       'LET docs = (FOR doc IN datasets FILTER doc.type == @type RETURN 1) RETURN LENGTH(docs)',
       { type: req.pathParams.sub }
     ).toArray()[0]
     data['parent_id'] = req.pathParams.service_key
     obj = collection.save(data, { waitForSync: true })
+    if (object.slug) {
+      var slug = _.map(object.slug, function(field_name) {
+        var value = ""
+        if (_.isPlainObject(data[field_name])) {
+          value = data[field_name][req.headers['foxx-locale']]
+        } else {
+          value = data[field_name]
+        }
+        return field_name == '_key' ? obj._key : value
+      })
+      slug = _.kebabCase(slug)
+      collection.update(obj, { slug: slug })
+    }
     save_revision(req.session.uid, object, data, object.revisions)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
@@ -423,7 +442,13 @@ router.post('/:service/:id', function (req, res) {
     if (object.timestamps === true) { data.updated_at = +new Date() }
     if (object.slug) {
       var slug = _.map(object.slug, function(field_name) {
-        return data[field_name]
+        var value = ""
+        if (_.isPlainObject(data[field_name])) {
+          value = data[field_name][req.headers['foxx-locale']]
+        } else {
+          value = data[field_name]
+        }
+        return field_name == '_key' ? doc._key : value
       })
       data['slug'] = _.kebabCase(slug)
     }
@@ -476,7 +501,13 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
     if (object.timestamps === true) { data.updated_at = +new Date() }
     if (object.slug) {
       var slug = _.map(object.slug, function(field_name) {
-        return data[field_name]
+        var value = ""
+        if (_.isPlainObject(data[field_name])) {
+          value = data[field_name][req.headers['foxx-locale']]
+        } else {
+          value = data[field_name]
+        }
+        return field_name == '_key' ? doc._key : value
       })
       data['slug'] = _.kebabCase(slug)
     }
