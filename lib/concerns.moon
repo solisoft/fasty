@@ -116,7 +116,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        print("DATASET : #{dataset}")
         if dataset == nil
           dataset = 'pages'
           output ..= dynamic_page(
@@ -125,11 +124,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             params, global_data, history, false
           )
         else
-          output ..= dynamic_page(
-            db_name,
-            load_dataset_by_slug(db_name, item, dataset, params.lang),
-            params, global_data, history, false
-          )
+          item = load_dataset_by_slug(db_name, item, dataset, params.lang)
+          print(to_json(item))
+          output ..= dynamic_page(db_name,item,params, global_data, history, false)
 
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
