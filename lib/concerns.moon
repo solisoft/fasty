@@ -214,6 +214,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 -- dynamic_page : check all {{ .* }} and load layout
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
   html = to_json(data)
+  print(data)
   if data
     page_partial = load_partial_by_slug(db_name, 'page', 'partials')
     if uselayout
