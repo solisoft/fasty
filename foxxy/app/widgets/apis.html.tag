@@ -180,7 +180,7 @@
     ////////////////////////////////////////////////////////////////////////////
     install(e) {
       e.preventDefault()
-      var url = "/service/" + opts.api_id
+      var url = "/service/" + self.api.name
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "service installed")
           UIkit.notification({

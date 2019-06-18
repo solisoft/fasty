@@ -1672,7 +1672,7 @@ riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">a
 
     this.install = function(e) {
       e.preventDefault()
-      var url = "/service/" + opts.api_id
+      var url = "/service/" + self.api.name
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "service installed")
           UIkit.notification({
