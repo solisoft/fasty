@@ -44,6 +44,7 @@ const model = function() {
     model: [
       { r: true, c: "1-1", n: "name", t: "string", j: joi.string().regex((/^[a-z0-9\-]+$/)).required(), l: "Mount Point" },
       { r: true, c: "1-1", n: "manifest", t: "code:json", j: joi.string().required(), l: "Manifest.json" },
+      { r: true, c: "1-1", n: "package", t: "code:javascript", j: joi.string().required(), l: "Package.json" },
       { r: true, c: "1-1", n: "code", t: "code:javascript", j: joi.string().required(), l: "Main.js" }
     ],
     columns: [{ name: "name" }],
@@ -70,8 +71,6 @@ const model = function() {
         fields: [
           { r: true, c: "1-1", n: "api_id", t: "hidden", j: joi.string().required(), l: "Post ID" },
           { r: true, c: "1-1", n: "name", t: "string", j: joi.string().regex((/^[a-z0-9\-]+$/)).required(), l: "Name" },
-          { r: true, c: "1-1", n: "manifest", t: "code:javascript", j: joi.string().required(), l: "Manifest.json" },
-          { r: true, c: "1-1", n: "package", t: "code:javascript", j: joi.string().required(), l: "Package.json" },
           { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: joi.string().required(), l: "Code Javascript" },
         ],
         singular: "api_route",
