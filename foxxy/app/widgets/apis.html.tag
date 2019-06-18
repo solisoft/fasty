@@ -36,11 +36,13 @@
   <script>
     var self = this
     this.data = []
+    ////////////////////////////////////////////////////////////////////////////
     new_item(e) {
       e.preventDefault()
       riot.mount("#"+opts.id, "api_crud_new", opts)
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     this.loadPage = function(pageIndex) {
       common.get(url + "/cruds/" + opts.parent_name + "/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/page/"+pageIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
@@ -52,24 +54,28 @@
     }
     this.loadPage(1)
 
+    ////////////////////////////////////////////////////////////////////////////
     edit(e) {
       e.preventDefault()
       opts.element_id = e.item.row._key
       riot.mount("#"+opts.id, "api_crud_edit", opts)
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     nextPage(e) {
       e.preventDefault()
       self.page += 1
       self.loadPage(self.page + 1)
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     previousPage(e) {
       e.preventDefault()
       self.page -= 1
       self.loadPage(self.page + 1)
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     destroy_object(e) {
       e.preventDefault()
       UIkit.modal.confirm("Are you sure?").then(function() {
@@ -87,22 +93,26 @@
   </form>
 
   <script>
+    ////////////////////////////////////////////////////////////////////////////
     goback(e) {
       e.preventDefault()
       riot.mount("#"+opts.id, "api_crud_index", opts)
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     save_form(e) {
       e.preventDefault()
       common.saveForm(opts.id+'_crud_api', "cruds/sub/"+opts.parent_name+"/"+ opts.id+"/"+opts.element_id, "", opts)
     }
 
     var self = this;
+
     common.get(url + "/cruds/" + opts.id + "/" + opts.element_id, function(d) {
       self.api = d.data
-
       common.buildForm(self.api, opts.fields, '#'+opts.id+'_crud_api')
     })
+
+    ////////////////////////////////////////////////////////////////////////////
     this.on('updated', function() {
       $(".select_list").select2()
       $(".select_mlist").select2()
@@ -121,15 +131,18 @@
     this.crud = {}
     this.crud[opts.key] = opts.parent_id
 
+    ////////////////////////////////////////////////////////////////////////////
     goback(e) {
       e.preventDefault()
       riot.mount("#"+opts.id, "api_crud_index", opts)
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     this.on('mount', function() {
       common.buildForm(self.crud, opts.fields, '#'+opts.id+'_crud_api')
     })
 
+    ////////////////////////////////////////////////////////////////////////////
     save_form(e) {
       e.preventDefault()
       common.saveForm(opts.id+'_crud_api', "cruds/sub/apis/"+ opts.id, "", opts)
@@ -151,7 +164,8 @@
         <h3>Editing api</h3>
         <form onsubmit="{ save_form }" class="uk-form" id="form_api">
         </form>
-        <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
+        <a onclick={install} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-upload"></i> Install</a>
+
       </li>
       <li each={ i, k in sub_models }>
         <div id={ k } class="crud"></div>
@@ -166,26 +180,33 @@
     var self = this
     self.can_access = false
     self.loaded = false
+    this.settings   = {}
 
+    common.get(url + "/settings", function(settings) { self.settings = settings.data })
+
+    ////////////////////////////////////////////////////////////////////////////
     save_form(e) {
       e.preventDefault()
-      common.saveForm("form_api", "cruds/apis",opts.api_id)
+      common.saveForm("form_api", "cruds/apis", opts.api_id)
     }
 
-    duplicate(e) {
-      UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/apis/" + self.api._key + "/duplicate", function(data) {
-          route('/apis/' + data._key + '/edit')
+    ////////////////////////////////////////////////////////////////////////////
+    install(e) {
+      e.preventDefault()
+      var url = "/service/" + self.api.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "service installed")
           UIkit.notification({
-            message : 'Successfully duplicated!',
+            message : 'Endpoint Deployed Successfully!',
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
           });
-        })
-      }, function() {})
+      })
+      return false
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     common.get(url + "/cruds/apis/" + opts.api_id, function(d) {
       self.api = d.data
       self.fields = d.fields
@@ -213,6 +234,7 @@
       })
     })
 
+    ////////////////////////////////////////////////////////////////////////////
     this.on('updated', function() {
       $(".select_list").select2()
       $(".select_mlist").select2()
@@ -234,11 +256,13 @@
     self.can_access = false
     self.loaded = false
 
+    ////////////////////////////////////////////////////////////////////////////
     save_form(e) {
       e.preventDefault()
       common.saveForm("form_new_api", "cruds/apis")
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     common.get(url + "/cruds/apis/fields", function(d) {
       common.get(url + "/auth/whoami", function(me) {
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
@@ -253,6 +277,7 @@
       })
     })
 
+    ////////////////////////////////////////////////////////////////////////////
     this.on('updated', function() {
       $(".select_list").select2()
       $(".select_mlist").select2()
@@ -344,6 +369,7 @@
       self.settings = settings.data
     })
 
+    ////////////////////////////////////////////////////////////////////////////
     this.loadPage = function(pageIndex) {
       self.loaded = false
       common.get(url + "/cruds/apis/page/"+pageIndex+"/"+this.perpage, function(d) {

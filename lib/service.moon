@@ -32,6 +32,7 @@ install_service = (sub_domain, name)->
   api = aql("db_#{sub_domain}", request, { 'name': name })[1]
 
   write_content("#{path}/APP/main.js", api.api.code)
+  write_content("#{path}/APP/package.json", api.api.package)
   write_content("#{path}/APP/manifest.json", api.api.manifest)
 
   for k, item in pairs api.routes
@@ -44,6 +45,7 @@ install_service = (sub_domain, name)->
     write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
 
   -- Install the service
+  os.execute("cd install_service/#{sub_domain}/#{name}/APP && /usr/bin/npm i")
   os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
   os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
 

@@ -1568,6 +1568,7 @@ $(function () {
 riot.tag2('api_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{page > 0}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
     var self = this
     this.data = []
+
     this.new_item = function(e) {
       e.preventDefault()
       riot.mount("#"+opts.id, "api_crud_new", opts)
@@ -1613,6 +1614,7 @@ riot.tag2('api_crud_index', '<a href="#" class="uk-button uk-button-small uk-but
 });
 
 riot.tag2('api_crud_edit', '<a href="#" class="uk-button uk-button-link" onclick="{goback}">Back to {opts.id}</a> <form onsubmit="{save_form}" class="uk-form" id="{opts.id}_crud_api"> </form>', '', '', function(opts) {
+
     this.goback = function(e) {
       e.preventDefault()
       riot.mount("#"+opts.id, "api_crud_index", opts)
@@ -1624,11 +1626,12 @@ riot.tag2('api_crud_edit', '<a href="#" class="uk-button uk-button-link" onclick
     }.bind(this)
 
     var self = this;
+
     common.get(url + "/cruds/" + opts.id + "/" + opts.element_id, function(d) {
       self.api = d.data
-
       common.buildForm(self.api, opts.fields, '#'+opts.id+'_crud_api')
     })
+
     this.on('updated', function() {
       $(".select_list").select2()
       $(".select_mlist").select2()
@@ -1657,28 +1660,32 @@ riot.tag2('api_crud_new', '<a href="#" class="uk-button uk-button-link" onclick=
 
 });
 
-riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">apis</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing api</h3> <form onsubmit="{save_form}" class="uk-form" id="form_api"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">apis</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing api</h3> <form onsubmit="{save_form}" class="uk-form" id="form_api"> </form> <a onclick="{install}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-upload"></i> Install</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    this.settings   = {}
+
+    common.get(url + "/settings", function(settings) { self.settings = settings.data })
 
     this.save_form = function(e) {
       e.preventDefault()
-      common.saveForm("form_api", "cruds/apis",opts.api_id)
+      common.saveForm("form_api", "cruds/apis", opts.api_id)
     }.bind(this)
 
-    this.duplicate = function(e) {
-      UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/apis/" + self.api._key + "/duplicate", function(data) {
-          route('/apis/' + data._key + '/edit')
+    this.install = function(e) {
+      e.preventDefault()
+      var url = "/service/" + self.api.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "service installed")
           UIkit.notification({
-            message : 'Successfully duplicated!',
+            message : 'Endpoint Deployed Successfully!',
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
           });
-        })
-      }, function() {})
+      })
+      return false
     }.bind(this)
 
     common.get(url + "/cruds/apis/" + opts.api_id, function(d) {
