@@ -167,17 +167,20 @@
     var self = this
     self.can_access = false
     self.loaded = false
+    this.settings   = {}
+
+    common.get(url + "/settings", function(settings) { self.settings = settings.data })
 
     ////////////////////////////////////////////////////////////////////////////
     save_form(e) {
       e.preventDefault()
-      common.saveForm("form_api", "cruds/apis",opts.api_id)
+      common.saveForm("form_api", "cruds/apis", opts.api_id)
     }
 
     ////////////////////////////////////////////////////////////////////////////
     install(e) {
       e.preventDefault()
-      var url = "/service/" + e.item.row.name
+      var url = "/service/" + opts.api_id
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "service installed")
           UIkit.notification({

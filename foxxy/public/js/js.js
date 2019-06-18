@@ -1661,15 +1661,18 @@ riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">a
     var self = this
     self.can_access = false
     self.loaded = false
+    this.settings   = {}
+
+    common.get(url + "/settings", function(settings) { self.settings = settings.data })
 
     this.save_form = function(e) {
       e.preventDefault()
-      common.saveForm("form_api", "cruds/apis",opts.api_id)
+      common.saveForm("form_api", "cruds/apis", opts.api_id)
     }.bind(this)
 
     this.install = function(e) {
       e.preventDefault()
-      var url = "/service/" + e.item.row.name
+      var url = "/service/" + opts.api_id
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "service installed")
           UIkit.notification({
