@@ -121,9 +121,13 @@ do
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
       load_settings(self, sub_domain)
-      return aql("db_" .. tostring(sub_domain), "FOR doc in components FILTER doc._key == @key RETURN doc.html", {
-        ["key"] = tostring(self.params.key)
-      })[1]
+      local html = ''
+      for i, key in pairs(stringy.split(self.params.key, '-')) do
+        html = html .. (aql("db_" .. tostring(sub_domain), "FOR doc in components FILTER doc._key == @key RETURN doc.html", {
+          ["key"] = tostring(key)
+        })[1] .. "\n")
+      end
+      return html
     end,
     [{
       page_no_lang = '/:all/:slug'

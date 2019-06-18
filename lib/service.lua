@@ -40,6 +40,7 @@ install_service = function(sub_domain, name)
     ['name'] = name
   })[1]
   write_content(tostring(path) .. "/APP/main.js", api.api.code)
+  write_content(tostring(path) .. "/APP/package.json", api.api.package)
   write_content(tostring(path) .. "/APP/manifest.json", api.api.manifest)
   for k, item in pairs(api.routes) do
     write_content(tostring(path) .. "/APP/routes/" .. tostring(item.name) .. ".js", item.javascript)
@@ -50,6 +51,7 @@ install_service = function(sub_domain, name)
   for k, item in pairs(api.tests) do
     write_content(tostring(path) .. "/APP/tests/" .. tostring(item.name) .. ".js", item.javascript)
   end
+  os.execute("cd install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. "/APP && /usr/bin/npm i")
   os.execute("cd install_service/" .. tostring(sub_domain) .. " && zip -rq " .. tostring(name) .. ".zip " .. tostring(name) .. "/")
   os.execute("rm --recursive install_service/" .. tostring(sub_domain) .. "/" .. tostring(name))
   return foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))

@@ -198,19 +198,28 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           output = etlua2html(db_data, partial, params.lang)
           output = dynamic_replace(db_name, output, global_data, history, params)
 
-    -- {{ riot | slug | <mount> }}
+    -- {{ riot | slug(#slug2...) | <mount> }}
     -- e.g. {{ riot | demo | mount }}
+    -- e.g. {{ riot | demo#demo2 }}
     if action == 'riot'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        component = aql(
-          db_name,
-          "FOR doc in components FILTER doc.slug == @slug RETURN doc",
-          { "slug": item }
-        )[1]
-        output ..= "<script src='/#{params.lang}/#{component._key}/component/#{component._rev}.tag' type='riot/tag'></script>"
+        ids = {}
+        revisions = {}
+        names = {}
+        for i, k in pairs(stringy.split(item, '#'))
+          component = aql(
+            db_name,
+            "FOR doc in components FILTER doc.slug == @slug RETURN doc",
+            { "slug": k }
+          )[1]
+          table.insert(ids, component._key)
+          table.insert(revisions, component._rev)
+          table.insert(names, k)
+        output ..= "<script src='/#{params.lang}/#{table.concat(ids, "-")}/component/#{table.concat(revisions, "-")}.tag' type='riot/tag'></script>"
+
         if dataset == "mount"
-          output ..= "<script>window.onload = function() { riot.mount('#{item}') }</script>"
+          output ..= "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(names, ", ")}') })</script>"
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}

@@ -253,12 +253,20 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'riot' then
       if history[widget] == nil then
         history[widget] = true
-        local component = aql(db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", {
-          ["slug"] = item
-        })[1]
-        output = output .. "<script src='/" .. tostring(params.lang) .. "/" .. tostring(component._key) .. "/component/" .. tostring(component._rev) .. ".tag' type='riot/tag'></script>"
+        local ids = { }
+        local revisions = { }
+        local names = { }
+        for i, k in pairs(stringy.split(item, '#')) do
+          local component = aql(db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", {
+            ["slug"] = k
+          })[1]
+          table.insert(ids, component._key)
+          table.insert(revisions, component._rev)
+          table.insert(names, k)
+        end
+        output = output .. "<script src='/" .. tostring(params.lang) .. "/" .. tostring(table.concat(ids, "-")) .. "/component/" .. tostring(table.concat(revisions, "-")) .. ".tag' type='riot/tag'></script>"
         if dataset == "mount" then
-          output = output .. "<script>window.onload = function() { riot.mount('" .. tostring(item) .. "') }</script>"
+          output = output .. "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('" .. tostring(table.concat(names, ", ")) .. "') })</script>"
         end
       end
     end

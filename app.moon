@@ -106,10 +106,13 @@ class extends lapis.Application
   [component: '/:lang/:key/component/:rev.tag']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
     load_settings(@, sub_domain)
-    aql(
-      "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
-      { "key": "#{@params.key}" }
-    )[1]
+    html = ''
+    for i, key in pairs(stringy.split(@params.key, '-'))
+      html ..= aql(
+        "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
+        { "key": "#{key}" }
+      )[1] .. "\n"
+    html
   ------------------------------------------------------------------------------
   -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>
