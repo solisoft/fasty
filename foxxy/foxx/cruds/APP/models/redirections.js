@@ -38,23 +38,27 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 // { r: true, c: "1-1", n: "json", t: "code:json", j: joi.any(), l: "Some Json" },
 // { r: true, c: "1-1", n: "content", t: "html", j: joi.any(), l: "Content Editor" },
 
-const model = function() {
+const model = function () {
+  var layouts = db._query(`FOR doc in layouts RETURN [doc._id, doc.name]`).toArray()
+  var spas = db._query(`FOR doc in spas RETURN [doc._id, doc.name]`).toArray()
   return {
     model: [
-      { r: true, c: "1-1", n: "name", t: "string", j: joi.string().required(), l: "Name" },
-      { r: true, c: "1-1", n: "spa", t: "string", j: joi.any(), l: "SPA" },
+      { r: true, c: "1-2", n: "name", t: "string", j: joi.string().required(), l: "Name" },
+      { r: false, c: "1-2", n: "route", t: "string", j: joi.string().required(), l: "Route" },
+      { r: true, c: "1-2", n: "spa_id", t: "list", j: joi.string().required(), l: "Single Page Application", d: spas },
+      { r: false, c: "1-2", n: "layout_id", t: "list", j: joi.string().required(), l: "Layout", d: layouts }
     ],
     roles: {
       read: ['developer', 'admin'],
       write: ['developer', 'admin']
     },
-    //columns: [
+    columns: [{ name: "name" }],
     //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
     //    values: { true: "online", false: "offline" },
     //    truncate: 20, uppercase: true, lowercase: true
     //  }, ...
     //],
-    //slug: ["title"],
+    slug: ["name"],
     //sort: "SORT doc.order ASC",
     //search: ["title", "barcode", "desc"],
     //includes: {
