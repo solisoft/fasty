@@ -41,8 +41,7 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 const model = function () {
   return {
     model: [
-      { r: true, c: "1-1", n: "name", t: "string", j: joi.string().required(), l: "Name" },
-      { r: true, c: "1-2", n: "slug", t: "string", j: joi.string().required(), l: "Slug" },
+      { r: true, c: "1-2", n: "name", t: "string", j: joi.string().required(), l: "Name" },
       { r: true, c: "1-1", n: "html", t: "code:html", j: joi.any(), l: "HTML/JS" },
       { r: true, c: "1-1", n: "js", t: "code:javascript", j: joi.any(), l: "Router (JS)" },
     ],
@@ -60,7 +59,7 @@ const model = function () {
     //    truncate: 20, uppercase: true, lowercase: true
     //  }, ...
     //],
-    //slug: ["title"],
+    slug: ["name"],
     //sort: "SORT doc.order ASC",
     //search: ["title", "barcode", "desc"],
     //includes: {
