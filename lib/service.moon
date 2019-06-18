@@ -32,6 +32,7 @@ install_service = (sub_domain, name)->
   api = aql("db_#{sub_domain}", request, { 'name': name })[1]
 
   write_content("#{path}/APP/main.js", api.api.code)
+  write_content("#{path}/APP/package.json", api.api.package)
   write_content("#{path}/APP/manifest.json", api.api.manifest)
 
   for k, item in pairs api.routes
