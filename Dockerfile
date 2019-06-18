@@ -6,8 +6,9 @@ RUN apt-get -qq update && apt-get install -qqy wget gnupg2 && wget -qO - https:/
     && apt-get -y install software-properties-common \
     && add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
 
-RUN apt-get -qq update && apt-get -qqy install  zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl make curl git-core curl luarocks libsass-dev openresty
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 
+RUN apt-get -qq update && apt-get -qqy install  zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl make curl git-core curl luarocks libsass-dev openresty nodejs
 RUN luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis $LAPIS_VERSION
 RUN luarocks install moonscript
 RUN luarocks install lapis-console
