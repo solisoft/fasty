@@ -33,7 +33,7 @@ install_service = (sub_domain, name)->
 
   write_content("#{path}/APP/main.js", api.api.code)
   write_content("#{path}/APP/package.json", api.api.package)
-  write_content("#{path}/APP/package-lock.json", api.api.package-lock)
+  write_content("#{path}/APP/package-lock.json", api.api.packagelock)
   write_content("#{path}/APP/manifest.json", api.api.manifest)
 
   for k, item in pairs api.routes

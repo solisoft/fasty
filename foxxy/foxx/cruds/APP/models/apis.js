@@ -46,7 +46,7 @@ const model = function() {
       { r: true, c: "1-1", n: "manifest", t: "code:json", j: joi.string().required(), l: "Manifest.json" },
       { r: true, c: "1-1", n: "code", t: "code:javascript", j: joi.string().required(), l: "Main.js" },
       { r: true, c: "1-2", n: "package", t: "code:javascript", j: joi.string().required(), l: "Package.json" },
-      { r: false, c: "1-2", n: "package-lock", t: "code:javascript", j: joi.string().required(), l: "Package-lock.json" }
+      { r: false, c: "1-2", n: "packagelock", t: "code:javascript", j: joi.string().required(), l: "Package-lock.json" }
     ],
     columns: [{ name: "name" }],
     //columns: [
