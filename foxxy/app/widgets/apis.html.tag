@@ -151,7 +151,8 @@
         <h3>Editing api</h3>
         <form onsubmit="{ save_form }" class="uk-form" id="form_api">
         </form>
-        <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
+        <a onclick={install} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-upload"></i> Install</a>
+
       </li>
       <li each={ i, k in sub_models }>
         <div id={ k } class="crud"></div>
@@ -167,25 +168,29 @@
     self.can_access = false
     self.loaded = false
 
+    ////////////////////////////////////////////////////////////////////////////
     save_form(e) {
       e.preventDefault()
       common.saveForm("form_api", "cruds/apis",opts.api_id)
     }
 
-    duplicate(e) {
-      UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/apis/" + self.api._key + "/duplicate", function(data) {
-          route('/apis/' + data._key + '/edit')
+    ////////////////////////////////////////////////////////////////////////////
+    install(e) {
+      e.preventDefault()
+      var url = "/service/" + e.item.row.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "service installed")
           UIkit.notification({
-            message : 'Successfully duplicated!',
+            message : 'Endpoint Deployed Successfully!',
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
           });
-        })
-      }, function() {})
+      })
+      return false
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     common.get(url + "/cruds/apis/" + opts.api_id, function(d) {
       self.api = d.data
       self.fields = d.fields

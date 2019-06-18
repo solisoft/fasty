@@ -1657,7 +1657,7 @@ riot.tag2('api_crud_new', '<a href="#" class="uk-button uk-button-link" onclick=
 
 });
 
-riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">apis</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing api</h3> <form onsubmit="{save_form}" class="uk-form" id="form_api"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">apis</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing api</h3> <form onsubmit="{save_form}" class="uk-form" id="form_api"> </form> <a onclick="{install}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-upload"></i> Install</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -1667,18 +1667,19 @@ riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">a
       common.saveForm("form_api", "cruds/apis",opts.api_id)
     }.bind(this)
 
-    this.duplicate = function(e) {
-      UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/apis/" + self.api._key + "/duplicate", function(data) {
-          route('/apis/' + data._key + '/edit')
+    this.install = function(e) {
+      e.preventDefault()
+      var url = "/service/" + e.item.row.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "service installed")
           UIkit.notification({
-            message : 'Successfully duplicated!',
+            message : 'Endpoint Deployed Successfully!',
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
           });
-        })
-      }, function() {})
+      })
+      return false
     }.bind(this)
 
     common.get(url + "/cruds/apis/" + opts.api_id, function(d) {
