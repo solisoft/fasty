@@ -204,22 +204,19 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'riot'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        ids = {}
-        revisions = {}
-        names = {}
+        data = { ids: {}, revisions: {}, names: {} }
         for i, k in pairs(stringy.split(item, '#'))
           component = aql(
-            db_name,
-            "FOR doc in components FILTER doc.slug == @slug RETURN doc",
-            { "slug": k }
+            db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", { "slug": k }
           )[1]
-          table.insert(ids, component._key)
-          table.insert(revisions, component._rev)
-          table.insert(names, k)
-        output ..= "<script src='/#{params.lang}/#{table.concat(ids, "-")}/component/#{table.concat(revisions, "-")}.tag' type='riot/tag'></script>"
+          table.insert(data.ids, component._key)
+          table.insert(data.revisions, component._rev)
+          table.insert(data.names, k)
+
+        output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
 
         if dataset == "mount"
-          output ..= "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(names, ", ")}') })</script>"
+          output ..= "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') })</script>"
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}

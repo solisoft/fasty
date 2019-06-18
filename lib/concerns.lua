@@ -253,20 +253,22 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'riot' then
       if history[widget] == nil then
         history[widget] = true
-        local ids = { }
-        local revisions = { }
-        local names = { }
+        local data = {
+          ids = { },
+          revisions = { },
+          names = { }
+        }
         for i, k in pairs(stringy.split(item, '#')) do
           local component = aql(db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", {
             ["slug"] = k
           })[1]
-          table.insert(ids, component._key)
-          table.insert(revisions, component._rev)
-          table.insert(names, k)
+          table.insert(data.ids, component._key)
+          table.insert(data.revisions, component._rev)
+          table.insert(data.names, k)
         end
-        output = output .. "<script src='/" .. tostring(params.lang) .. "/" .. tostring(table.concat(ids, "-")) .. "/component/" .. tostring(table.concat(revisions, "-")) .. ".tag' type='riot/tag'></script>"
+        output = output .. "<script src='/" .. tostring(params.lang) .. "/" .. tostring(table.concat(data.ids, "-")) .. "/component/" .. tostring(table.concat(data.revisions, "-")) .. ".tag' type='riot/tag'></script>"
         if dataset == "mount" then
-          output = output .. "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('" .. tostring(table.concat(names, ", ")) .. "') })</script>"
+          output = output .. "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('" .. tostring(table.concat(data.names, ", ")) .. "') })</script>"
         end
       end
     end
