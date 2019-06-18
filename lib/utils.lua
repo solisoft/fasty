@@ -44,7 +44,6 @@ check_valid_lang = function(langs, lang)
   if allowed_lang[lang] == nil then
     lang = stringy.split(langs, ',')[1]
   end
-  print("LANG " .. lang)
   return lang
 end
 local map

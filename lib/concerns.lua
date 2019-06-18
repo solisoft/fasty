@@ -96,7 +96,6 @@ load_dataset_by_slug = function(db_name, slug, object, lang, uselayout)
   end
   local request = "FOR item IN datasets FILTER item.type == '" .. tostring(object) .. "' FILTER item.slug == @slug "
   request = request .. 'RETURN { item }'
-  print(request)
   local page = aql(db_name, request, {
     slug = slug
   })[1]

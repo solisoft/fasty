@@ -174,52 +174,29 @@ var create_edge_collection = function (collection) {
   if (!db._collection(collection)) { db._createEdgeCollection(collection); }
 }
 
-var create_graph = function (graphName) {
+var create_graph = function (graphName, edge, from, to) {
   if (!Graph._exists(graphName)) {
     Graph._create(graphName,
-      [Graph._relation('folder_path', 'folders', 'folders')]
+      [Graph._relation(edge, from, to)]
     );
   }
 }
 
-
 create_collection('layouts');
-
 create_collection('pages');
-
 create_collection('partials');
-
 create_collection('components');
-
 create_collection('spas');
-
 create_collection('redirections');
-
 create_collection('trads');
-
 create_collection('datatypes');
-
 create_collection('users');
-
-create_collection('users');
-
-create_collection('users');
-
-create_collection('users');
-
 create_collection('aqls');
-
-create_collection('aqls');
-
 create_collection('helpers');
-
-create_collection('helpers');
-
 create_collection('apis');
 create_collection('api_routes');
 create_collection('api_scripts');
 create_collection('api_tests');
-
 create_collection('folders');
 create_collection('revisions');
 create_collection('publications');
@@ -228,6 +205,6 @@ db._collection('revisions').ensureIndex({ type: 'hash', fields: ['object_id'] })
 db._collection('publications').ensureIndex({ type: 'hash', fields: ['object_id'] });
 
 create_edge_collection('folder_path')
-create_graph('folderGraph')
+create_graph('folderGraph', 'folder_path', 'folders', 'folders')
 /*@{{setup}}*/
 
