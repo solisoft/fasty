@@ -218,13 +218,13 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         if dataset == "mount"
           output ..= "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') })</script>"
 
-    -- {{ spa | slug }}
+    -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
     if action == 'spa'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
         spa = aql(
-          db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", { "slug": k }
+          db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", { "slug": item }
         )[1]
         output = spa.html
         output ..= "<script>#{spa.js}</script>"
