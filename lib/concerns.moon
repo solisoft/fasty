@@ -259,7 +259,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ aql | activate_account }}
     if action == 'aql'
       aql_request = aql(
-        db_name, "FOR a in aqls FILTER doc.slug == @slug RETURN a", { "slug": item }
+        db_name, "FOR a in aqls FILTER a.slug == @slug RETURN a", { "slug": item }
       )[1]
       if aql_request
         aql(db_name, aql_request.aql, prepare_bindvars(splat))
