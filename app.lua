@@ -34,10 +34,10 @@ do
   local _obj_0 = require('lapis.application')
   capture_errors, yield_error, respond_to = _obj_0.capture_errors, _obj_0.yield_error, _obj_0.respond_to
 end
-local dynamic_replace, dynamic_page, load_page_by_slug
+local dynamic_replace, dynamic_page, load_page_by_slug, load_redirection
 do
   local _obj_0 = require('lib.concerns')
-  dynamic_replace, dynamic_page, load_page_by_slug = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.load_page_by_slug
+  dynamic_replace, dynamic_page, load_page_by_slug, load_redirection = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.load_page_by_slug, _obj_0.load_redirection
 end
 local jwt = { }
 local global_data = { }
@@ -155,6 +155,7 @@ do
       page = '/:lang/:all/:slug(/*)'
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+      local dbname = "db_" .. tostring(sub_domain)
       if no_db[sub_domain] then
         return {
           redirect_to = '/need_a_db'
@@ -163,8 +164,8 @@ do
         load_settings(self, sub_domain)
         self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
         self.session.lang = self.params.lang
-        local html = dynamic_page("db_" .. tostring(sub_domain), load_page_by_slug("db_" .. tostring(sub_domain), self.params.slug, 'pages', self.params.lang), self.params, global_data)
-        html = dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params)
+        local html = dynamic_page(dbname, load_page_by_slug(dbname, self.params.slug, self.params.lang), self.params, global_data)
+        html = dynamic_replace(dbname, html, global_data, { }, self.params)
         basic_auth(self, settings[sub_domain])
         if is_auth(self, settings[sub_domain]) then
           if html ~= 'null' then

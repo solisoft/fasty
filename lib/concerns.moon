@@ -163,7 +163,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'partial'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        partial = load_partial_by_slug(db_name, item, 'partials', false)
+        partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial
           splat = {}
           splat = splat_to_table(params.splat) if params.splat

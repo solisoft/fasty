@@ -61,19 +61,19 @@ etlua2html = function(json, partial, lang)
     ['lang'] = lang
   })
 end
-local load_partial_by_slug
-load_partial_by_slug = function(db_name, slug, object)
+local load_document_by_slug
+load_document_by_slug = function(db_name, slug, object)
   local request = "FOR item IN " .. tostring(object) .. " FILTER item.slug == @slug RETURN { item }"
   return aql(db_name, request, {
     slug = slug
   })[1]
 end
 local load_page_by_slug
-load_page_by_slug = function(db_name, slug, object, lang, uselayout)
+load_page_by_slug = function(db_name, slug, lang, uselayout)
   if uselayout == nil then
     uselayout = true
   end
-  local request = "FOR item IN " .. tostring(object) .. " FILTER item.slug[@lang] == @slug "
+  local request = "FOR item IN pages FILTER item.slug[@lang] == @slug "
   if uselayout == true then
     request = request .. 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
   else
@@ -83,7 +83,7 @@ load_page_by_slug = function(db_name, slug, object, lang, uselayout)
     slug = slug,
     lang = lang
   })[1]
-  local publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
+  local publication = document_get(db_name, 'publications/pages_' .. page.item._key)
   if publication.code ~= 404 then
     page.item = publication.data
   end
@@ -115,7 +115,7 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
   end
   local html = to_json(data)
   if data then
-    local page_partial = load_partial_by_slug(db_name, 'page', 'partials')
+    local page_partial = load_document_by_slug(db_name, 'page', 'partials')
     if uselayout then
       html = data.layout.html:gsub('@yield', escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang)))
       html = prepare_headers(html, data, params)
@@ -124,6 +124,13 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
     end
   end
   return html
+end
+local load_redirection
+load_redirection = function(db_name, slug)
+  local request = "\n  FOR r IN redirections\n  FILTER r.slug == @slug\n  LET spa = (FOR s IN spas FILTER s._key == r.spa_key RETURN s)\n  LET layout = (FOR l IN layouts FILTER l._key == r.layout_key RETURN l)\n  RETURN { item: { html: CONCAT(r.html, r.js)}, spa, layout }\n  "
+  return aql(db_name, request, {
+    slug = slug
+  })[1]
 end
 local dynamic_replace
 dynamic_replace = function(db_name, html, global_data, history, params)
@@ -192,7 +199,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'partial' then
       if history[widget] == nil then
         history[widget] = true
-        local partial = load_partial_by_slug(db_name, item, 'partials', false)
+        local partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial then
           local splat = { }
           if params.splat then
@@ -272,6 +279,17 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         end
       end
     end
+    if action == 'spa' then
+      if history[widget] == nil then
+        history[widget] = true
+        local spa = aql(db_name, "FOR doc in spas FILTER doc.slug == @slug RETURN doc", {
+          ["slug"] = item
+        })[1]
+        output = spa.html
+        output = output .. "<script>" .. tostring(spa.js) .. "</script>"
+        output = dynamic_replace(db_name, output, global_data, history, params)
+      end
+    end
     if action == 'tr' then
       output = "Missing translation <em style='color:red'>" .. tostring(item) .. "</em>"
       if not (translations[item]) then
@@ -295,5 +313,6 @@ return {
   load_page_by_slug = load_page_by_slug,
   dynamic_page = dynamic_page,
   escape_pattern = escape_pattern,
-  dynamic_replace = dynamic_replace
+  dynamic_replace = dynamic_replace,
+  load_redirection = load_redirection
 }
