@@ -138,16 +138,16 @@ class extends lapis.Application
       @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
       @session.lang = @params.lang
 
-      redirection = load_redirection(dbname, @params.slug)
-      html = ''
-      if redirection == nil
+      --redirection = load_redirection(dbname, @params.slug)
+      --html = ''
+      --if redirection == nil
         html = dynamic_page(
           dbname,
           load_page_by_slug(dbname, @params.slug, 'pages', @params.lang),
           @params, global_data
         )
-      else
-        html = "{{ spa | #{redirection.spa_name} }}"
+      --else
+      --  html = "{{ spa | #{redirection.spa_name} }}"
 
       html = dynamic_replace(dbname, html, global_data, {}, @params)
 
