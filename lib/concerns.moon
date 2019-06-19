@@ -262,6 +262,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         db_name, "FOR a in aqls FILTER a.slug == @slug RETURN a", { "slug": item }
       )[1]
       if aql_request
+        print(to_json(aql_request))
+        print(to_json(prepare_bindvars(splat)))
         aql(db_name, aql_request.aql, prepare_bindvars(splat))
 
     -- {{ tr | slug }}
