@@ -101,10 +101,19 @@ load_redirection = (db_name, params) ->
   else
     nil
 --------------------------------------------------------------------------------
+prepare_bindvars = (splat) ->
+  bindvar = {}
+  for k, v in pairs(splat) do
+    v = tonumber(v) if v\match('^%d+$')
+    bindvar[k] = v if args['aql']\find('@' .. k)
+  bindvar
+--------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
   translations = global_data.trads
   aqls = global_data.aqls
   helpers = global_data.helpers
+  splat = {}
+  splat = splat_to_table(params.splat) if params.splat
 
   -- {{ lang }}
   html = html\gsub('{{ lang }}', params.lang)
@@ -176,8 +185,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         history[widget] = true
         partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial
-          splat = {}
-          splat = splat_to_table(params.splat) if params.splat
           db_data = {}
           if dataset == 'arango' then
             -- check if it's a stored procedure
@@ -188,10 +195,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               )[1]
 
             -- prepare the bindvar variable with variable found in the request
-            bindvar = {}
-            for k, v in pairs(splat) do
-              v = tonumber(v) if v\match('^%d+$')
-              bindvar[k] = v if args['aql']\find('@' .. k)
+            bindvar = prepare_bindvars(splat)
 
             -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
             for condition in string.gmatch(args['aql'], '__IF (%w-)__') do
@@ -250,6 +254,15 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         output = spa.html
         output ..= "<script>#{spa.js}</script>"
         output = dynamic_replace(db_name, output, global_data, history, params)
+
+    -- {{ aql | slug }} -- Run an AQL request
+    -- e.g. {{ aql | activate_account }}
+    if action == 'aql'
+      aql_request = aql(
+        db_name, "FOR a in aqls FILTER doc.slug == @slug RETURN doc", { "slug": item }
+      )[1]
+      if aql_request
+        aql(db_name, aql_request.aql, prepare_bindvars(splat))
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}

@@ -142,11 +142,28 @@ load_redirection = function(db_name, params)
     return nil
   end
 end
+local prepare_bindvars
+prepare_bindvars = function(splat)
+  local bindvar = { }
+  for k, v in pairs(splat) do
+    if v:match('^%d+$') then
+      v = tonumber(v)
+    end
+    if args['aql']:find('@' .. k) then
+      bindvar[k] = v
+    end
+  end
+  return bindvar
+end
 local dynamic_replace
 dynamic_replace = function(db_name, html, global_data, history, params)
   local translations = global_data.trads
   local aqls = global_data.aqls
   local helpers = global_data.helpers
+  local splat = { }
+  if params.splat then
+    splat = splat_to_table(params.splat)
+  end
   html = html:gsub('{{ lang }}', params.lang)
   if helpers then
     for widget in string.gmatch(html, '{{.-}}') do
@@ -211,10 +228,6 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         history[widget] = true
         local partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial then
-          local splat = { }
-          if params.splat then
-            splat = splat_to_table(params.splat)
-          end
           local db_data = { }
           if dataset == 'arango' then
             if args['req'] then
@@ -222,15 +235,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
                 slug = args['req']
               })[1]
             end
-            local bindvar = { }
-            for k, v in pairs(splat) do
-              if v:match('^%d+$') then
-                v = tonumber(v)
-              end
-              if args['aql']:find('@' .. k) then
-                bindvar[k] = v
-              end
-            end
+            local bindvar = prepare_bindvars(splat)
             for condition in string.gmatch(args['aql'], '__IF (%w-)__') do
               if not (bindvar[condition]) then
                 args['aql'] = args['aql']:gsub('__IF ' .. condition .. '__.-__END ' .. condition .. '__', '')
@@ -298,6 +303,14 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         output = spa.html
         output = output .. "<script>" .. tostring(spa.js) .. "</script>"
         output = dynamic_replace(db_name, output, global_data, history, params)
+      end
+    end
+    if action == 'aql' then
+      local aql_request = aql(db_name, "FOR a in aqls FILTER doc.slug == @slug RETURN doc", {
+        ["slug"] = item
+      })[1]
+      if aql_request then
+        aql(db_name, aql_request.aql, prepare_bindvars(splat))
       end
     end
     if action == 'tr' then
