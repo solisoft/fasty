@@ -141,11 +141,11 @@ class extends lapis.Application
       --redirection = load_redirection(dbname, @params.slug)
       --html = ''
       --if redirection == nil
-        html = dynamic_page(
-          dbname,
-          load_page_by_slug(dbname, @params.slug, 'pages', @params.lang),
-          @params, global_data
-        )
+      html = dynamic_page(
+        dbname,
+        load_page_by_slug(dbname, @params.slug, 'pages', @params.lang),
+        @params, global_data
+      )
       --else
       --  html = "{{ spa | #{redirection.spa_name} }}"
 
