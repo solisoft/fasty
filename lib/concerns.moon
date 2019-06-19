@@ -224,7 +224,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
         spa = aql(
-          db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", { "slug": item }
+          db_name, "FOR doc in spas FILTER doc.slug == @slug RETURN doc", { "slug": item }
         )[1]
         output = spa.html
         output ..= "<script>#{spa.js}</script>"
