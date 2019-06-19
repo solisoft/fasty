@@ -101,11 +101,11 @@ load_redirection = (db_name, params) ->
   else
     nil
 --------------------------------------------------------------------------------
-prepare_bindvars = (splat, args) ->
+prepare_bindvars = (splat, aql_request) ->
   bindvar = {}
   for k, v in pairs(splat) do
     v = tonumber(v) if v\match('^%d+$')
-    bindvar[k] = v if args['aql']\find('@' .. k)
+    bindvar[k] = v if aql_request\find('@' .. k)
   bindvar
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
@@ -195,7 +195,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               )[1]
 
             -- prepare the bindvar variable with variable found in the request
-            bindvar = prepare_bindvars(splat, args)
+            bindvar = prepare_bindvars(splat, args['aql'])
 
             -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
             for condition in string.gmatch(args['aql'], '__IF (%w-)__') do
@@ -262,7 +262,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         db_name, "FOR a in aqls FILTER a.slug == @slug RETURN a", { "slug": item }
       )[1]
       if aql_request
-        aql(db_name, aql_request.aql, prepare_bindvars(splat, args))
+        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql))
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}
