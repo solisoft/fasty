@@ -4669,13 +4669,13 @@ riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a hr
 
     this.save_form = function(e) {
       e.preventDefault()
-      common.saveForm("form_page", "cruds/pages",opts.page_id)
+      common.saveForm("form_page", "cruds/redirections",opts.redirection_id)
     }.bind(this)
 
     this.duplicate = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/pages/" + self.page._key + "/duplicate", function(data) {
-          route('/pages/' + data._key + '/edit')
+        common.get(url + "/cruds/redirections/" + self.page._key + "/duplicate", function(data) {
+          route('/redirections/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
             status  : 'success',
@@ -4686,7 +4686,7 @@ riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a hr
       }, function() {})
     }.bind(this)
 
-    common.get(url + "/cruds/pages/" + opts.page_id, function(d) {
+    common.get(url + "/cruds/redirections/" + opts.redirection_id, function(d) {
       self.page = d.data
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
@@ -4698,7 +4698,7 @@ riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a hr
         self.loaded = true
         self.update()
         if(self.can_access)
-          common.buildForm(self.page, fields, '#form_page', 'pages', function() {
+          common.buildForm(self.page, fields, '#form_page', 'redirections', function() {
             $(".crud").each(function(i, c) {
             var id = $(c).attr("id")
             riot.mount("#" + id, "page_crud_index", { model: id,
@@ -4706,8 +4706,8 @@ riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a hr
               key: self.sub_models[id].key,
               singular: self.sub_models[id].singular,
               columns: self.sub_models[id].columns,
-              parent_id: opts.page_id,
-              parent_name: "pages" })
+              parent_id: opts.redirection_id,
+              parent_name: "redirections" })
           })
         })
       })

@@ -43,22 +43,20 @@ const model = function () {
   var spas = db._query(`FOR doc in spas RETURN [doc._id, doc.name]`).toArray()
   return {
     model: [
-      { r: true, c: "1-2", n: "name", t: "string", j: joi.string().required(), l: "Name" },
-      { r: false, c: "1-2", n: "route", t: "string", j: joi.string().required(), l: "Route" },
-      { r: true, c: "1-2", n: "spa_id", t: "list", j: joi.string().required(), l: "Single Page Application", d: spas },
-      { r: false, c: "1-2", n: "layout_id", t: "list", j: joi.string().required(), l: "Layout", d: layouts }
+      { r: true, c: "1-3", n: "route", t: "string", j: joi.string().required(), l: "Route" },
+      { r: false, c: "1-3", n: "spa_id", t: "list", j: joi.string().required(), l: "Single Page Application", d: spas },
+      { r: false, c: "1-3", n: "layout_id", t: "list", j: joi.string().required(), l: "Layout", d: layouts }
     ],
     roles: {
       read: ['developer', 'admin'],
       write: ['developer', 'admin']
     },
-    columns: [{ name: "name" }],
+    columns: [{ name: "route" }],
     //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
     //    values: { true: "online", false: "offline" },
     //    truncate: 20, uppercase: true, lowercase: true
     //  }, ...
     //],
-    slug: ["name"],
     //sort: "SORT doc.order ASC",
     //search: ["title", "barcode", "desc"],
     //includes: {

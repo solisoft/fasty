@@ -13,7 +13,8 @@ import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
-import dynamic_replace, dynamic_page, load_page_by_slug from require 'lib.concerns'
+import dynamic_replace, dynamic_page,
+       load_page_by_slug, load_redirection from require 'lib.concerns'
 
 jwt = {}
 global_data = {}
@@ -130,18 +131,25 @@ class extends lapis.Application
   -- page
   [page: '/:lang/:all/:slug(/*)']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
+    dbname = "db_#{sub_domain}"
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
       @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
       @session.lang = @params.lang
 
-      html = dynamic_page(
-        "db_#{sub_domain}",
-        load_page_by_slug("db_#{sub_domain}", @params.slug, 'pages', @params.lang),
-        @params, global_data
-      )
-      html = dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
+      redirection = load_redirection(dbname, @params.slug)
+      html = ''
+      if redirection == nil
+        html = dynamic_page(
+          dbname,
+          load_page_by_slug(dbname, @params.slug, 'pages', @params.lang),
+          @params, global_data
+        )
+      else
+        html = "{{ spa | #{redirection.spa_name} }}"
+
+      html = dynamic_replace(dbname, html, global_data, {}, @params)
 
       basic_auth(@, settings[sub_domain]) -- check if website need a basic auth
       if is_auth(@, settings[sub_domain])

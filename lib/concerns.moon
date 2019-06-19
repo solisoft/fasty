@@ -33,12 +33,12 @@ etlua2html = (json, partial, lang) ->
   template = etlua.compile(partial.item.html)
   template({ 'dataset': json, 'to_json': to_json, 'lang': lang })
 --------------------------------------------------------------------------------
-load_partial_by_slug = (db_name, slug, object)->
+load_document_by_slug = (db_name, slug, object)->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
   aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
-load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
-  request = "FOR item IN #{object} FILTER item.slug[@lang] == @slug "
+load_page_by_slug = (db_name, slug, lang, uselayout = true)->
+  request = "FOR item IN pages FILTER item.slug[@lang] == @slug "
   if uselayout == true
     request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
   else
@@ -46,7 +46,7 @@ load_page_by_slug = (db_name, slug, object, lang, uselayout = true)->
 
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
-  publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
+  publication = document_get(db_name, 'publications/pages_' .. page.item._key)
   if publication.code ~= 404
     page.item = publication.data
 
@@ -67,7 +67,7 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
   html = to_json(data)
   if data
-    page_partial = load_partial_by_slug(db_name, 'page', 'partials')
+    page_partial = load_document_by_slug(db_name, 'page', 'partials')
     if uselayout
       html = data.layout.html\gsub(
         '@yield',
@@ -79,6 +79,16 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
     -- html = dynamic_replace(db_name, html, global_data, history, params)
   html
+--------------------------------------------------------------------------------
+load_redirection = (db_name, slug) ->
+  request = "
+  FOR item IN redirections
+  FILTER item.slug == @slug
+  LET spa = (FOR s IN spas FILTER s._key == item.spa_key RETURN s)
+  LET layout = (FOR l IN layouts FILTER l._key == item.layout_key RETURN l)
+  RETURN { item, spa, layout }
+  "
+  aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
   translations = global_data.trads
@@ -246,4 +256,5 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   html
 --------------------------------------------------------------------------------
 -- expose methods
-{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern, :dynamic_replace }
+{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern,
+  :dynamic_replace, :load_redirection }
