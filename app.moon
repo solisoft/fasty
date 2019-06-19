@@ -131,25 +131,26 @@ class extends lapis.Application
   -- page
   [page: '/:lang/:all/:slug(/*)']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-    dbname = "db_#{sub_domain}"
+    db_name = "db_#{sub_domain}"
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
       @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
       @session.lang = @params.lang
 
-      redirection = load_redirection(dbname, @params.slug)
+      redirection = load_redirection(db_name, @params)
+
       html = ''
       if redirection == nil
         html = dynamic_page(
-          dbname,
-          load_page_by_slug(dbname, @params.slug, @params.lang),
+          db_name,
+          load_page_by_slug(db_name, @params.slug, @params.lang),
           @params, global_data
         )
       else
-        html = "{{ spa | #{redirection.spa_name} }}"
+        html = redirection
 
-      html = dynamic_replace(dbname, html, global_data, {}, @params)
+      html = dynamic_replace(db_name, html, global_data, {}, @params)
 
       basic_auth(@, settings[sub_domain]) -- check if website need a basic auth
       if is_auth(@, settings[sub_domain])

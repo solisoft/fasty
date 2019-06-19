@@ -159,7 +159,7 @@
     </ul>
   </virtual>
   <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
+    Sorry, you can't access this redirection...
   </virtual>
 
   <script>
@@ -169,12 +169,12 @@
 
     save_form(e) {
       e.preventDefault()
-      common.saveForm("form_page", "cruds/redirections",opts.redirection_id)
+      common.saveForm("form_redirection", "cruds/redirections",opts.redirection_id)
     }
 
     duplicate(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/redirections/" + self.page._key + "/duplicate", function(data) {
+        common.get(url + "/cruds/redirections/" + self.redirection._key + "/duplicate", function(data) {
           route('/redirections/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
@@ -187,7 +187,7 @@
     }
 
     common.get(url + "/cruds/redirections/" + opts.redirection_id, function(d) {
-      self.page = d.data
+      self.redirection = d.data
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -198,10 +198,10 @@
         self.loaded = true
         self.update()
         if(self.can_access)
-          common.buildForm(self.page, fields, '#form_page', 'redirections', function() {
+          common.buildForm(self.redirection, fields, '#form_redirection', 'redirections', function() {
             $(".crud").each(function(i, c) {
             var id = $(c).attr("id")
-            riot.mount("#" + id, "page_crud_index", { model: id,
+            riot.mount("#" + id, "redirection_crud_index", { model: id,
               fields: self.sub_models[id].fields,
               key: self.sub_models[id].key,
               singular: self.sub_models[id].singular,
@@ -227,7 +227,7 @@
     </form>
   </virtual>
   <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
+    Sorry, you can't access this redirection...
   </virtual>
   <script>
     var self = this

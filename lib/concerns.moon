@@ -16,15 +16,15 @@ prepare_headers = (html, data, params)->
   html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
   html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
   headers = "<title>#{data.item.name}</title>"
-  if(data.item.og_title[params.lang])
+  if(data.item.og_title and data.item.og_title[params.lang])
     headers = "<title>#{data.item.og_title[params.lang]}</title>"
-  if(data.item.description[params.lang])
+  if(data.item.description and data.item.description[params.lang])
     headers ..= "<meta name='description' content='#{data.item.description[params.lang]}'>"
-  if(data.item.og_title[params.lang])
+  if(data.item.og_title and data.item.og_title[params.lang])
     headers ..= "<meta property='og:title' content='#{data.item.og_title[params.lang]}' />"
-  if(data.item.og_img[params.lang])
+  if(data.item.og_img and data.item.og_img[params.lang])
     headers ..= "<meta property='og:image' content='#{data.item.og_img[params.lang]}' />"
-  if(data.item.og_type[params.lang])
+  if(data.item.og_type and data.item.og_type[params.lang])
     headers ..= "<meta property='og:type' content='#{data.item.og_type[params.lang]}' />"
 
   html\gsub('@headers', headers)
@@ -46,22 +46,24 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
 
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
-  publication = document_get(db_name, 'publications/pages_' .. page.item._key)
-  if publication.code ~= 404
-    page.item = publication.data
+  if page
+    publication = document_get(db_name, 'publications/pages_' .. page.item._key)
+    if publication.code ~= 404
+      page.item = publication.data
 
   page
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
   request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
   request ..= 'RETURN { item }'
-  page = aql(db_name, request, { slug: slug })[1]
+  dataset = aql(db_name, request, { slug: slug })[1]
 
-  publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
-  if publication.code ~= 404
-    page.item = publication.data
+  if dataset
+    publication = document_get(db_name, 'publications/' .. object .. '_' .. dataset.item._key)
+    if publication.code ~= 404
+      dataset.item = publication.data
 
-  page
+  dataset
 --------------------------------------------------------------------------------
 -- dynamic_page : check all {{ .* }} and load layout
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
@@ -80,15 +82,24 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
     -- html = dynamic_replace(db_name, html, global_data, history, params)
   html
 --------------------------------------------------------------------------------
-load_redirection = (db_name, slug) ->
+load_redirection = (db_name, params) ->
   request = "
   FOR r IN redirections
-  FILTER r.slug == @slug
-  LET spa = (FOR s IN spas FILTER s._key == r.spa_key RETURN s)
-  LET layout = (FOR l IN layouts FILTER l._key == r.layout_key RETURN l)
-  RETURN { item: { html: CONCAT(r.html, r.js)}, spa, layout }
+  FILTER r.route == @slug
+  LET spa = (FOR s IN spas FILTER s._id == r.spa_id RETURN s)[0]
+  LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]
+  RETURN { item: r, spa_name: spa.name, layout }
   "
-  aql(db_name, request, { slug: slug })[1]
+  redirection = aql(db_name, request, { slug: params.slug })[1]
+
+  if redirection != nil
+    html = redirection.layout.html\gsub(
+      '@yield',
+      "{{ spa | #{redirection.spa_name} }}"
+    )
+    prepare_headers(html, redirection, params)
+  else
+    nil
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
   translations = global_data.trads

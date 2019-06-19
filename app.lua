@@ -155,7 +155,7 @@ do
       page = '/:lang/:all/:slug(/*)'
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      local dbname = "db_" .. tostring(sub_domain)
+      local db_name = "db_" .. tostring(sub_domain)
       if no_db[sub_domain] then
         return {
           redirect_to = '/need_a_db'
@@ -164,8 +164,14 @@ do
         load_settings(self, sub_domain)
         self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
         self.session.lang = self.params.lang
-        local html = dynamic_page(dbname, load_page_by_slug(dbname, self.params.slug, self.params.lang), self.params, global_data)
-        html = dynamic_replace(dbname, html, global_data, { }, self.params)
+        local redirection = load_redirection(db_name, self.params)
+        local html = ''
+        if redirection == nil then
+          html = dynamic_page(db_name, load_page_by_slug(db_name, self.params.slug, self.params.lang), self.params, global_data)
+        else
+          html = redirection
+        end
+        html = dynamic_replace(db_name, html, global_data, { }, self.params)
         basic_auth(self, settings[sub_domain])
         if is_auth(self, settings[sub_domain]) then
           if html ~= 'null' then

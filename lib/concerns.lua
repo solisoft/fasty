@@ -35,19 +35,19 @@ prepare_headers = function(html, data, params)
   html = html:gsub('@js', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/js/" .. tostring(data.layout._rev) .. ".js")
   html = html:gsub('@css', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/css/" .. tostring(data.layout._rev) .. ".css")
   local headers = "<title>" .. tostring(data.item.name) .. "</title>"
-  if (data.item.og_title[params.lang]) then
+  if (data.item.og_title and data.item.og_title[params.lang]) then
     headers = "<title>" .. tostring(data.item.og_title[params.lang]) .. "</title>"
   end
-  if (data.item.description[params.lang]) then
+  if (data.item.description and data.item.description[params.lang]) then
     headers = headers .. "<meta name='description' content='" .. tostring(data.item.description[params.lang]) .. "'>"
   end
-  if (data.item.og_title[params.lang]) then
+  if (data.item.og_title and data.item.og_title[params.lang]) then
     headers = headers .. "<meta property='og:title' content='" .. tostring(data.item.og_title[params.lang]) .. "' />"
   end
-  if (data.item.og_img[params.lang]) then
+  if (data.item.og_img and data.item.og_img[params.lang]) then
     headers = headers .. "<meta property='og:image' content='" .. tostring(data.item.og_img[params.lang]) .. "' />"
   end
-  if (data.item.og_type[params.lang]) then
+  if (data.item.og_type and data.item.og_type[params.lang]) then
     headers = headers .. "<meta property='og:type' content='" .. tostring(data.item.og_type[params.lang]) .. "' />"
   end
   return html:gsub('@headers', headers)
@@ -83,9 +83,11 @@ load_page_by_slug = function(db_name, slug, lang, uselayout)
     slug = slug,
     lang = lang
   })[1]
-  local publication = document_get(db_name, 'publications/pages_' .. page.item._key)
-  if publication.code ~= 404 then
-    page.item = publication.data
+  if page then
+    local publication = document_get(db_name, 'publications/pages_' .. page.item._key)
+    if publication.code ~= 404 then
+      page.item = publication.data
+    end
   end
   return page
 end
@@ -96,14 +98,16 @@ load_dataset_by_slug = function(db_name, slug, object, lang, uselayout)
   end
   local request = "FOR item IN datasets FILTER item.type == '" .. tostring(object) .. "' FILTER item.slug == @slug "
   request = request .. 'RETURN { item }'
-  local page = aql(db_name, request, {
+  local dataset = aql(db_name, request, {
     slug = slug
   })[1]
-  local publication = document_get(db_name, 'publications/' .. object .. '_' .. page.item._key)
-  if publication.code ~= 404 then
-    page.item = publication.data
+  if dataset then
+    local publication = document_get(db_name, 'publications/' .. object .. '_' .. dataset.item._key)
+    if publication.code ~= 404 then
+      dataset.item = publication.data
+    end
   end
-  return page
+  return dataset
 end
 local dynamic_page
 dynamic_page = function(db_name, data, params, global_data, history, uselayout)
@@ -126,11 +130,17 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
   return html
 end
 local load_redirection
-load_redirection = function(db_name, slug)
-  local request = "\n  FOR r IN redirections\n  FILTER r.slug == @slug\n  LET spa = (FOR s IN spas FILTER s._key == r.spa_key RETURN s)\n  LET layout = (FOR l IN layouts FILTER l._key == r.layout_key RETURN l)\n  RETURN { item: { html: CONCAT(r.html, r.js)}, spa, layout }\n  "
-  return aql(db_name, request, {
-    slug = slug
+load_redirection = function(db_name, params)
+  local request = "\n  FOR r IN redirections\n  FILTER r.route == @slug\n  LET spa = (FOR s IN spas FILTER s._id == r.spa_id RETURN s)[0]\n  LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]\n  RETURN { item: r, spa_name: spa.name, layout }\n  "
+  local redirection = aql(db_name, request, {
+    slug = params.slug
   })[1]
+  if redirection ~= nil then
+    local html = redirection.layout.html:gsub('@yield', "{{ spa | " .. tostring(redirection.spa_name) .. " }}")
+    return prepare_headers(html, redirection, params)
+  else
+    return nil
+  end
 end
 local dynamic_replace
 dynamic_replace = function(db_name, html, global_data, history, params)

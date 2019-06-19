@@ -4662,19 +4662,19 @@ riot.tag2('redirection_crud_new', '<a href="#" class="uk-button uk-button-link" 
 
 });
 
-riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">redirections</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing redirection</h3> <form onsubmit="{save_form}" class="uk-form" id="form_redirection"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">redirections</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing redirection</h3> <form onsubmit="{save_form}" class="uk-form" id="form_redirection"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this redirection... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
 
     this.save_form = function(e) {
       e.preventDefault()
-      common.saveForm("form_page", "cruds/redirections",opts.redirection_id)
+      common.saveForm("form_redirection", "cruds/redirections",opts.redirection_id)
     }.bind(this)
 
     this.duplicate = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/redirections/" + self.page._key + "/duplicate", function(data) {
+        common.get(url + "/cruds/redirections/" + self.redirection._key + "/duplicate", function(data) {
           route('/redirections/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
@@ -4687,7 +4687,7 @@ riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a hr
     }.bind(this)
 
     common.get(url + "/cruds/redirections/" + opts.redirection_id, function(d) {
-      self.page = d.data
+      self.redirection = d.data
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -4698,10 +4698,10 @@ riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a hr
         self.loaded = true
         self.update()
         if(self.can_access)
-          common.buildForm(self.page, fields, '#form_page', 'redirections', function() {
+          common.buildForm(self.redirection, fields, '#form_redirection', 'redirections', function() {
             $(".crud").each(function(i, c) {
             var id = $(c).attr("id")
-            riot.mount("#" + id, "page_crud_index", { model: id,
+            riot.mount("#" + id, "redirection_crud_index", { model: id,
               fields: self.sub_models[id].fields,
               key: self.sub_models[id].key,
               singular: self.sub_models[id].singular,
@@ -4720,7 +4720,7 @@ riot.tag2('redirection_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a hr
     })
 });
 
-riot.tag2('redirection_new', '<virtual if="{can_access}"> <h3>Creating redirection</h3> <form onsubmit="{save_form}" class="uk-form" id="form_new_redirection"> </form> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
+riot.tag2('redirection_new', '<virtual if="{can_access}"> <h3>Creating redirection</h3> <form onsubmit="{save_form}" class="uk-form" id="form_new_redirection"> </form> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this redirection... </virtual>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
