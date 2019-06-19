@@ -95,7 +95,7 @@ load_redirection = (db_name, params) ->
   if redirection != nil
     html = redirection.layout.html\gsub(
       '@yield',
-      "{{ spa | #{redirection.spa_name} }}"
+      "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
     )
     prepare_headers(html, redirection, params)
   else
