@@ -95,17 +95,17 @@ load_redirection = (db_name, params) ->
   if redirection != nil
     html = redirection.layout.html\gsub(
       '@yield',
-      "{{ spa | #{redirection.spa_name} }}"
+      "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
     )
     prepare_headers(html, redirection, params)
   else
     nil
 --------------------------------------------------------------------------------
-prepare_bindvars = (splat) ->
+prepare_bindvars = (splat, aql_request) ->
   bindvar = {}
   for k, v in pairs(splat) do
     v = tonumber(v) if v\match('^%d+$')
-    bindvar[k] = v if args['aql']\find('@' .. k)
+    bindvar[k] = v if aql_request\find('@' .. k)
   bindvar
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
@@ -180,7 +180,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               )[1]
 
             -- prepare the bindvar variable with variable found in the request
-            bindvar = prepare_bindvars(splat)
+            bindvar = prepare_bindvars(splat, args['aql'])
 
             -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
             for condition in string.gmatch(args['aql'], '__IF (%w-)__') do
@@ -244,10 +244,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ aql | activate_account }}
     if action == 'aql'
       aql_request = aql(
-        db_name, "FOR a in aqls FILTER doc.slug == @slug RETURN doc", { "slug": item }
+        db_name, "FOR a in aqls FILTER a.slug == @slug RETURN a", { "slug": item }
       )[1]
       if aql_request
-        aql(db_name, aql_request.aql, prepare_bindvars(splat))
+        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql))
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}

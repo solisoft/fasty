@@ -29,7 +29,8 @@ var check_json = function(json, folder, fullname, api) {
         if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
       }
 
-      var header = "#FASTY " + obj.id
+      var header = obj.locked_by ? '@lock' : ''
+      header += "#FASTY " + obj.id
 
       if (k == "layouts") {
         fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
@@ -102,7 +103,6 @@ var check_json = function(json, folder, fullname, api) {
             }
           })
         }, 100)
-
       }
     })
   }
@@ -111,7 +111,6 @@ var check_json = function(json, folder, fullname, api) {
 if(argv._.length != 1) {
   console.log("usage : fasty <shortuct> -w".yellow)
 } else {
-
   var fullname = tokens['name']
   var domain = tokens['domains'][argv._[0]].domain
   var token  = tokens['domains'][argv._[0]].token
