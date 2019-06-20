@@ -77,7 +77,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
       )
       html = prepare_headers(html, data, params)
     else
-      html = etlua2html(data.item.json, page_partial, params.lang)
+      html = etlua2html(data.json, page_partial, params.lang)
 
   html
 --------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if keywords[4] then args    = splat_to_table(keywords[4], '#')
 
     -- {{ page | slug }}
-    -- e.g. {{ page | home }}
+    -- e.g. {{ page | home | <dataset> }}
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
