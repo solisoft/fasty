@@ -118,28 +118,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   -- {{ lang }}
   html = html\gsub('{{ lang }}', params.lang)
 
-  -- helpers
-  if helpers
-    for widget in string.gmatch(html, '{{.-}}') do
-
-      output = ''
-      action = ''
-      item = ''
-      keywords = {}
-
-      widget_no_deco, _ = widget\gsub("{{ ", "")\gsub(" }}", "")
-      table.insert(keywords, trim(k)) for i, k in pairs(stringy.split(widget_no_deco, '|'))
-
-      if keywords[1] then action  = keywords[1]
-      if keywords[2] then item    = keywords[2]
-
-      -- {{ helper | shortcut }}
-      -- e.g. {{ helper | hello_world }}
-      if action == 'helper'
-        helper = helpers[item]
-        output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
-        html = html\gsub(escape_pattern(widget), escape_pattern(output))
-
   for widget in string.gmatch(html, '{{.-}}') do
     output = ''
     action = ''
@@ -176,6 +154,13 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           )
 
         output ..= dynamic_replace(db_name, obj.html, global_data, history, params)
+
+    -- {{ helper | shortcut }}
+    -- e.g. {{ helper | hello_world }}
+    if action == 'helper'
+      helper = helpers[item]
+      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
+      output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}

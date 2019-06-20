@@ -165,29 +165,6 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     splat = splat_to_table(params.splat)
   end
   html = html:gsub('{{ lang }}', params.lang)
-  if helpers then
-    for widget in string.gmatch(html, '{{.-}}') do
-      local output = ''
-      local action = ''
-      local item = ''
-      local keywords = { }
-      local widget_no_deco, _ = widget:gsub("{{ ", ""):gsub(" }}", "")
-      for i, k in pairs(stringy.split(widget_no_deco, '|')) do
-        table.insert(keywords, trim(k))
-      end
-      if keywords[1] then
-        action = keywords[1]
-      end
-      if keywords[2] then
-        item = keywords[2]
-      end
-      if action == 'helper' then
-        local helper = helpers[item]
-        output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
-        html = html:gsub(escape_pattern(widget), escape_pattern(output))
-      end
-    end
-  end
   for widget in string.gmatch(html, '{{.-}}') do
     local output = ''
     local action = ''
@@ -222,6 +199,11 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         end
         output = output .. dynamic_replace(db_name, obj.html, global_data, history, params)
       end
+    end
+    if action == 'helper' then
+      local helper = helpers[item]
+      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
+      output = dynamic_replace(db_name, output, global_data, history, params)
     end
     if action == 'partial' then
       if history[widget] == nil then
