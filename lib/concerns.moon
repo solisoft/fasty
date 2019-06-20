@@ -146,6 +146,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             params, global_data, history, false
           )
         else
+          if splat[item] then item = splat[item]
           page_html = dynamic_page(
             db_name,
             load_dataset_by_slug(db_name, item, dataset, params.lang),
