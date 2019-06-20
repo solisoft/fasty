@@ -13,40 +13,40 @@ router.get('/:token', function (req, res) {
   var data = {}
   if (_settings.secret == req.pathParams.token) {
     data = db._query(`
-      LET layouts = (
-        FOR l IN layouts
-        RETURN { id: l._id, name: l.name, html: l.html, scss: l.scss, js: l.javascript }
-      )
-      LET components = (
-        FOR c IN components RETURN { id: c._id, name: c.name, html: c.html }
-      )
-      LET partials = (FOR p IN partials RETURN { id: p._id, name: p.slug, html: p.html })
-      LET aqls = (FOR a IN aqls RETURN { id: a._id, name: a.slug, aql: a.aql })
-      LET datatypes = (
-        FOR d IN datatypes
-        RETURN { id: d._id, name: d.name, slug: d.slug, json: d.javascript }
-      )
-      LET apis = (
-        FOR a IN apis
-          LET api_routes = (
-            FOR ar IN api_routes FILTER ar.api_id == a._key
-            RETURN { id: ar._id, name: ar.name, js: ar.javascript }
-          )
-          LET api_scripts = (
-            FOR as IN api_scripts FILTER as.api_id == a._key
-            RETURN { id: as._id, name: as.name, js: as.javascript }
-          )
-          LET api_tests = (
-            FOR at IN api_tests FILTER at.api_id == a._key
-            RETURN { id: at._id, name: at.name, js: at.javascript }
-          )
-          RETURN {
-            api: { id: a._id, name: a.name, manifest: a.manifest, code: a.code },
-            api_routes, api_scripts, api_tests
-          }
-      )
+    LET layouts = (
+      FOR l IN layouts
+      RETURN { id: l._id, name: l.name, html: l.html, scss: l.scss, js: l.javascript, locked_by: l.locked_by }
+    )
+    LET components = (
+      FOR c IN components RETURN { id: c._id, name: c.name, html: c.html, locked_by: c.locked_by }
+    )
+    LET partials = (FOR p IN partials RETURN { id: p._id, name: p.slug, html: p.html, locked_by: p.locked_by })
+    LET aqls = (FOR a IN aqls RETURN { id: a._id, name: a.slug, aql: a.aql, locked_by: a.locked_by })
+    LET datatypes = (
+      FOR d IN datatypes
+      RETURN { id: d._id, name: d.name, slug: d.slug, json: d.javascript, locked_by: d.locked_by }
+    )
+    LET apis = (
+      FOR a IN apis
+        LET api_routes = (
+          FOR ar IN api_routes FILTER ar.api_id == a._key
+          RETURN { id: ar._id, name: ar.name, js: ar.javascript, locked_by: ar.locked_by }
+        )
+        LET api_scripts = (
+          FOR as IN api_scripts FILTER as.api_id == a._key
+          RETURN { id: as._id, name: as.name, js: as.javascript, locked_by: as.locked_by }
+        )
+        LET api_tests = (
+          FOR at IN api_tests FILTER at.api_id == a._key
+          RETURN { id: at._id, name: at.name, js: at.javascript, locked_by: at.locked_by }
+        )
+        RETURN {
+          api: { id: a._id, name: a.name, manifest: a.manifest, code: a.code, locked_by: a.locked_by },
+          api_routes, api_scripts, api_tests
+        }
+    )
 
-      RETURN { layouts, components, partials, aqls, datatypes, apis}
+    RETURN { layouts, components, partials, aqls, datatypes, apis}
     `).toArray()[0]
   }
   res.json(data)

@@ -242,6 +242,11 @@ router.post('/:service/:id', function (req, res) {
   catch(e) {}
   if(errors.length == 0) {
     var object = collection.document(req.pathParams.id)
+    var can_save = true
+    if (object.locked_by) {
+      const user = db.users.document(req.session.uid)
+      if(object.locked_by != user.fn + ' ' + user.ln) can_save = false
+    }
     var data = fieldsToData(fields, body, req.headers)
     if(models()[req.pathParams.service].search) {
       data.search = {}
@@ -263,8 +268,10 @@ router.post('/:service/:id', function (req, res) {
       data['slug'] = _.kebabCase(slug)
     }
 
-    obj = collection.update(object, data)
-    save_revision(req.session.uid, object, data, 10)
+    if (can_save) {
+      obj = collection.update(object, data)
+      save_revision(req.session.uid, object, data, 10)
+    }
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })

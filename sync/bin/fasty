@@ -29,7 +29,8 @@ var check_json = function(json, folder, fullname, api) {
         if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
       }
 
-      var header = "#FASTY " + obj.id
+      var header = obj.locked_by ? '@lock' : ''
+      header += "#FASTY " + obj.id
 
       if (k == "layouts") {
         fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
