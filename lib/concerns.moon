@@ -77,8 +77,8 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
       )
       html = prepare_headers(html, data, params)
     else
-      print(to_json(data))
-      html = etlua2html(data.json, page_partial, params.lang)
+      print(to_json(data.item.json))
+      html = etlua2html(data.item.json, page_partial, params.lang)
 
   html
 --------------------------------------------------------------------------------
