@@ -141,6 +141,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         page_html = ''
         if args['from_json']
           page_partial = load_document_by_slug(db_name, 'page', 'partials')
+          print(item)
           output = etlua2html(from_json(item), page_partial, params.lang)
         else
           if dataset == ''
