@@ -1660,11 +1660,12 @@ riot.tag2('api_crud_new', '<a href="#" class="uk-button uk-button-link" onclick=
 
 });
 
-riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">apis</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing api</h3> <form onsubmit="{save_form}" class="uk-form" id="form_api"> </form> <a onclick="{install}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-upload"></i> Install</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('api_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">apis</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing api</h3> <form onsubmit="{save_form}" class="uk-form" id="form_api"> </form> <a onclick="{install}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-upload"></i> Install</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
     this.settings   = {}
+    self.locked_by = null
 
     common.get(url + "/settings", function(settings) { self.settings = settings.data })
 
@@ -1690,6 +1691,7 @@ riot.tag2('api_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">a
 
     common.get(url + "/cruds/apis/" + opts.api_id, function(d) {
       self.api = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -1904,102 +1906,11 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
 });
 
 require.register("widgets/aqls.html.tag", function(exports, require, module) {
-riot.tag2('aql_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{page > 0}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
-    var self = this
-    this.data = []
-    this.new_item = function(e) {
-      e.preventDefault()
-      riot.mount("#"+opts.id, "aql_crud_new", opts)
-    }.bind(this)
-
-    this.loadPage = function(pageIndex) {
-      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/page/"+pageIndex+"/"+per_page, function(d) {
-        self.data = d.data[0].data
-        self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
-        if(opts.columns) self.cols = opts.columns
-        self.count = d.data[0].count
-        self.update()
-      })
-    }
-    this.loadPage(1)
-
-    this.edit = function(e) {
-      e.preventDefault()
-      opts.element_id = e.item.row._key
-      riot.mount("#"+opts.id, "aql_crud_edit", opts)
-    }.bind(this)
-
-    this.nextPage = function(e) {
-      e.preventDefault()
-      self.page += 1
-      self.loadPage(self.page + 1)
-    }.bind(this)
-
-    this.previousPage = function(e) {
-      e.preventDefault()
-      self.page -= 1
-      self.loadPage(self.page + 1)
-    }.bind(this)
-
-    this.destroy_object = function(e) {
-      e.preventDefault()
-      UIkit.modal.confirm("Are you sure?").then(function() {
-        common.delete(url + "/cruds/" + opts.id + "/" + e.item.row._key, function() {
-          self.loadPage(1)
-        })
-      }, function() {})
-    }.bind(this)
-});
-
-riot.tag2('aql_crud_edit', '<a href="#" class="uk-button uk-button-link" onclick="{goback}">Back to {opts.id}</a> <form onsubmit="{save_form}" class="uk-form" id="{opts.id}_crud_aql"> </form>', '', '', function(opts) {
-    this.goback = function(e) {
-      e.preventDefault()
-      riot.mount("#"+opts.id, "aql_crud_index", opts)
-    }.bind(this)
-
-    this.save_form = function(e) {
-      e.preventDefault()
-      common.saveForm(opts.id+'_crud_aql', "cruds/sub/"+opts.parent_name+"/"+ opts.id+"/"+opts.element_id, "", opts)
-    }.bind(this)
-
-    var self = this;
-    common.get(url + "/cruds/" + opts.id + "/" + opts.element_id, function(d) {
-      self.aql = d.data
-
-      common.buildForm(self.aql, opts.fields, '#'+opts.id+'_crud_aql')
-    })
-    this.on('updated', function() {
-      $(".select_list").select2()
-      $(".select_mlist").select2()
-      $(".select_tag").select2({ tags: true })
-    })
-});
-
-riot.tag2('aql_crud_new', '<a href="#" class="uk-button uk-button-link" onclick="{goback}">Back to {opts.id}</a> <form onsubmit="{save_form}" class="uk-form" id="{opts.id}_crud_aql"> </form>', '', '', function(opts) {
-    var self = this
-    this.crud = {}
-    this.crud[opts.key] = opts.parent_id
-
-    this.goback = function(e) {
-      e.preventDefault()
-      riot.mount("#"+opts.id, "aql_crud_index", opts)
-    }.bind(this)
-
-    this.on('mount', function() {
-      common.buildForm(self.crud, opts.fields, '#'+opts.id+'_crud_aql')
-    })
-
-    this.save_form = function(e) {
-      e.preventDefault()
-      common.saveForm(opts.id+'_crud_aql', "cruds/sub/aqls/"+ opts.id, "", opts)
-    }.bind(this)
-
-});
-
-riot.tag2('aql_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">aqls</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing aql</h3> <form onsubmit="{save_form}" class="uk-form" id="form_aql"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('aql_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">aqls</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing aql</h3> <form onsubmit="{save_form}" class="uk-form" id="form_aql"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    self.locked_by = null
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -2022,6 +1933,7 @@ riot.tag2('aql_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">a
 
     common.get(url + "/cruds/aqls/" + opts.aql_id, function(d) {
       self.aql = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -2307,10 +2219,11 @@ riot.tag2('component_crud_new', '<a href="#" class="uk-button uk-button-link" on
 
 });
 
-riot.tag2('component_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">components</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing component</h3> <form onsubmit="{save_form}" class="uk-form" id="form_component"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('component_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">components</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing component</h3> <form onsubmit="{save_form}" class="uk-form" id="form_component"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    self.locked_by = null
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -2333,6 +2246,7 @@ riot.tag2('component_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href
 
     common.get(url + "/cruds/components/" + opts.component_id, function(d) {
       self.component = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -2960,10 +2874,11 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
 
 require.register("widgets/datatypes.html.tag", function(exports, require, module) {
 
-riot.tag2('datatype_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datatypes</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing datatype</h3> <form onsubmit="{save_form}" class="uk-form" id="form_datatype"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> <dataset_helper></dataset_helper> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('datatype_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">datatypes</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing datatype</h3> <form onsubmit="{save_form}" class="uk-form" id="form_datatype"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> <dataset_helper></dataset_helper> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    self.locked_by = null
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -2986,6 +2901,7 @@ riot.tag2('datatype_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href=
 
     common.get(url + "/cruds/datatypes/" + opts.datatype_id, function(d) {
       self.datatype = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
 
@@ -3280,10 +3196,11 @@ riot.tag2('helper_crud_new', '<a href="#" class="uk-button uk-button-link" oncli
 
 });
 
-riot.tag2('helper_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">helpers</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing helper</h3> <form onsubmit="{save_form}" class="uk-form" id="form_helper"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('helper_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">helpers</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing helper</h3> <form onsubmit="{save_form}" class="uk-form" id="form_helper"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    self.locked_by = null
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -3306,6 +3223,7 @@ riot.tag2('helper_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#
 
     common.get(url + "/cruds/helpers/" + opts.helper_id, function(d) {
       self.helper = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -3591,10 +3509,11 @@ riot.tag2('layout_crud_new', '<a href="#" class="uk-button uk-button-link" oncli
 
 });
 
-riot.tag2('layout_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">layouts</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing layout</h3> <form onsubmit="{save_form}" class="uk-form" id="form_layout"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('layout_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">layouts</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing layout</h3> <form onsubmit="{save_form}" class="uk-form" id="form_layout"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    self.locked_by = null
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -3617,6 +3536,7 @@ riot.tag2('layout_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#
 
     common.get(url + "/cruds/layouts/" + opts.layout_id, function(d) {
       self.layout = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -4351,10 +4271,11 @@ riot.tag2('partial_crud_new', '<a href="#" class="uk-button uk-button-link" oncl
 
 });
 
-riot.tag2('partial_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">partials</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing partial</h3> <form onsubmit="{save_form}" class="uk-form" id="form_partial"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('partial_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">partials</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing partial</h3> <form onsubmit="{save_form}" class="uk-form" id="form_partial"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    self.locked_by = null
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -4378,6 +4299,7 @@ riot.tag2('partial_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
     common.get(url + "/cruds/partials/" + opts.partial_id, function(d) {
       self.partial = d.data
       self.fields = d.fields
+      self.locked_by = d.data.locked_by
       self.sub_models = d.fields.sub_models
       var fields = d.fields
 
@@ -5006,11 +4928,11 @@ riot.tag2('spa_crud_new', '<a href="#" class="uk-button uk-button-link" onclick=
 
 });
 
-riot.tag2('spa_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">spas</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing spa</h3> <form onsubmit="{save_form}" class="uk-form" id="form_spa"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('spa_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">spas</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing spa</h3> <form onsubmit="{save_form}" class="uk-form" id="form_spa"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
-
+    self.locked_by = null
     this.save_form = function(e) {
       e.preventDefault()
       common.saveForm("form_spa", "cruds/spas",opts.spa_id)
@@ -5032,6 +4954,7 @@ riot.tag2('spa_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">s
 
     common.get(url + "/cruds/spas/" + opts.spa_id, function(d) {
       self.spa = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields

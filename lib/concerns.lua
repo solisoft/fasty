@@ -136,20 +136,20 @@ load_redirection = function(db_name, params)
     slug = params.slug
   })[1]
   if redirection ~= nil then
-    local html = redirection.layout.html:gsub('@yield', "{{ spa | " .. tostring(redirection.spa_name) .. " }}")
+    local html = redirection.layout.html:gsub('@yield', "<div class='" .. tostring(redirection.item.class) .. "'>{{ spa | " .. tostring(redirection.spa_name) .. " }}</div>")
     return prepare_headers(html, redirection, params)
   else
     return nil
   end
 end
 local prepare_bindvars
-prepare_bindvars = function(splat)
+prepare_bindvars = function(splat, aql_request)
   local bindvar = { }
   for k, v in pairs(splat) do
     if v:match('^%d+$') then
       v = tonumber(v)
     end
-    if args['aql']:find('@' .. k) then
+    if aql_request:find('@' .. k) then
       bindvar[k] = v
     end
   end
@@ -165,29 +165,6 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     splat = splat_to_table(params.splat)
   end
   html = html:gsub('{{ lang }}', params.lang)
-  if helpers then
-    for widget in string.gmatch(html, '{{.-}}') do
-      local output = ''
-      local action = ''
-      local item = ''
-      local keywords = { }
-      local widget_no_deco, _ = widget:gsub("{{ ", ""):gsub(" }}", "")
-      for i, k in pairs(stringy.split(widget_no_deco, '|')) do
-        table.insert(keywords, trim(k))
-      end
-      if keywords[1] then
-        action = keywords[1]
-      end
-      if keywords[2] then
-        item = keywords[2]
-      end
-      if action == 'helper' then
-        local helper = helpers[item]
-        output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
-        html = html:gsub(escape_pattern(widget), escape_pattern(output))
-      end
-    end
-  end
   for widget in string.gmatch(html, '{{.-}}') do
     local output = ''
     local action = ''
@@ -223,6 +200,11 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         output = output .. dynamic_replace(db_name, obj.html, global_data, history, params)
       end
     end
+    if action == 'helper' then
+      local helper = helpers[item]
+      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
+      output = dynamic_replace(db_name, output, global_data, history, params)
+    end
     if action == 'partial' then
       if history[widget] == nil then
         history[widget] = true
@@ -235,7 +217,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
                 slug = args['req']
               })[1]
             end
-            local bindvar = prepare_bindvars(splat)
+            local bindvar = prepare_bindvars(splat, args['aql'])
             for condition in string.gmatch(args['aql'], '__IF (%w-)__') do
               if not (bindvar[condition]) then
                 args['aql'] = args['aql']:gsub('__IF ' .. condition .. '__.-__END ' .. condition .. '__', '')
@@ -306,11 +288,11 @@ dynamic_replace = function(db_name, html, global_data, history, params)
       end
     end
     if action == 'aql' then
-      local aql_request = aql(db_name, "FOR a in aqls FILTER doc.slug == @slug RETURN doc", {
+      local aql_request = aql(db_name, "FOR a in aqls FILTER a.slug == @slug RETURN a", {
         ["slug"] = item
       })[1]
       if aql_request then
-        aql(db_name, aql_request.aql, prepare_bindvars(splat))
+        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql))
       end
     end
     if action == 'tr' then

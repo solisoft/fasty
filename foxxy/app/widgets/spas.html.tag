@@ -141,6 +141,9 @@
 
 <spa_edit>
   <virtual if={can_access}>
+    <div uk-alert class="uk-alert-warning" if={locked_by}>
+      <i class="fas fa-lock"></i> This file is locked by { locked_by }
+    </div>
     <ul uk-tab>
       <li><a href="#">spas</a></li>
       <li each={ i, k in sub_models }><a href="#">{ k }</a></li>
@@ -166,7 +169,7 @@
     var self = this
     self.can_access = false
     self.loaded = false
-
+    self.locked_by = null
     save_form(e) {
       e.preventDefault()
       common.saveForm("form_spa", "cruds/spas",opts.spa_id)
@@ -188,6 +191,7 @@
 
     common.get(url + "/cruds/spas/" + opts.spa_id, function(d) {
       self.spa = d.data
+      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields

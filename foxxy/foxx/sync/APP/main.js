@@ -76,7 +76,7 @@ router.patch('/:token', function (req, res) {
         db._collection(collection).update(object, data)
         res.json(`Saved! ${collection} ${id} ${field}`)
       } else {
-        res.json(`Error! File is locked by ${req.body.name}`)
+        res.json(`Error! File is locked by ${object.locked_by}`)
       }
     } else {
       if (object.locked_by != null) {
@@ -85,7 +85,7 @@ router.patch('/:token', function (req, res) {
           db._collection(collection).update(object, data)
           res.json(`Saved! ${collection} ${id} ${field}`)
         } else {
-          res.json(`Error! File is locked by ${req.body.name}`)
+          res.json(`Error! File is locked by ${object.locked_by}`)
         }
       } else {
         db._collection(collection).update(object, data)
