@@ -29,9 +29,9 @@ prepare_headers = (html, data, params)->
 
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
-etlua2html = (json, partial, lang) ->
+etlua2html = (json, partial, params) ->
   template = etlua.compile(partial.item.html)
-  template({ 'dataset': json, 'to_json': to_json, 'lang': lang })
+  template({ 'dataset': json, 'to_json': to_json, 'lang': params.lang, 'params': params })
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object)->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
@@ -73,11 +73,11 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
     if uselayout
       html = data.layout.html\gsub(
         '@yield',
-        escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang))
+        escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params))
       )
       html = prepare_headers(html, data, params)
     else
-      html = etlua2html(data.item.html.json, page_partial, params.lang)
+      html = etlua2html(data.item.html.json, page_partial, params)
 
   html
 --------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
           db_data = from_json(http_get(args['url'], args['headers'])) if dataset == 'rest'
           db_data = table_deep_merge(db_data, { _params: args }) if args['use_params']
-          output = etlua2html(db_data, partial, params.lang)
+          output = etlua2html(db_data, partial, params)
           output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ riot | slug(#slug2...) | <mount> }}
