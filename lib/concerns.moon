@@ -139,25 +139,20 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
         page_html = ''
-        if args['from_json']
-          page_partial = load_document_by_slug(db_name, 'page', 'partials')
-          print(item)
-          output = etlua2html(from_json(item), page_partial, params.lang)
+        if dataset == ''
+          page_html = dynamic_page(
+            db_name,
+            load_page_by_slug(db_name, item, 'pages', params.lang, false),
+            params, global_data, history, false
+          )
         else
-          if dataset == ''
-            page_html = dynamic_page(
-              db_name,
-              load_page_by_slug(db_name, item, 'pages', params.lang, false),
-              params, global_data, history, false
-            )
-          else
-            page_html = dynamic_page(
-              db_name,
-              load_dataset_by_slug(db_name, item, dataset, params.lang),
-              params, global_data, history, false
-            )
+          page_html = dynamic_page(
+            db_name,
+            load_dataset_by_slug(db_name, item, dataset, params.lang),
+            params, global_data, history, false
+          )
 
-          output ..= dynamic_replace(db_name, page_html, global_data, history, params)
+        output ..= dynamic_replace(db_name, page_html, global_data, history, params)
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
