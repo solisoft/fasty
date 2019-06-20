@@ -77,9 +77,8 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
       )
       html = prepare_headers(html, data, params)
     else
-      html = data.item.html
+      html = etlua2html(data.item.json, page_partial, params.lang)
 
-    -- html = dynamic_replace(db_name, html, global_data, history, params)
   html
 --------------------------------------------------------------------------------
 load_redirection = (db_name, params) ->
@@ -139,21 +138,21 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        obj = {}
+        page_html = ''
         if dataset == ''
-          obj = dynamic_page(
+          page_html = dynamic_page(
             db_name,
             load_page_by_slug(db_name, item, 'pages', params.lang, false),
             params, global_data, history, false
           )
         else
-          obj = dynamic_page(
+          page_html = dynamic_page(
             db_name,
             load_dataset_by_slug(db_name, item, dataset, params.lang),
             params, global_data, history, false
           )
 
-        output ..= dynamic_replace(db_name, obj.html, global_data, history, params)
+        output ..= dynamic_replace(db_name, page_html, global_data, history, params)
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}

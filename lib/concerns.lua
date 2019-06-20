@@ -124,7 +124,7 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
       html = data.layout.html:gsub('@yield', escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang)))
       html = prepare_headers(html, data, params)
     else
-      html = data.item.html
+      html = etlua2html(data.item.json, page_partial, params.lang)
     end
   end
   return html
@@ -191,13 +191,13 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'page' then
       if history[widget] == nil then
         history[widget] = true
-        local obj = { }
+        local page_html = ''
         if dataset == '' then
-          obj = dynamic_page(db_name, load_page_by_slug(db_name, item, 'pages', params.lang, false), params, global_data, history, false)
+          page_html = dynamic_page(db_name, load_page_by_slug(db_name, item, 'pages', params.lang, false), params, global_data, history, false)
         else
-          obj = dynamic_page(db_name, load_dataset_by_slug(db_name, item, dataset, params.lang), params, global_data, history, false)
+          page_html = dynamic_page(db_name, load_dataset_by_slug(db_name, item, dataset, params.lang), params, global_data, history, false)
         end
-        output = output .. dynamic_replace(db_name, obj.html, global_data, history, params)
+        output = output .. dynamic_replace(db_name, page_html, global_data, history, params)
       end
     end
     if action == 'helper' then
