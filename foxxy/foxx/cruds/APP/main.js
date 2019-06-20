@@ -273,7 +273,7 @@ router.post('/:service/:id', function (req, res) {
       save_revision(req.session.uid, object, data, 10)
     }
   }
-  res.send({ success: errors.length == 0, data: obj, errors: errors });
+  res.send({ success: errors.length == 0 && can_save, data: obj, errors: errors });
 })
 .header('foxx-locale')
 .header('X-Session-Id')
