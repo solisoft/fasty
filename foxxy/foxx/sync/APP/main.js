@@ -60,6 +60,7 @@ router.patch('/:token', function (req, res) {
 
   if (_settings.secret == req.pathParams.token) {
     var firstLine = req.body.data.split('\n')[0];
+    var isLocked = firstLine.split(' ')[0].index("@lock") >= 0
     var id = firstLine.split(' ')[1]
     var collection = id.split('/')[0]
     var field = firstLine.split(' ')[2]
@@ -68,14 +69,33 @@ router.patch('/:token', function (req, res) {
 
     var data = {}
     data[field.trim()] = content
-    db._collection(collection).update(object, data)
 
-    res.json(`Saved! ${collection} ${id} ${field}`)
-
+    if (isLocked) {
+      if (object.locked_by == null || object.locked_by == req.body.name) {
+        data['locked_by'] = req.body.name
+        db._collection(collection).update(object, data)
+        res.json(`Saved! ${collection} ${id} ${field}`)
+      } else {
+        res.json(`Error! File is locked by ${req.body.name}`)
+      }
+    } else {
+      if (object.locked_by != null) {
+        if (object.locked_by == req.body.name) {
+          data['locked_by'] = null
+          db._collection(collection).update(object, data)
+          res.json(`Saved! ${collection} ${id} ${field}`)
+        } else {
+          res.json(`Error! File is locked by ${req.body.name}`)
+        }
+      } else {
+        db._collection(collection).update(object, data)
+        res.json(`Saved! ${collection} ${id} ${field}`)
+      }
+    }
   } else {
     res.json({ error: true, reason: 'Bad Token' })
   }
 }).body(joi.object({
-  data: joi.string(),
-  name: joi.string()
+  data: joi.string().required(),
+  name: joi.string().required()
 }), 'data')
