@@ -1832,7 +1832,7 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/apis/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -2069,7 +2069,7 @@ riot.tag2('aqls', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/aqls/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -2382,7 +2382,7 @@ riot.tag2('components', '<virtual if="{can_access}"> <div class="uk-float-right"
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/components/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -3359,7 +3359,7 @@ riot.tag2('helpers', '<virtual if="{can_access}"> <div class="uk-float-right"> <
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/helpers/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -3672,7 +3672,7 @@ riot.tag2('layouts', '<virtual if="{can_access}"> <div class="uk-float-right"> <
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/layouts/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -4434,7 +4434,7 @@ riot.tag2('partials', '<virtual if="{can_access}"> <div class="uk-float-right"> 
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/partials/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -4745,7 +4745,7 @@ riot.tag2('redirections', '<virtual if="{can_access}"> <div class="uk-float-righ
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/redirections/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -5090,7 +5090,7 @@ riot.tag2('spas', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/spas/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -5401,7 +5401,7 @@ riot.tag2('trads', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/trads/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)
@@ -5799,7 +5799,7 @@ riot.tag2('users', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/users/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }.bind(this)

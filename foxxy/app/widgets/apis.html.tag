@@ -441,7 +441,7 @@
     destroy_object(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/apis/" + e.item.row._key, function() {
-          self.loadPage(self.page)
+          self.loadPage(self.page + 1)
         })
       }, function() {})
     }
