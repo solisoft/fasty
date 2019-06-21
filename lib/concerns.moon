@@ -41,15 +41,13 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
   request = "FOR item IN pages FILTER item.slug[@lang] == @slug "
   if uselayout == true
     request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
-  else
-    request ..= 'RETURN { item }'
+  else request ..= 'RETURN { item }'
 
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   if page
     publication = document_get(db_name, 'publications/pages_' .. page.item._key)
-    if publication.code ~= 404
-      page.item = publication.data
+    if publication.code ~= 404 then page.item = publication.data
 
   page
 --------------------------------------------------------------------------------
@@ -60,8 +58,7 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
 
   if dataset
     publication = document_get(db_name, 'publications/' .. object .. '_' .. dataset.item._key)
-    if publication.code ~= 404
-      dataset.item = publication.data
+    if publication.code ~= 404 then dataset.item = publication.data
 
   dataset
 --------------------------------------------------------------------------------
@@ -76,8 +73,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
         escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params))
       )
       html = prepare_headers(html, data, params)
-    else
-      html = etlua2html(data.item.html.json, page_partial, params)
+    else html = etlua2html(data.item.html.json, page_partial, params)
 
   html
 --------------------------------------------------------------------------------
@@ -91,14 +87,13 @@ load_redirection = (db_name, params) ->
   "
   redirection = aql(db_name, request, { slug: params.slug })[1]
 
-  if redirection != nil
+  if redirection != nil then
     html = redirection.layout.html\gsub(
       '@yield',
       "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
     )
     prepare_headers(html, redirection, params)
-  else
-    nil
+  else nil
 --------------------------------------------------------------------------------
 prepare_bindvars = (splat, aql_request) ->
   bindvar = {}
@@ -128,10 +123,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     widget_no_deco, _ = widget\gsub("{{ ", "")\gsub(" }}", "")
     table.insert(keywords, trim(k)) for i, k in pairs(stringy.split(widget_no_deco, '|'))
 
-    if keywords[1] then action  = keywords[1]
-    if keywords[2] then item    = keywords[2]
-    if keywords[3] then dataset = keywords[3]
-    if keywords[4] then args    = splat_to_table(keywords[4], '#')
+    action  = keywords[1] if keywords[1]
+    item    = keywords[2] if keywords[2]
+    dataset = keywords[3] if keywords[3]
+    args    = splat_to_table(keywords[4], '#') if keywords[4]
 
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
@@ -254,7 +249,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'tr'
       output = "Missing translation <em style='color:red'>#{item}</em>"
       aql(db_name, 'INSERT { key: @key, value: {} } IN trads', { key: item }) unless translations[item]
-      if translations[item] and translations[item][params.lang] then
+      if translations[item] and translations[item][params.lang]
         output = translations[item][params.lang]
 
     -- {{ external | url }}
