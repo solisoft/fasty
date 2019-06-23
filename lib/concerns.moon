@@ -130,8 +130,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ settings | key }}
     -- e.g. {{ settings | chatroom_url }}
-    if action == 'settings'
-      output = from_json(global_data.settings[1].home)[item]
+    if action == 'settings' and from_json(global_data.settings[1].home)[item]
+        output = from_json(global_data.settings[1].home)[item]
 
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
