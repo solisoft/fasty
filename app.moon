@@ -59,8 +59,7 @@ class extends lapis.Application
     settings[sub_domain] = global_data.settings[1]
   ------------------------------------------------------------------------------
   -- need_a_db
-  [need_a_db: '/need_a_db']: =>
-    render: true
+  [need_a_db: '/need_a_db']: => render: true
   ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
@@ -113,7 +112,7 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    html
+    dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
   ------------------------------------------------------------------------------
   -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>

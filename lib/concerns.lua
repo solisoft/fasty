@@ -189,6 +189,9 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if keywords[4] then
       args = splat_to_table(keywords[4], '#')
     end
+    if action == 'settings' then
+      output = from_json(global_data.settings[1].home)[item]
+    end
     if action == 'page' then
       if history[widget] == nil then
         history[widget] = true

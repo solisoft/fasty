@@ -128,6 +128,11 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     dataset = keywords[3] if keywords[3]
     args    = splat_to_table(keywords[4], '#') if keywords[4]
 
+    -- {{ settings | key }}
+    -- e.g. {{ settings | chatroom_url }}
+    if action == 'settings'
+      output = from_json(global_data.settings[1].home)[item]
+
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
     if action == 'page'
