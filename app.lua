@@ -127,7 +127,7 @@ do
           ["key"] = tostring(key)
         })[1] .. "\n")
       end
-      return html
+      return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params)
     end,
     [{
       page_no_lang = '/:all/:slug'

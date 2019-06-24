@@ -53,12 +53,13 @@ prepare_headers = function(html, data, params)
   return html:gsub('@headers', headers)
 end
 local etlua2html
-etlua2html = function(json, partial, lang)
+etlua2html = function(json, partial, params)
   local template = etlua.compile(partial.item.html)
   return template({
     ['dataset'] = json,
     ['to_json'] = to_json,
-    ['lang'] = lang
+    ['lang'] = params.lang,
+    ['params'] = params
   })
 end
 local load_document_by_slug
@@ -121,10 +122,10 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
   if data then
     local page_partial = load_document_by_slug(db_name, 'page', 'partials')
     if uselayout then
-      html = data.layout.html:gsub('@yield', escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params.lang)))
+      html = data.layout.html:gsub('@yield', escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params)))
       html = prepare_headers(html, data, params)
     else
-      html = etlua2html(data.item.json, page_partial, params.lang)
+      html = etlua2html(data.item.html.json, page_partial, params)
     end
   end
   return html
@@ -188,6 +189,9 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if keywords[4] then
       args = splat_to_table(keywords[4], '#')
     end
+    if action == 'settings' then
+      output = from_json(global_data.settings[1].home)[item]
+    end
     if action == 'page' then
       if history[widget] == nil then
         history[widget] = true
@@ -195,6 +199,9 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         if dataset == '' then
           page_html = dynamic_page(db_name, load_page_by_slug(db_name, item, 'pages', params.lang, false), params, global_data, history, false)
         else
+          if splat[item] then
+            item = splat[item]
+          end
           page_html = dynamic_page(db_name, load_dataset_by_slug(db_name, item, dataset, params.lang), params, global_data, history, false)
         end
         output = output .. dynamic_replace(db_name, page_html, global_data, history, params)
@@ -249,7 +256,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
               _params = args
             })
           end
-          output = etlua2html(db_data, partial, params.lang)
+          output = etlua2html(db_data, partial, params)
           output = dynamic_replace(db_name, output, global_data, history, params)
         end
       end

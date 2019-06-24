@@ -12,32 +12,26 @@ table_deep_merge = (t1, t2) ->
     if type(v) == "table" then
       if type(t1[k] or false) == "table" then
         table_deep_merge(t1[k] or {}, t2[k] or {})
-      else
-        t1[k] = v
-    else
-      t1[k] = v
+      else t1[k] = v
+    else t1[k] = v
   t1
 --------------------------------------------------------------------------------
 -- Return Index off value in table or nil if not found
 table_index = (tab, val) ->
-  for index, value in ipairs(tab) do
-    return index if value == val
+  for index, value in ipairs(tab) do return index if value == val
   nil
 --------------------------------------------------------------------------------
 -- Check valid lang
 check_valid_lang = (langs, lang) ->
   allowed_lang = {}
-  for k, v in pairs(stringy.split(langs, ','))
-    allowed_lang[v] = true
+  for k, v in pairs(stringy.split(langs, ',')) do allowed_lang[v] = true
 
-  if allowed_lang[lang] == nil then
-    lang = stringy.split(langs, ',')[1]
+  if allowed_lang[lang] == nil then lang = stringy.split(langs, ',')[1]
   lang
 --------------------------------------------------------------------------------
 map = (tbl, f)->
   data = {}
-  for k,v in pairs tbl
-    data[k] = f(v)
+  for k,v in pairs tbl do data[k] = f(v)
   data
 --------------------------------------------------------------------------------
 -- expose methods

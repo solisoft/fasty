@@ -54,7 +54,7 @@ var check_json = function(json, folder, fullname, api) {
         if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
 
         fs.writeFileSync(endpathname + '/manifest.json', header + " manifest\n" + obj.api.manifest)
-        fs.writeFileSync(endpathname + '/main.js', header + " javascript\n" + obj.api.code)
+        fs.writeFileSync(endpathname + '/main.js', header + " code\n" + obj.api.code)
         if(!fs.existsSync(endpathname + "/routes")) fs.mkdirSync(endpathname + "/routes")
         if(!fs.existsSync(endpathname + "/scripts")) fs.mkdirSync(endpathname + "/scripts")
         if(!fs.existsSync(endpathname + "/tests")) fs.mkdirSync(endpathname + "/tests")
