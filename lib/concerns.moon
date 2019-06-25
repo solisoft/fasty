@@ -131,7 +131,11 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- {{ settings | key }}
     -- e.g. {{ settings | chatroom_url }}
     if action == 'settings' and from_json(global_data.settings[1].home)[item]
-        output = from_json(global_data.settings[1].home)[item]
+      output = from_json(global_data.settings[1].home)[item]
+
+    -- {{ splat | key }}
+    -- e.g. {{ splat | salon }}
+    if action == 'splat' and splat[item] then output = splat[item]
 
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
