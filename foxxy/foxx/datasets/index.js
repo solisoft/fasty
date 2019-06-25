@@ -408,7 +408,7 @@ router.post('/:service/:service_key/:sub', function (req, res) {
       collection.update(obj, { slug: slug })
     }
     save_revision(req.session.uid, object, data, object.revisions)
-    save_activity(obj._id, 'created', req.session.uid)
+    save_activity(object._id, 'created', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -465,7 +465,7 @@ router.post('/:service/:id', function (req, res) {
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
-    save_activity(obj._id, 'updated', req.session.uid)
+    save_activity(doc._id, 'updated', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
@@ -525,7 +525,7 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
-    save_activity(obj._id, 'updated', req.session.uid)
+    save_activity(doc._id, 'updated', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
