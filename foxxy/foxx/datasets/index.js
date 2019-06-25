@@ -20,6 +20,15 @@ const sessions = sessionsMiddleware({
 module.context.use(sessions);
 module.context.use(router);
 
+var save_activity = function(object_id, action, user_key) {
+  db.activities.save({
+    date: +new Date(),
+    object_id,
+    action,
+    user_key
+  })
+}
+
 var typeCast = function(type, value) {
   var value = unescape(value)
   if (type == "integer") value = parseInt(value)
@@ -336,6 +345,7 @@ router.post('/:service', function (req, res) {
       collection.update(obj, { slug: slug })
     }
     save_revision(req.session.uid, obj, data, object.revisions)
+    save_activity(obj._id, 'created', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -398,6 +408,7 @@ router.post('/:service/:service_key/:sub', function (req, res) {
       collection.update(obj, { slug: slug })
     }
     save_revision(req.session.uid, object, data, object.revisions)
+    save_activity(obj._id, 'created', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
@@ -454,6 +465,7 @@ router.post('/:service/:id', function (req, res) {
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
+    save_activity(obj._id, 'updated', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
@@ -513,6 +525,7 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
+    save_activity(obj._id, 'updated', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
@@ -574,7 +587,7 @@ router.post('/:id/publish', function (req, res) {
 .description('publish a dataset.');
 
 ////////////////////////////////////////////////////////////////////////////////
-// DELET /datasets/:service/:id
+// DELETE /datasets/:service/:id
 router.delete('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   collection.remove('datasets/' + req.pathParams.id)
