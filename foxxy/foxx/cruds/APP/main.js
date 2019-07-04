@@ -106,10 +106,7 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
     folder = 'FILTER !HAS(doc, "folder_key") || doc.folder_key == @folder'
     folder_params = { folder: req.queryParams.folder }
   }
-
-  res.send({
-    model: models()[req.pathParams.service],
-    data: db._query(`
+  var data = db._query(`
     LET count = LENGTH(FOR doc IN @@collection ${folder} RETURN 1)
     LET data = (
       FOR doc IN @@collection
@@ -122,7 +119,11 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
       "@collection": req.pathParams.service,
       "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
       "perpage": parseInt(req.pathParams.perpage)
-    }, folder_params)).toArray()
+    }, folder_params)
+  ).toArray()
+  res.send({
+    model: models()[req.pathParams.service],
+    data
   });
 })
 .header('X-Session-Id')
@@ -175,7 +176,9 @@ router.post('/:service', function (req, res) {
   if(!_.isArray(fields)) fields = fields.model
   try {
     var schema = {}
-    _.each(fields, function (f) { schema[f.n] = f.j })
+    _.each(fields, function (f) {
+      schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
+    })
     if (models()[req.pathParams.service].act_as_tree) {
       schema['folder_key'] = joi.string().required()
     }
@@ -236,7 +239,10 @@ router.post('/:service/:id', function (req, res) {
   if(!_.isArray(fields)) fields = fields.model
   try {
     var schema = {}
-    _.each(fields, function(f) {schema[f.n] = f.ju ? f.ju : f.j })
+    _.each(fields, function (f) {
+      let validate = f.ju ? f.ju : f.j
+      schema[f.n] = _.isString(validate) ? eval(validate) : validate
+    })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
@@ -397,7 +403,9 @@ router.post('/sub/:service/:subservice', function (req, res) {
   var errors = []
   try {
     var schema = {}
-    _.each(fields, function(f) {schema[f.n] = f.j })
+    _.each(fields, function (f) {
+      schema[f.n] = _.isString(f.j) ? eval(f.j) : f.j
+    })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
@@ -421,7 +429,10 @@ router.post('/sub/:service/:subservice/:id', function (req, res) {
   var errors = []
   try {
     var schema = {}
-    _.each(fields, function(f) {schema[f.n] = f.ju ? f.ju : f.j })
+    _.each(fields, function (f) {
+      let validate = f.ju ? f.ju : f.j
+      schema[f.n] = _.isString(validate) ? eval(validate) : validate
+    })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}

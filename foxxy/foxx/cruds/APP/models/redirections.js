@@ -43,10 +43,10 @@ const model = function () {
   var spas = db._query(`FOR doc in spas RETURN [doc._id, doc.name]`).toArray()
   return {
     model: [
-      { r: true, c: "1-2", n: "route", t: "string", j: joi.string().required(), l: "Route" },
-      { r: false, c: "1-2", n: "class", t: "string", j: joi.any(), l: "Classe" },
-      { r: true, c: "1-2", n: "spa_id", t: "list", j: joi.string().required(), l: "Single Page Application", d: spas },
-      { r: false, c: "1-2", n: "layout_id", t: "list", j: joi.string().required(), l: "Layout", d: layouts }
+      { r: true, c: "1-2", n: "route", t: "string", j: "joi.string().required()", l: "Route" },
+      { r: false, c: "1-2", n: "class", t: "string", j: "joi.any()", l: "Classe" },
+      { r: true, c: "1-2", n: "spa_id", t: "list", j: "joi.string().required()", l: "Single Page Application", d: spas },
+      { r: false, c: "1-2", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: layouts }
     ],
     roles: {
       read: ['developer', 'admin'],

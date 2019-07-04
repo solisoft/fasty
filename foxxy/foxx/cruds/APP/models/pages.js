@@ -42,16 +42,16 @@ const model = function () {
   var layouts = db._query(`FOR doc in layouts RETURN [doc._id, doc.name]`).toArray()
   return {
     model: [
-      { r: true, c: "3-4", n: "name", t: "string", j: joi.string().required(), l: "Name", tr: true },
-      { r: false, c: "1-4", n: "layout_id", t: "list", j: joi.string().required(), l: "Layout", d: layouts },
-      { r: true, c: "1-1", n: "slug", t: "string", j: joi.string().required(), l: "Slug", tr: true },
-      { r: true, c: "1-1", n: "html", t: "html", j: joi.any(), l: "Content", tr: true },
-      { r: true, c: "1-1", n: "description", t: "text", j: joi.any(), l: "Description", tr: true },
+      { r: true, c: "3-4", n: "name", t: "string", j: "joi.string().required()", l: "Name", tr: true },
+      { r: false, c: "1-4", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: layouts },
+      { r: true, c: "1-1", n: "slug", t: "string", j: "joi.string().required()", l: "Slug", tr: true },
+      { r: true, c: "1-1", n: "html", t: "html", j: "joi.any()", l: "Content", tr: true },
+      { r: true, c: "1-1", n: "description", t: "text", j: "joi.any()", l: "Description", tr: true },
 
-      { r: true, c: "1-1", n: "og_title", t: "string", j: joi.any(), l: "og:title", tr: true },
-      { r: true, c: "1-1", n: "og_img", t: "string", j: joi.any(), l: "og:img", tr: true },
-      { r: true, c: "1-1", n: "og_type", t: "string", j: joi.any(), l: "og:type", tr: true },
-      { r: true, c: "1-1", n: "og_aql", t: "code:aql", j: joi.any(), l: "og:aql", tr: true },
+      { r: true, c: "1-1", n: "og_title", t: "string", j: "joi.any()", l: "og:title", tr: true },
+      { r: true, c: "1-1", n: "og_img", t: "string", j: "joi.any()", l: "og:img", tr: true },
+      { r: true, c: "1-1", n: "og_type", t: "string", j: "joi.any()", l: "og:type", tr: true },
+      { r: true, c: "1-1", n: "og_aql", t: "code:aql", j: "joi.any()", l: "og:aql", tr: true },
 
     ],
     columns: [

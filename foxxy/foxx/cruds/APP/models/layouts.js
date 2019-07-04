@@ -41,14 +41,14 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 const model = function() {
   return {
     model: [
-      { r: true, c: "1-1", n: "name", t: "string", j: joi.string().required(), l: "Name" },
-      { r: true, c: "1-1", n: "html", t: "code:html", j: joi.any(), l: "HTML" },
+      { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().required()", l: "Name" },
+      { r: true, c: "1-1", n: "html", t: "code:html", j: "joi.any()", l: "HTML" },
       { tab: "CSS" },
-      { r: true, c: "1-1", n: "i_css", t: "code:text", j: joi.any(), l: "Included CSS" },
-      { r: true, c: "1-1", n: "scss", t: "code:scss", j: joi.any(), l: "CSS/Sass" },
+      { r: true, c: "1-1", n: "i_css", t: "code:text", j: "joi.any()", l: "Included CSS" },
+      { r: true, c: "1-1", n: "scss", t: "code:scss", j: "joi.any()", l: "CSS/Sass" },
       { tab: "JS" },
-      { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: joi.any(), l: "JS" },
-      { r: true, c: "1-1", n: "i_js", t: "code:text", j: joi.any(), l: "Included JS", endtab: true }
+      { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.any()", l: "JS" },
+      { r: true, c: "1-1", n: "i_js", t: "code:text", j: "joi.any()", l: "Included JS", endtab: true }
     ],
     columns: [
       { name: "name" },

@@ -42,13 +42,13 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 const model = function() {
   return {
     model: [
-      { r: true, c: "1-2", n: "fn", t: "string", j: joi.string().required(), l: "First Name" },
-      { r: false, c: "1-2", n: "ln", t: "string", j: joi.string().required(), l: "Last Name" },
-      { r: true, c: "1-2", n: "username", t: "string", j: joi.string().required(), l: "Email" },
-      { r: false, c: "1-2", n: "role", t: "string", j: joi.string().required(), l: "Role" },
-      { r: true, c: "1-2", n: "password", t: "password", j: joi.any(), l: "Password" },
-      { r: false, c: "1-2", n: "password_confirmation", t: "password_confirmation", j: joi.any().valid(joi.ref('password')).options({ language: { any: { allowOnly: 'must match password' } } }), l: "Password confirmation" },
-      { r: true, c: "1-1", n: "image", t: "image", j: joi.string(), l: "Avatar" },
+      { r: true, c: "1-2", n: "fn", t: "string", j: "joi.string().required()", l: "First Name" },
+      { r: false, c: "1-2", n: "ln", t: "string", j: "joi.string().required()", l: "Last Name" },
+      { r: true, c: "1-2", n: "username", t: "string", j: "joi.string().required()", l: "Email" },
+      { r: false, c: "1-2", n: "role", t: "string", j: "joi.string().required()", l: "Role" },
+      { r: true, c: "1-2", n: "password", t: "password", j: "joi.any()", l: "Password" },
+      { r: false, c: "1-2", n: "password_confirmation", t: "password_confirmation", j: "joi.any().valid(joi.ref('password')).options({ language: { any: { allowOnly: 'must match password' } } })", l: "Password confirmation" },
+      { r: true, c: "1-1", n: "image", t: "image", j: "joi.string()", l: "Avatar" },
     ],
     columns: [
       { name: "fn", label: "First Name" },

@@ -293,7 +293,6 @@ router.post('/:service', function (req, res) {
 
   try {
     var schema = {}
-    _.each(fields, function (f) { schema[f.n] = f.j })
     if (object.act_as_tree) schema['folder_key'] = joi.string().required()
     _.each(fields, function (f) {
       schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j

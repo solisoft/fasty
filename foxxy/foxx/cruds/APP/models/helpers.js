@@ -50,9 +50,9 @@ const model = function() {
 
   return {
     model: [
-      { r: true, c: "1-1", n: "shortcut", t: "string", j: joi.string().required(), l: "Shortcut" },
-      { r: true, c: "1-1", n: "partial_key", t: "list", j: joi.string().required(), l: "Partial", d: partials },
-      { r: true, c: "1-1", n: "aql_key", t: "list", j: joi.string().required(), l: "AQL", d: aqls }
+      { r: true, c: "1-1", n: "shortcut", t: "string", j: "joi.string().required()", l: "Shortcut" },
+      { r: true, c: "1-1", n: "partial_key", t: "list", j: "joi.string().required()", l: "Partial", d: partials },
+      { r: true, c: "1-1", n: "aql_key", t: "list", j: "joi.string().required()", l: "AQL", d: aqls }
     ],
     columns: [{ name: 'shortcut' }],
     //columns: [
