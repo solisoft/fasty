@@ -36,7 +36,7 @@ install_service = function(sub_domain, name)
   os.execute("mkdir " .. tostring(path) .. "/APP/scripts")
   os.execute("mkdir " .. tostring(path) .. "/APP/tests")
   os.execute("mkdir " .. tostring(path) .. "/APP/libs")
-  local request = 'FOR api IN apis FILTER api.name == @name\n      LET routes  = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)\n      LET scripts = (FOR s IN api_scripts FILTER s.api_id == api._key RETURN s)\n      LET tests   = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)\n      LET libs    = (FOR t IN api_libs FILTER t.api_id == api._key RETURN t)\n      RETURN { api, routes, scripts, tests, libs }'
+  local request = 'FOR api IN apis FILTER api.name == @name\n    LET routes = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)\n    LET scripts = (FOR s IN api_scripts FILTER s.api_id == api._key RETURN s)\n    LET tests = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)\n    LET libs = (FOR l IN api_libs FILTER l.api_id == api._key RETURN l)\n    RETURN { api, routes, scripts, tests, libs }'
   local api = aql("db_" .. tostring(sub_domain), request, {
     ['name'] = name
   })[1]
