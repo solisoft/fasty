@@ -71,7 +71,7 @@ class extends lapis.Application
       @req.headers['host'] = @req.headers['x-forwarded-host']
       @req.parsed_url['host'] = @req.headers['x-forwarded-host']
 
-    if no_db[sub_domain] == nil then redirect_to: 'need_a_db'
+    if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
       load_settings(@, sub_domain)
       if @params.lang then @session.lang = @params.lang
@@ -123,7 +123,7 @@ class extends lapis.Application
       @req.parsed_url['host'] = @req.headers['x-forwarded-host']
 
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-    if no_db[sub_domain] == nil then redirect_to: '/need_a_db'
+    if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
       unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
@@ -133,7 +133,7 @@ class extends lapis.Application
   [page: '/:lang/:all/:slug(/*)']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
     db_name = "db_#{sub_domain}"
-    if no_db[sub_domain] == nil then redirect_to: '/need_a_db'
+    if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
       @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
