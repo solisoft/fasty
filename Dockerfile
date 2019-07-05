@@ -1,14 +1,16 @@
 FROM ubuntu:18.04
 LABEL Olivier Bonnaure <olivier@solisoft.net>
 
-# install build dependencies
-RUN apt-get -qq update && apt-get install -qqy wget gnupg2 && wget -qO - https://openresty.org/package/pubkey.gpg | apt-key add - \
-    && apt-get -y install software-properties-common \
-    && add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
 
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get -qq update && apt-get -qqy install zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev libssl-dev gcc perl make curl git-core curl luarocks libsass-dev
 
-RUN apt-get -qq update && apt-get -qqy install  zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl make curl git-core curl luarocks libsass-dev openresty nodejs
+RUN wget https://openresty.org/download/openresty-1.15.8.1.tar.gz \
+    && tar xf openresty-1.15.8.1.tar.gz \
+    && cd openresty-1.15.8.1 \
+    && ./configure -j2 \
+    && make -j2 \
+    && make install
+
 RUN luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis $LAPIS_VERSION
 RUN luarocks install moonscript
 RUN luarocks install lapis-console
