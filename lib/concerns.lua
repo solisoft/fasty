@@ -19,11 +19,9 @@ splat_to_table = function(splat, sep)
   if sep == nil then
     sep = '/'
   end
-  local _tbl_0 = { }
   for k, v in splat:gmatch(tostring(sep) .. "?(.-)" .. tostring(sep) .. "([^" .. tostring(sep) .. "]+)" .. tostring(sep) .. "?") do
-    _tbl_0[k] = v
+    local _ = k, v
   end
-  return _tbl_0
 end
 local escape_pattern
 escape_pattern = function(text)
@@ -228,20 +226,20 @@ dynamic_replace = function(db_name, html, global_data, history, params)
               })[1]
             end
             local bindvar = prepare_bindvars(splat, args['aql'])
-            for condition in string.gmatch(args['aql'], '__IF (%w-)__') do
-              if not (bindvar[condition]) then
-                args['aql'] = args['aql']:gsub('__IF ' .. condition .. '__.-__END ' .. condition .. '__', '')
+            for str in string.gmatch(args['aql'], '__IF (%w-)__') do
+              if not (bindvar[str]) then
+                args['aql'] = args['aql']:gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
               else
-                args['aql'] = args['aql']:gsub('__IF ' .. condition .. '__', '')
-                args['aql'] = args['aql']:gsub('__END ' .. condition .. '__', '')
+                args['aql'] = args['aql']:gsub('__IF ' .. str .. '__', '')
+                args['aql'] = args['aql']:gsub('__END ' .. str .. '__', '')
               end
             end
-            for condition in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
-              if bindvar[condition] then
-                args['aql'] = args['aql']:gsub('__IF_NOT ' .. condition .. '__.-__END_NOT ' .. condition .. '__', '')
+            for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
+              if bindvar[str] then
+                args['aql'] = args['aql']:gsub('__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', '')
               else
-                args['aql'] = args['aql']:gsub('__IF_NOT ' .. condition .. '__', '')
-                args['aql'] = args['aql']:gsub('__END_NOT ' .. condition .. '__', '')
+                args['aql'] = args['aql']:gsub('__IF_NOT ' .. str .. '__', '')
+                args['aql'] = args['aql']:gsub('__END_NOT ' .. str .. '__', '')
               end
             end
             db_data = {

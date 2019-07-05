@@ -1,14 +1,14 @@
 etlua   = require 'etlua'
 stringy = require 'stringy'
-
 import aql, document_get from require 'lib.arango'
 import table_deep_merge from require 'lib.utils'
 import http_get from require 'lib.http_client'
 import from_json, to_json, trim from require 'lapis.util'
 --------------------------------------------------------------------------------
-splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
+splat_to_table = (splat, sep = '/') ->
+  k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?"
 --------------------------------------------------------------------------------
-escape_pattern = (text)->
+escape_pattern = (text) ->
   str, _ = text\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
 --------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
 
   page
 --------------------------------------------------------------------------------
-load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
+load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
   request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
   request ..= 'RETURN { item }'
   dataset = aql(db_name, request, { slug: slug })[1]
@@ -63,7 +63,7 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
   dataset
 --------------------------------------------------------------------------------
 -- dynamic_page : check all {{ .* }} and load layout
-dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
+dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true) ->
   html = to_json(data)
   if data
     page_partial = load_document_by_slug(db_name, 'page', 'partials')
@@ -175,7 +175,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial
           db_data = {}
-          if dataset == 'arango' then
+          if dataset == 'arango'
             -- check if it's a stored procedure
             if args['req']
               args['aql'] = aql(
@@ -187,28 +187,32 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             bindvar = prepare_bindvars(splat, args['aql'])
 
             -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
-            for condition in string.gmatch(args['aql'], '__IF (%w-)__') do
-              unless bindvar[condition] then
-                args['aql'] = args['aql']\gsub('__IF ' .. condition .. '__.-__END ' ..
-                              condition .. '__', '')
+            for str in string.gmatch(args['aql'], '__IF (%w-)__') do
+              unless bindvar[str] then
+                args['aql'] = args['aql']\gsub('__IF ' .. str ..
+                              '__.-__END ' .. str .. '__', '')
               else
-                args['aql'] = args['aql']\gsub('__IF ' .. condition .. '__', '')
-                args['aql'] = args['aql']\gsub('__END ' .. condition .. '__', '')
+                args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
+                args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')
 
-            -- handle conditions __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
-            for condition in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
-              if bindvar[condition] then
-                args['aql'] = args['aql']\gsub('__IF_NOT ' ..
-                              condition .. '__.-__END_NOT ' .. condition .. '__', '')
+            -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
+            for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
+              if bindvar[str] then
+                args['aql'] = args['aql']\gsub(
+                  '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
+                )
               else
-                args['aql'] = args['aql']\gsub('__IF_NOT ' .. condition .. '__', '')
-                args['aql'] = args['aql']\gsub('__END_NOT ' .. condition .. '__', '')
+                args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
+                args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
             db_data = { results: aql(db_name, args['aql'], bindvar) }
             db_data = table_deep_merge(db_data, { _params: args })
 
-          db_data = from_json(http_get(args['url'], args['headers'])) if dataset == 'rest'
-          db_data = table_deep_merge(db_data, { _params: args }) if args['use_params']
+          if dataset == 'rest'
+            db_data = from_json(http_get(args['url'], args['headers']))
+          if args['use_params']
+            db_data = table_deep_merge(db_data, { _params: args })
+
           output = etlua2html(db_data, partial, params)
           output = dynamic_replace(db_name, output, global_data, history, params)
 
@@ -221,7 +225,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         data = { ids: {}, revisions: {}, names: {} }
         for i, k in pairs(stringy.split(item, '#'))
           component = aql(
-            db_name, "FOR doc in components FILTER doc.slug == @slug RETURN doc", { "slug": k }
+            db_name,
+            "FOR doc in components FILTER doc.slug == @slug RETURN doc",
+            { "slug": k }
           )[1]
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
@@ -238,7 +244,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
         spa = aql(
-          db_name, "FOR doc in spas FILTER doc.slug == @slug RETURN doc", { "slug": item }
+          db_name,
+          "FOR doc in spas FILTER doc.slug == @slug RETURN doc",
+          { "slug": item }
         )[1]
         output = spa.html
         output ..= "<script>#{spa.js}</script>"
@@ -257,7 +265,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ tr | my_text }}
     if action == 'tr'
       output = "Missing translation <em style='color:red'>#{item}</em>"
-      aql(db_name, 'INSERT { key: @key, value: {} } IN trads', { key: item }) unless translations[item]
+      unless translations[item]
+        aql(db_name, 'INSERT { key: @key, value: {} } IN trads', { key: item })
       if translations[item] and translations[item][params.lang]
         output = translations[item][params.lang]
 

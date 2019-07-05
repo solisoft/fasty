@@ -1,16 +1,16 @@
 http = require 'lapis.nginx.http'
-
 import map, table_index from require 'lib.utils'
 import from_json, to_json, trim from require 'lapis.util'
 import aql, foxx_services, foxx_install, foxx_upgrade from require 'lib.arango'
-
 --------------------------------------------------------------------------------
+-- write_content
 write_content = (filename, content)->
   file = io.open(filename, 'w+')
   io.output(file)
   io.write(content)
   io.close(file)
 --------------------------------------------------------------------------------
+-- read_zipfile
 read_zipfile = (filename)->
   file = io.open(filename, 'r')
   io.input(file)
@@ -18,6 +18,7 @@ read_zipfile = (filename)->
   io.close(file)
   data
 --------------------------------------------------------------------------------
+-- install_service
 install_service = (sub_domain, name)->
   path = "install_service/#{sub_domain}/#{name}"
   os.execute("mkdir -p #{path}/APP/routes")
@@ -58,7 +59,6 @@ install_service = (sub_domain, name)->
     "db_#{sub_domain}", name,
     read_zipfile("install_service/#{sub_domain}/#{name}.zip")
   )
-
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service }
