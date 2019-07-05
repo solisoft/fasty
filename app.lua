@@ -156,7 +156,7 @@ do
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
       local db_name = "db_" .. tostring(sub_domain)
-      if no_db[sub_domain] then
+      if no_db[sub_domain] == nil then
         return {
           redirect_to = '/need_a_db'
         }
