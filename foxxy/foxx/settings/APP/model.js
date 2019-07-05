@@ -38,16 +38,16 @@ const load_fields = function () {
 
   return {
     fields: [
-      { r: true, c: "1-1", n: "home", t: "code:json", j: joi.string().required(), l: "Home page" },
-      { r: true, c: "1-1", n: "langs", t: "string", j: joi.string().required(), l: "Langs" },
-      { r: true, c: "1-1", n: "jwt_secret", t: "string", j: joi.string().required(), l: "JWT Secret" },
-      { r: true, c: "1-2", n: "upload_path", t: "string", j: joi.string().required(), l: "Upload Path" },
-      { r: false, c: "1-2", n: "upload_url", t: "string", j: joi.string().required(), l: "Upload URL" },
-      { r: true, c: "1-2", n: "secret", t: "string", j: joi.string().required(), l: "Token" },
-      { r: false, c: "1-2", n: "deploy_secret", t: "string", j: joi.any(), l: "Deploy to Token" },
-      { r: false, c: "1-1", n: "resize_ovh", t: "string", j: joi.any(), l: "resize.ovh api key" },
-      { r: true, c: "1-2", n: "ba_login", t: "string", j: joi.any(), l: "Basic Auth : Username" },
-      { r: false, c: "1-2", n: "ba_pass", t: "string", j: joi.any(), l: "Basic Auth : Password" },
+      { r: true, c: "1-1", n: "home", t: "code:json", j: "joi.string().required()", l: "Home page" },
+      { r: true, c: "1-1", n: "langs", t: "string", j: "joi.string().required()", l: "Langs" },
+      { r: true, c: "1-1", n: "jwt_secret", t: "string", j: "joi.string().required()", l: "JWT Secret" },
+      { r: true, c: "1-2", n: "upload_path", t: "string", j: "joi.string().required()", l: "Upload Path" },
+      { r: false, c: "1-2", n: "upload_url", t: "string", j: "joi.string().required()", l: "Upload URL" },
+      { r: true, c: "1-2", n: "secret", t: "string", j: "joi.string().required()", l: "Token" },
+      { r: false, c: "1-2", n: "deploy_secret", t: "string", j: "joi.any()", l: "Deploy to Token" },
+      { r: false, c: "1-1", n: "resize_ovh", t: "string", j: "joi.any()", l: "resize.ovh api key" },
+      { r: true, c: "1-2", n: "ba_login", t: "string", j: "joi.any()", l: "Basic Auth : Username" },
+      { r: false, c: "1-2", n: "ba_pass", t: "string", j: "joi.any()", l: "Basic Auth : Password" },
     ],
     roles: {
       write: ['developer', 'admin']

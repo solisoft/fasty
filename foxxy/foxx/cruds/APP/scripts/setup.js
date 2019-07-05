@@ -197,6 +197,7 @@ create_collection('apis');
 create_collection('api_routes');
 create_collection('api_scripts');
 create_collection('api_tests');
+create_collection('api_libs');
 create_collection('folders');
 create_collection('revisions');
 create_collection('publications');
