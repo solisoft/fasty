@@ -75,7 +75,7 @@ do
         self.req.headers['host'] = self.req.headers['x-forwarded-host']
         self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
       end
-      if no_db[sub_domain] == nil then
+      if no_db[sub_domain] then
         return {
           redirect_to = 'need_a_db'
         }
@@ -137,7 +137,7 @@ do
         self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
       end
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      if no_db[sub_domain] == nil then
+      if no_db[sub_domain] then
         return {
           redirect_to = '/need_a_db'
         }
@@ -156,7 +156,7 @@ do
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
       local db_name = "db_" .. tostring(sub_domain)
-      if no_db[sub_domain] == nil then
+      if no_db[sub_domain] then
         return {
           redirect_to = '/need_a_db'
         }

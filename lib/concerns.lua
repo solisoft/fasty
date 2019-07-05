@@ -19,9 +19,11 @@ splat_to_table = function(splat, sep)
   if sep == nil then
     sep = '/'
   end
+  local _tbl_0 = { }
   for k, v in splat:gmatch(tostring(sep) .. "?(.-)" .. tostring(sep) .. "([^" .. tostring(sep) .. "]+)" .. tostring(sep) .. "?") do
-    local _ = k, v
+    _tbl_0[k] = v
   end
+  return _tbl_0
 end
 local escape_pattern
 escape_pattern = function(text)
@@ -187,6 +189,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if keywords[4] then
       args = splat_to_table(keywords[4], '#')
     end
+    print(to_json(keywords[4]))
     if action == 'settings' and from_json(global_data.settings[1].home)[item] then
       output = from_json(global_data.settings[1].home)[item]
     end

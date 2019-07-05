@@ -5,8 +5,7 @@ import table_deep_merge from require 'lib.utils'
 import http_get from require 'lib.http_client'
 import from_json, to_json, trim from require 'lapis.util'
 --------------------------------------------------------------------------------
-splat_to_table = (splat, sep = '/') ->
-  k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?"
+splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
 escape_pattern = (text) ->
   str, _ = text\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
@@ -127,6 +126,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     item    = keywords[2] if keywords[2]
     dataset = keywords[3] if keywords[3]
     args    = splat_to_table(keywords[4], '#') if keywords[4]
+    print(to_json(keywords[4]))
 
     -- {{ settings | key }}
     -- e.g. {{ settings | chatroom_url }}
