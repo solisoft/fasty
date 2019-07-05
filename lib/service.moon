@@ -21,14 +21,16 @@ read_zipfile = (filename)->
 install_service = (sub_domain, name)->
   path = "install_service/#{sub_domain}/#{name}"
   os.execute("mkdir -p #{path}/APP/routes")
-  os.execute("mkdir -p #{path}/APP/scripts")
-  os.execute("mkdir -p #{path}/APP/tests")
+  os.execute("mkdir #{path}/APP/scripts")
+  os.execute("mkdir #{path}/APP/tests")
+  os.execute("mkdir #{path}/APP/libs")
 
   request = 'FOR api IN apis FILTER api.name == @name
-      LET routes = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)
+      LET routes  = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)
       LET scripts = (FOR s IN api_scripts FILTER s.api_id == api._key RETURN s)
-      LET tests = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)
-      RETURN { api, routes, scripts, tests }'
+      LET tests   = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)
+      LET libs    = (FOR t IN api_libs FILTER t.api_id == api._key RETURN t)
+      RETURN { api, routes, scripts, tests, libs }'
   api = aql("db_#{sub_domain}", request, { 'name': name })[1]
 
   write_content("#{path}/APP/main.js", api.api.code)
@@ -37,6 +39,9 @@ install_service = (sub_domain, name)->
 
   for k, item in pairs api.routes
     write_content("#{path}/APP/routes/#{item.name}.js", item.javascript)
+
+  for k, item in pairs api.libs
+    write_content("#{path}/APP/libs/#{item.name}.js", item.javascript)
 
   for k, item in pairs api.scripts
     write_content("#{path}/APP/scripts/#{item.name}.js", item.javascript)

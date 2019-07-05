@@ -84,6 +84,17 @@ const model = function() {
     //    timestamps: true,
       },
 
+      api_libs: {
+        fields: [
+          { r: true, c: "1-1", n: "api_id", t: "hidden", j: joi.string().required(), l: "Post ID" },
+          { r: true, c: "1-1", n: "name", t: "string", j: joi.string().regex((/^[a-z0-9\-]+$/)).required(), l: "Name" },
+          { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: joi.string().required(), l: "Code Javascript" },
+        ],
+        singular: "api_lib",
+        key: "api_id",
+        columns: [{ name: "name" }]
+      },
+
       api_scripts: {
         fields: [
           { r: true, c: "1-1", n: "api_id", t: "hidden", j: joi.string().required(), l: "Post ID" },
