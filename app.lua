@@ -75,7 +75,7 @@ do
         self.req.headers['host'] = self.req.headers['x-forwarded-host']
         self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
       end
-      if no_db[sub_domain] then
+      if no_db[sub_domain] == nil then
         return {
           redirect_to = 'need_a_db'
         }
@@ -137,7 +137,7 @@ do
         self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
       end
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      if no_db[sub_domain] then
+      if no_db[sub_domain] == nil then
         return {
           redirect_to = '/need_a_db'
         }
@@ -248,9 +248,10 @@ do
     end
     if list_databases()["db_" .. tostring(sub_domain)] == nil then
       no_db[sub_domain] = true
+    else
+      global_data = aql("db_" .. tostring(sub_domain), '\n        LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n        LET g_redirections = (FOR doc IN redirections RETURN doc)\n        LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n        LET g_components = (FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }]))\n        LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n        LET g_helpers = (\n          FOR h IN helpers\n            FOR p IN partials\n              FILTER h.partial_key == p._key\n              FOR a IN aqls\n                FILTER h.aql_key == a._key\n                RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n        )\n        RETURN { components: g_components, settings: g_settings,\n          redirections: g_redirections, aqls: g_aqls,\n          trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n      ')[1]
+      settings[sub_domain] = global_data.settings[1]
     end
-    global_data = aql("db_" .. tostring(sub_domain), '\n      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n      LET g_redirections = (FOR doc IN redirections RETURN doc)\n      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n      LET g_components = (FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }]))\n      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n      LET g_helpers = (\n        FOR h IN helpers\n          FOR p IN partials\n            FILTER h.partial_key == p._key\n            FOR a IN aqls\n              FILTER h.aql_key == a._key\n              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n      )\n      RETURN { components: g_components, settings: g_settings,\n        redirections: g_redirections, aqls: g_aqls,\n        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n    ')[1]
-    settings[sub_domain] = global_data.settings[1]
   end
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)

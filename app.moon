@@ -37,26 +37,28 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   load_settings = (sub_domain) =>
     jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil
-    no_db[sub_domain] = true if list_databases!["db_#{sub_domain}"] == nil
-    global_data = aql("db_#{sub_domain}", '
-      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)
-      LET g_redirections = (FOR doc IN redirections RETURN doc)
-      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))
-      LET g_components = (FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }]))
-      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
-      LET g_helpers = (
-        FOR h IN helpers
-          FOR p IN partials
-            FILTER h.partial_key == p._key
-            FOR a IN aqls
-              FILTER h.aql_key == a._key
-              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])
-      )
-      RETURN { components: g_components, settings: g_settings,
-        redirections: g_redirections, aqls: g_aqls,
-        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
-    ')[1]
-    settings[sub_domain] = global_data.settings[1]
+    if list_databases!["db_#{sub_domain}"] == nil
+      no_db[sub_domain] = true
+    else
+      global_data = aql("db_#{sub_domain}", '
+        LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)
+        LET g_redirections = (FOR doc IN redirections RETURN doc)
+        LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))
+        LET g_components = (FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }]))
+        LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
+        LET g_helpers = (
+          FOR h IN helpers
+            FOR p IN partials
+              FILTER h.partial_key == p._key
+              FOR a IN aqls
+                FILTER h.aql_key == a._key
+                RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])
+        )
+        RETURN { components: g_components, settings: g_settings,
+          redirections: g_redirections, aqls: g_aqls,
+          trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
+      ')[1]
+      settings[sub_domain] = global_data.settings[1]
   ------------------------------------------------------------------------------
   -- need_a_db
   [need_a_db: '/need_a_db']: => render: true
@@ -69,7 +71,7 @@ class extends lapis.Application
       @req.headers['host'] = @req.headers['x-forwarded-host']
       @req.parsed_url['host'] = @req.headers['x-forwarded-host']
 
-    if no_db[sub_domain] then redirect_to: 'need_a_db'
+    if no_db[sub_domain] == nil then redirect_to: 'need_a_db'
     else
       load_settings(@, sub_domain)
       if @params.lang then @session.lang = @params.lang
@@ -121,7 +123,7 @@ class extends lapis.Application
       @req.parsed_url['host'] = @req.headers['x-forwarded-host']
 
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-    if no_db[sub_domain] then redirect_to: '/need_a_db'
+    if no_db[sub_domain] == nil then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
       unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
@@ -131,7 +133,7 @@ class extends lapis.Application
   [page: '/:lang/:all/:slug(/*)']: =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
     db_name = "db_#{sub_domain}"
-    if no_db[sub_domain] then redirect_to: '/need_a_db'
+    if no_db[sub_domain] == nil then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
       @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)

@@ -33,9 +33,10 @@ local install_service
 install_service = function(sub_domain, name)
   local path = "install_service/" .. tostring(sub_domain) .. "/" .. tostring(name)
   os.execute("mkdir -p " .. tostring(path) .. "/APP/routes")
-  os.execute("mkdir -p " .. tostring(path) .. "/APP/scripts")
-  os.execute("mkdir -p " .. tostring(path) .. "/APP/tests")
-  local request = 'FOR api IN apis FILTER api.name == @name\n      LET routes = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)\n      LET scripts = (FOR s IN api_scripts FILTER s.api_id == api._key RETURN s)\n      LET tests = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)\n      RETURN { api, routes, scripts, tests }'
+  os.execute("mkdir " .. tostring(path) .. "/APP/scripts")
+  os.execute("mkdir " .. tostring(path) .. "/APP/tests")
+  os.execute("mkdir " .. tostring(path) .. "/APP/libs")
+  local request = 'FOR api IN apis FILTER api.name == @name\n    LET routes = (FOR r IN api_routes FILTER r.api_id == api._key RETURN r)\n    LET scripts = (FOR s IN api_scripts FILTER s.api_id == api._key RETURN s)\n    LET tests = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)\n    LET libs = (FOR l IN api_libs FILTER l.api_id == api._key RETURN l)\n    RETURN { api, routes, scripts, tests, libs }'
   local api = aql("db_" .. tostring(sub_domain), request, {
     ['name'] = name
   })[1]
@@ -44,6 +45,9 @@ install_service = function(sub_domain, name)
   write_content(tostring(path) .. "/APP/manifest.json", api.api.manifest)
   for k, item in pairs(api.routes) do
     write_content(tostring(path) .. "/APP/routes/" .. tostring(item.name) .. ".js", item.javascript)
+  end
+  for k, item in pairs(api.libs) do
+    write_content(tostring(path) .. "/APP/libs/" .. tostring(item.name) .. ".js", item.javascript)
   end
   for k, item in pairs(api.scripts) do
     write_content(tostring(path) .. "/APP/scripts/" .. tostring(item.name) .. ".js", item.javascript)
