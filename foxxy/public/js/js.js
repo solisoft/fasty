@@ -1433,7 +1433,7 @@ document.removeEventListener("keydown", function() {})
 document.addEventListener("keydown", function(e) {
   if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
     e.preventDefault();
-    $('input[type=submit]').click();
+    $('input[type=submit]:visible').click();
   }
 }, false);
 
