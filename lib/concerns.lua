@@ -92,6 +92,14 @@ load_page_by_slug = function(db_name, slug, lang, uselayout)
   end
   return page
 end
+local page_info
+page_info = function(db_name, slug, lang)
+  local request = "\n    FOR page IN pages FILTER page.slug[@lang] == @slug\n    LET root = (\n      FOR folder IN folders\n      FILTER folder.name == 'Root' AND folder.object_type == 'pages'\n      RETURN folder\n    )[0]\n\n    FOR folder IN folders\n      FILTER folder._key == (HAS(page, 'folder_key') ? page.folder_key : root._key)\n      LET path = (\n        FOR v, e IN ANY SHORTEST_PATH folder TO root GRAPH 'folderGraph'\n        FILTER HAS(v, 'ba_login') AND v.ba_login != ''\n        RETURN v\n      )[0]\n\n      RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
+  return aql(db_name, request, {
+    slug = slug,
+    lang = lang
+  })[1]
+end
 local load_dataset_by_slug
 load_dataset_by_slug = function(db_name, slug, object, lang, uselayout)
   if uselayout == nil then
@@ -330,5 +338,6 @@ return {
   dynamic_page = dynamic_page,
   escape_pattern = escape_pattern,
   dynamic_replace = dynamic_replace,
-  load_redirection = load_redirection
+  load_redirection = load_redirection,
+  page_info = page_info
 }

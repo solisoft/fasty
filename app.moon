@@ -13,7 +13,7 @@ import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
-import dynamic_replace, dynamic_page,
+import dynamic_replace, dynamic_page, page_info
        load_page_by_slug, load_redirection from require 'lib.concerns'
 
 jwt = {}
@@ -152,9 +152,10 @@ class extends lapis.Application
         html = redirection
 
       html = dynamic_replace(db_name, html, global_data, {}, @params)
+      infos = page_info(db_name, @params.slug, @params.lang)
 
-      basic_auth(@, settings[sub_domain]) -- check if website need a basic auth
-      if is_auth(@, settings[sub_domain])
+      basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
+      if is_auth(@, settings[sub_domain], infos)
         if html ~= 'null'
           html
         else

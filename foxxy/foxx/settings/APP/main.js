@@ -93,7 +93,10 @@ router.post('/:id', function (req, res) {
   var errors = []
   try {
     var schema = {}
-    _.each(model.fields, function(f) {schema[f.n] = f.j })
+    _.each(model.fields, function (f) {
+      schema[f.n] = eval(validate)
+    })
+
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}

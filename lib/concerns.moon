@@ -32,11 +32,11 @@ etlua2html = (json, partial, params) ->
   template = etlua.compile(partial.item.html)
   template({ 'dataset': json, 'to_json': to_json, 'lang': params.lang, 'params': params })
 --------------------------------------------------------------------------------
-load_document_by_slug = (db_name, slug, object)->
+load_document_by_slug = (db_name, slug, object) ->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
   aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
-load_page_by_slug = (db_name, slug, lang, uselayout = true)->
+load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
   request = "FOR item IN pages FILTER item.slug[@lang] == @slug "
   if uselayout == true
     request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
@@ -49,6 +49,26 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
     if publication.code ~= 404 then page.item = publication.data
 
   page
+--------------------------------------------------------------------------------
+page_info = (db_name, slug, lang) ->
+  request = "
+    FOR page IN pages FILTER page.slug[@lang] == @slug
+    LET root = (
+      FOR folder IN folders
+      FILTER folder.name == 'Root' AND folder.object_type == 'pages'
+      RETURN folder
+    )[0]
+
+    FOR folder IN folders
+      FILTER folder._key == (HAS(page, 'folder_key') ? page.folder_key : root._key)
+      LET path = (
+        FOR v, e IN ANY SHORTEST_PATH folder TO root GRAPH 'folderGraph'
+        FILTER HAS(v, 'ba_login') AND v.ba_login != ''
+        RETURN v
+      )[0]
+
+      RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
+  aql(db_name, request, { slug: slug, lang: lang })[1]
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
   request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
@@ -279,4 +299,4 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 --------------------------------------------------------------------------------
 -- expose methods
 { :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern,
-  :dynamic_replace, :load_redirection }
+  :dynamic_replace, :load_redirection, :page_info }

@@ -34,10 +34,10 @@ do
   local _obj_0 = require('lapis.application')
   capture_errors, yield_error, respond_to = _obj_0.capture_errors, _obj_0.yield_error, _obj_0.respond_to
 end
-local dynamic_replace, dynamic_page, load_page_by_slug, load_redirection
+local dynamic_replace, dynamic_page, page_info, load_page_by_slug, load_redirection
 do
   local _obj_0 = require('lib.concerns')
-  dynamic_replace, dynamic_page, load_page_by_slug, load_redirection = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.load_page_by_slug, _obj_0.load_redirection
+  dynamic_replace, dynamic_page, page_info, load_page_by_slug, load_redirection = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.page_info, _obj_0.load_page_by_slug, _obj_0.load_redirection
 end
 local jwt = { }
 local global_data = { }
@@ -172,8 +172,9 @@ do
           html = redirection
         end
         html = dynamic_replace(db_name, html, global_data, { }, self.params)
-        basic_auth(self, settings[sub_domain])
-        if is_auth(self, settings[sub_domain]) then
+        local infos = page_info(db_name, self.params.slug, self.params.lang)
+        basic_auth(self, settings[sub_domain], infos)
+        if is_auth(self, settings[sub_domain], infos) then
           if html ~= 'null' then
             return html
           else

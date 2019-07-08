@@ -21,8 +21,6 @@ It will launch the lapis instance + an arangoDB one
 * To access Lapis app (dev) : `http://demo.127.0.0.1.xip.io:8080`
 * To access Lapis app (prod) : `http://demo.127.0.0.1.xip.io:9090`
 
-# Installation
-
 Install foxxy & foxx-cli as global npm modules
 
 `sudo npm install -g foxxy`
@@ -34,6 +32,10 @@ Create a database called `db_cms` and install services on it :
 - Go to the foxxy folder and run
 - `foxxy upgrade settings --server fasty --database db_cms`
 - `foxxy upgrade --server fasty --database db_cms`
+
+# Upgrade ArangoDB version
+
+- `docker-compose run --rm arangodb arangod --database.auto-upgrade`
 
 # Links
 
