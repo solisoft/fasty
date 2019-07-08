@@ -7,6 +7,20 @@ const router = createRouter();
 module.context.use(router);
 const _settings = db._collection('settings').firstExample()
 
+var save_revision = function (uid, object, data, max) {
+  db.revisions.save({
+    data: data, object_id: object._id, c_at: (+new Date()), user_key: uid
+  })
+  db._query(`
+  LET rev_ids = (
+    FOR doc IN revisions FILTER doc.object_id == @id
+    SORT doc.c_at LIMIT @max, 100 RETURN doc._key
+  )
+  FOR id IN rev_ids
+  REMOVE { _key: id } IN revisions
+  `, { id: object._id, max: max })
+}
+
 // -----------------------------------------------------------------------------
 // GET /sync
 router.get('/:token', function (req, res) {
@@ -74,6 +88,7 @@ router.patch('/:token', function (req, res) {
       if (object.locked_by == null || object.locked_by == req.body.name) {
         data['locked_by'] = req.body.name
         db._collection(collection).update(object, data)
+        save_revision(null, object, data, 10)
         res.json(`Saved! ${collection} ${id} ${field}`)
       } else {
         res.json(`Error! File is locked by ${object.locked_by}`)
@@ -83,6 +98,7 @@ router.patch('/:token', function (req, res) {
         if (object.locked_by == req.body.name) {
           data['locked_by'] = null
           db._collection(collection).update(object, data)
+          save_revision(null, object, data, 10)
           res.json(`Saved! ${collection} ${id} ${field}`)
         } else {
           res.json(`Error! File is locked by ${object.locked_by}`)
