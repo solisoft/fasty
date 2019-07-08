@@ -8,7 +8,6 @@ module.context.use(router);
 const _settings = db._collection('settings').firstExample()
 
 var save_revision = function (uid, object, data, max) {
-  console.log("saving ...")
   db.revisions.save({
     data: data, object_id: object._id, c_at: (+new Date()), user_key: uid
   })
