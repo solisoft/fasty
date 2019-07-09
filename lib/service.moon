@@ -60,5 +60,16 @@ install_service = (sub_domain, name)->
     read_zipfile("install_service/#{sub_domain}/#{name}.zip")
   )
 --------------------------------------------------------------------------------
+-- install script
+install_script = (sub_domain, name) ->
+  path = "scripts/#{sub_domain}/#{name}"
+  os.execute("mkdir -p #{path}")
+  request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
+  script = aql("db_#{sub_domain}", request, { 'name': name })[1]
+  write_content("#{path}/index.js", script.code)
+  write_content("#{path}/package.json", script.package)
+  os.execute("cd #{path} && yarn")
+  os.execute("forever stop #{path}/index.js")
+  os.execute("forever start -l #{path}/access.log -e #{path}/err.log #{path}/index.js")
 -- expose methods
-{ :install_service }
+{ :install_service, :install_script }

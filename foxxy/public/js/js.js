@@ -4906,7 +4906,7 @@ riot.tag2('script_crud_new', '<a href="#" class="uk-button uk-button-link" oncli
 
 });
 
-riot.tag2('script_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">scripts</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing script</h3> <form onsubmit="{save_form}" class="uk-form" id="form_script"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('script_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">scripts</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing script</h3> <form onsubmit="{save_form}" class="uk-form" id="form_script"> </form> <a class="uk-button uk-button-secondary" onclick="{install}">Launch / Restart</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -4956,6 +4956,21 @@ riot.tag2('script_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#
         })
       })
     })
+
+    this.install = function(e) {
+      e.preventDefault()
+      var url = "/service/" + self.api.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "service installed")
+          UIkit.notification({
+            message : 'Endpoint Deployed Successfully!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+      return false
+    }.bind(this)
 
     this.on('updated', function() {
       $(".select_list").select2()

@@ -7,8 +7,8 @@ config  = require('lapis.config').get!
 
 import cached from require 'lapis.cache'
 import check_valid_lang from require 'lib.utils'
-import install_service from require 'lib.service'
 import basic_auth, is_auth from require 'lib.basic_auth'
+import install_service, install_script from require 'lib.service'
 import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
@@ -172,6 +172,19 @@ class extends lapis.Application
       if @params.token == settings[sub_domain].token
         install_service(sub_domain, @params.name)
         'service installed'
+      else
+        status: 401, 'Not authorized'
+  }
+  ------------------------------------------------------------------------------
+  -- install script
+  [service: '/script/:name']: respond_to {
+    POST: =>
+      sub_domain = stringy.split(@req.headers.host, '.')[1]
+      load_settings(@, sub_domain)
+
+      if @params.token == settings[sub_domain].token
+        install_script(sub_domain, @params.name)
+        'script installed'
       else
         status: 401, 'Not authorized'
   }

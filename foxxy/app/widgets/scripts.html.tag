@@ -129,7 +129,7 @@
     this.on('mount', function() {
       common.buildForm(self.crud, opts.fields, '#'+opts.id+'_crud_script')
     })
-
+    ////////////////////////////////////////////////////////////////////////////
     save_form(e) {
       e.preventDefault()
       common.saveForm(opts.id+'_crud_script', "cruds/sub/scripts/"+ opts.id, "", opts)
@@ -151,7 +151,7 @@
         <h3>Editing script</h3>
         <form onsubmit="{ save_form }" class="uk-form" id="form_script">
         </form>
-        <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
+        <a class="uk-button uk-button-secondary" onclick="{ install }">Launch / Restart</a>
       </li>
       <li each={ i, k in sub_models }>
         <div id={ k } class="crud"></div>
@@ -212,6 +212,22 @@
         })
       })
     })
+
+    ////////////////////////////////////////////////////////////////////////////
+    install(e) {
+      e.preventDefault()
+      var url = "/service/" + self.api.name
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "service installed")
+          UIkit.notification({
+            message : 'Endpoint Deployed Successfully!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+      return false
+    }
 
     this.on('updated', function() {
       $(".select_list").select2()

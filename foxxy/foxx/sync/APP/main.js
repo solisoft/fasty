@@ -61,7 +61,7 @@ router.get('/:token', function (req, res) {
     )
     LET scripts = (
       FOR s IN scripts
-      RETURN { id: s._id, name: s.name, code: s.code, package: s.packge, locked_by: s.locked_by }
+      RETURN { id: s._id, name: s.name, code: s.code, package: s.package, locked_by: s.locked_by }
     )
 
     RETURN { layouts, components, partials, aqls, datatypes, apis, scripts }
