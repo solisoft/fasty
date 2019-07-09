@@ -36,8 +36,6 @@ var check_json = function(json, folder, fullname, api) {
         fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
         fs.writeFileSync(endpathname + '/' + obj.name + '.scss', header + " scss\n" + obj.scss)
         fs.writeFileSync(endpathname + '/' + obj.name + '.js', header + " js\n" + obj.js)
-        //fs.writeFileSync(endpathname + '/' + obj.filename + '.css.txt', header + " css_assets\n" + obj.css_assets)
-        //fs.writeFileSync(endpathname + '/' + obj.filename + '.js.txt', header + " js_assets\n" + obj.js_assets)
       }
       if (k == "components") {
         fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
@@ -71,6 +69,11 @@ var check_json = function(json, folder, fullname, api) {
           fs.writeFileSync(endpathname + '/tests/' + test.name + '.js', header + " javascript\n" + test.js)
         })
       }
+      if (k == "scripts") {
+        fs.writeFileSync(endpathname + '/index.js', header + " code\n" + obj.code)
+        fs.writeFileSync(endpathname + '/package.json', header + " package\n" + obj.package)
+      }
+
     })
   })
 

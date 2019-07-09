@@ -50,6 +50,9 @@ $(function () {
   route('/aqls', function() { riot.mount('div#app', 'aqls') })
   route('/helpers', function() { riot.mount('div#app', 'helpers') })
   route('/apis', function() { riot.mount('div#app', 'apis') })
+  route('/scripts', function(name) {
+    riot.mount('div#app', 'scripts')
+  })
   /*@{{router}}*/
 
 
@@ -106,6 +109,11 @@ $(function () {
       if(collection == "apis") {
         if(action == "edit") { riot.mount('div#app', 'api_edit', { api_id: id }) }
       }
+      if(collection == "scripts") {
+        if(action == "edit") {
+          riot.mount('div#app', 'script_edit', { script_id: id })  
+        }
+      } 
       /*@{{router_cia}}*/
     }
   })
@@ -123,6 +131,9 @@ $(function () {
     if(collection == "aqls" && action == "new") riot.mount('div#app', 'aql_new')
     if(collection == "helpers" && action == "new") riot.mount('div#app', 'helper_new')
     if(collection == "apis" && action == "new") riot.mount('div#app', 'api_new')
+    if(collection == "scripts") {
+      if(action == "new") riot.mount('div#app', 'script_new')
+    }
     /*@{{router_ca}}*/
   })
 

@@ -59,8 +59,12 @@ router.get('/:token', function (req, res) {
           api_routes, api_scripts, api_tests
         }
     )
+    LET scripts = (
+      FOR s IN scripts
+      RETURN { id: s._id, name: s.name, code: s.code, package: s.packge, locked_by: s.locked_by }
+    )
 
-    RETURN { layouts, components, partials, aqls, datatypes, apis}
+    RETURN { layouts, components, partials, aqls, datatypes, apis, scripts }
     `).toArray()[0]
   }
   res.json(data)

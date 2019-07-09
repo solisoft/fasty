@@ -207,5 +207,7 @@ db._collection('publications').ensureIndex({ type: 'hash', fields: ['object_id']
 
 create_edge_collection('folder_path')
 create_graph('folderGraph', 'folder_path', 'folders', 'folders')
+create_collection('scripts');
+
 /*@{{setup}}*/
 
