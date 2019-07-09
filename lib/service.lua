@@ -60,6 +60,22 @@ install_service = function(sub_domain, name)
   os.execute("rm --recursive install_service/" .. tostring(sub_domain) .. "/" .. tostring(name))
   return foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
 end
+local install_script
+install_script = function(sub_domain, name)
+  local path = "scripts/" .. tostring(sub_domain) .. "/" .. tostring(name)
+  os.execute("mkdir -p " .. tostring(path))
+  local request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
+  local script = aql("db_" .. tostring(sub_domain), request, {
+    ['name'] = name
+  })[1]
+  write_content(tostring(path) .. "/index.js", script.code)
+  write_content(tostring(path) .. "/package.json", script.package)
+  os.execute("export PATH='$PATH:/usr/local/bin' && cd " .. tostring(path) .. " && yarn")
+  os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever list")
+  os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever stop " .. tostring(sub_domain) .. tostring(name))
+  return os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever start --id " .. tostring(sub_domain) .. tostring(name) .. " -l " .. tostring(sub_domain) .. "/" .. tostring(name) .. "/access.log --append " .. tostring(path) .. "/index.js")
+end
 return {
-  install_service = install_service
+  install_service = install_service,
+  install_script = install_script
 }

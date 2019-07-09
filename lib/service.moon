@@ -68,8 +68,9 @@ install_script = (sub_domain, name) ->
   script = aql("db_#{sub_domain}", request, { 'name': name })[1]
   write_content("#{path}/index.js", script.code)
   write_content("#{path}/package.json", script.package)
-  os.execute("cd #{path} && yarn")
-  os.execute("forever stop #{path}/index.js")
-  os.execute("forever start -l #{path}/access.log -e #{path}/err.log #{path}/index.js")
+  os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
+  os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever list")
+  os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever stop #{sub_domain}#{name}")
+  os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever start --id #{sub_domain}#{name} -l #{sub_domain}/#{name}/access.log --append #{path}/index.js")
 -- expose methods
 { :install_service, :install_script }

@@ -4910,6 +4910,10 @@ riot.tag2('script_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#
     var self = this
     self.can_access = false
     self.loaded = false
+    this.settings   = {}
+    self.locked_by = null
+
+    common.get(url + "/settings", function(settings) { self.settings = settings.data })
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -4959,11 +4963,11 @@ riot.tag2('script_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#
 
     this.install = function(e) {
       e.preventDefault()
-      var url = "/service/" + self.api.name
+      var url = "/script/" + self.script.name
       $.post(url, { token: self.settings.token }, function(data) {
-        if(data == "service installed")
+        if(data == "script installed")
           UIkit.notification({
-            message : 'Endpoint Deployed Successfully!',
+            message : 'Script Launched Successfully!',
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'

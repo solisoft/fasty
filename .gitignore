@@ -14,5 +14,6 @@ coverage
 foxxy/app/js/config.js
 deploy-cms
 install_service
+scripts
 sync/*.tgz
 cypress/videos

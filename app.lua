@@ -7,12 +7,15 @@ local cached
 cached = require('lapis.cache').cached
 local check_valid_lang
 check_valid_lang = require('lib.utils').check_valid_lang
-local install_service
-install_service = require('lib.service').install_service
 local basic_auth, is_auth
 do
   local _obj_0 = require('lib.basic_auth')
   basic_auth, is_auth = _obj_0.basic_auth, _obj_0.is_auth
+end
+local install_service, install_script
+do
+  local _obj_0 = require('lib.service')
+  install_service, install_script = _obj_0.install_service, _obj_0.install_script
 end
 local hmac_sha1, encode_base64
 do
@@ -202,6 +205,22 @@ do
         if self.params.token == settings[sub_domain].token then
           install_service(sub_domain, self.params.name)
           return 'service installed'
+        else
+          return {
+            status = 401
+          }, 'Not authorized'
+        end
+      end
+    }),
+    [{
+      service = '/script/:name'
+    }] = respond_to({
+      POST = function(self)
+        local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+        load_settings(self, sub_domain)
+        if self.params.token == settings[sub_domain].token then
+          install_script(sub_domain, self.params.name)
+          return 'script installed'
         else
           return {
             status = 401

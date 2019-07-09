@@ -18,9 +18,11 @@ RUN luarocks install stringy
 RUN luarocks install busted
 RUN luarocks install sass
 
-RUN curl -L https://git.io/n-install | N_PREFIX=/usr/bin/n bash -s -- -y
-RUN ln -s /usr/bin/n/bin/node /usr/bin/node
-RUN /usr/bin/n/bin/npm install -g yarn forever
+RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n
+RUN chmod +x n && mv n /usr/bin/n
+RUN n lts
+
+RUN npm install -g yarn forever
 
 WORKDIR /var/www
 
