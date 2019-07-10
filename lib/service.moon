@@ -67,7 +67,7 @@ install_script = (sub_domain, name) ->
   request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
   script = aql("db_#{sub_domain}", request, { 'name': name })[1]
   write_content("#{path}/package.json", script.package)
-  os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
+  -- os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
   write_content("#{path}/index.js", script.code)
   -- os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
   -- os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever list")
