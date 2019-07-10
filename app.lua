@@ -12,11 +12,6 @@ do
   local _obj_0 = require('lib.basic_auth')
   basic_auth, is_auth = _obj_0.basic_auth, _obj_0.is_auth
 end
-local install_service, install_script
-do
-  local _obj_0 = require('lib.service')
-  install_service, install_script = _obj_0.install_service, _obj_0.install_script
-end
 local hmac_sha1, encode_base64
 do
   local _obj_0 = require('lapis.util.encoding')
@@ -36,6 +31,11 @@ local capture_errors, yield_error, respond_to
 do
   local _obj_0 = require('lapis.application')
   capture_errors, yield_error, respond_to = _obj_0.capture_errors, _obj_0.yield_error, _obj_0.respond_to
+end
+local install_service, install_script, deploy_site
+do
+  local _obj_0 = require('lib.service')
+  install_service, install_script, deploy_site = _obj_0.install_service, _obj_0.install_script, _obj_0.deploy_site
 end
 local dynamic_replace, dynamic_page, page_info, load_page_by_slug, load_redirection
 do
@@ -221,6 +221,22 @@ do
         if self.params.token == settings[sub_domain].token then
           install_script(sub_domain, self.params.name)
           return 'script installed'
+        else
+          return {
+            status = 401
+          }, 'Not authorized'
+        end
+      end
+    }),
+    [{
+      service = '/deploy'
+    }] = respond_to({
+      POST = function(self)
+        local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+        load_settings(self, sub_domain)
+        if self.params.token == settings[sub_domain].token then
+          deploy_site(sub_domain, settings[sub_domain])
+          return 'site deployed'
         else
           return {
             status = 401

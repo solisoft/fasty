@@ -8,11 +8,11 @@ config  = require('lapis.config').get!
 import cached from require 'lapis.cache'
 import check_valid_lang from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
-import install_service, install_script from require 'lib.service'
 import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
+import install_service, install_script, deploy_site from require 'lib.service'
 import dynamic_replace, dynamic_page, page_info
        load_page_by_slug, load_redirection from require 'lib.concerns'
 
@@ -185,6 +185,19 @@ class extends lapis.Application
       if @params.token == settings[sub_domain].token
         install_script(sub_domain, @params.name)
         'script installed'
+      else
+        status: 401, 'Not authorized'
+  }
+  ------------------------------------------------------------------------------
+  -- deploy site
+  [service: '/deploy']: respond_to {
+    POST: =>
+      sub_domain = stringy.split(@req.headers.host, '.')[1]
+      load_settings(@, sub_domain)
+
+      if @params.token == settings[sub_domain].token
+        deploy_site(sub_domain, settings[sub_domain])
+        'site deployed'
       else
         status: 401, 'Not authorized'
   }

@@ -1,7 +1,7 @@
 http = require 'lapis.nginx.http'
 import map, table_index from require 'lib.utils'
 import from_json, to_json, trim from require 'lapis.util'
-import aql, foxx_services, foxx_install, foxx_upgrade from require 'lib.arango'
+import aql, foxx_upgrade from require 'lib.arango'
 --------------------------------------------------------------------------------
 -- write_content
 write_content = (filename, content)->
@@ -60,6 +60,16 @@ install_service = (sub_domain, name)->
     read_zipfile("install_service/#{sub_domain}/#{name}.zip")
   )
 --------------------------------------------------------------------------------
+-- deploy site
+deploy_site = (sub_domain, settings) ->
+  config = require('lapis.config').get!
+  db_config = require('lapis.config').get("db_#{config._name}")
+  path = "dump/#{sub_domain}/"
+  os.execute("mkdir -p #{path}")
+  os.execute("arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection sripts --collection pages --collection trads --collection datasets --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint http+tcp://172.31.0.6:8529 --output-directory #{path} --overwrite true")
+  os.execute("arangorestore --include-system-collections true --server.database #{settings.deploy_secret} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint http+tcp://172.31.0.6:8529 --input-directory #{path} --overwrite true")
+  os.execute("rm -Rf #{path}")
+--------------------------------------------------------------------------------
 -- install script
 install_script = (sub_domain, name) ->
   path = "scripts/#{sub_domain}/#{name}"
@@ -69,9 +79,5 @@ install_script = (sub_domain, name) ->
   write_content("#{path}/package.json", script.package)
   os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
   write_content("#{path}/index.js", script.code)
-  -- os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
-  -- os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever list")
-  -- os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever stop #{sub_domain}#{name}")
-  -- os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever start --id #{sub_domain}#{name} -l #{sub_domain}/#{name}/access.log --append #{path}/index.js")
 -- expose methods
-{ :install_service, :install_script }
+{ :install_service, :install_script, :deploy_site }

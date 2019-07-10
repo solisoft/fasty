@@ -25,6 +25,7 @@
 
 <rightnav>
   <ul class="uk-navbar-nav">
+    <li><a onclick={deploy} if={settings.deploy_secret != ""}>Deploy</a></li>
     <li each={lang in langs} class="{lang == window.localStorage.getItem('foxx-locale') ? 'uk-active' : ''}"><a onclick={changeLang}>{lang}</a></li>
 
     <li><a href="#logout"><i class="uk-icon-sign-out"></i> Logout</a></li>
@@ -43,6 +44,22 @@
     changeLang(e) {
       window.localStorage.setItem('foxx-locale', e.item.lang)
       document.location.reload()
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    deploy(e) {
+      e.preventDefault()
+      var url = "/deploy"
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "site deployed")
+          UIkit.notification({
+            message : 'Site Deployed Successfully!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+      return false
     }
   </script>
 </rightnav>

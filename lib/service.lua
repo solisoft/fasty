@@ -9,10 +9,10 @@ do
   local _obj_0 = require('lapis.util')
   from_json, to_json, trim = _obj_0.from_json, _obj_0.to_json, _obj_0.trim
 end
-local aql, foxx_services, foxx_install, foxx_upgrade
+local aql, foxx_upgrade
 do
   local _obj_0 = require('lib.arango')
-  aql, foxx_services, foxx_install, foxx_upgrade = _obj_0.aql, _obj_0.foxx_services, _obj_0.foxx_install, _obj_0.foxx_upgrade
+  aql, foxx_upgrade = _obj_0.aql, _obj_0.foxx_upgrade
 end
 local write_content
 write_content = function(filename, content)
@@ -60,6 +60,16 @@ install_service = function(sub_domain, name)
   os.execute("rm --recursive install_service/" .. tostring(sub_domain) .. "/" .. tostring(name))
   return foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
 end
+local deploy_site
+deploy_site = function(sub_domain, settings)
+  local config = require('lapis.config').get()
+  local db_config = require('lapis.config').get("db_" .. tostring(config._name))
+  local path = "dump/" .. tostring(sub_domain) .. "/"
+  os.execute("mkdir -p " .. tostring(path))
+  os.execute("arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection sripts --collection pages --collection trads --collection datasets --include-system-collections true --server.database db_" .. tostring(sub_domain) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --output-directory " .. tostring(path) .. " --overwrite true")
+  os.execute("arangorestore --include-system-collections true --server.database " .. tostring(settings.deploy_secret) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --input-directory " .. tostring(path) .. " --overwrite true")
+  return os.execute("rm -Rf " .. tostring(path))
+end
 local install_script
 install_script = function(sub_domain, name)
   local path = "scripts/" .. tostring(sub_domain) .. "/" .. tostring(name)
@@ -68,14 +78,12 @@ install_script = function(sub_domain, name)
   local script = aql("db_" .. tostring(sub_domain), request, {
     ['name'] = name
   })[1]
-  write_content(tostring(path) .. "/index.js", script.code)
   write_content(tostring(path) .. "/package.json", script.package)
   os.execute("export PATH='$PATH:/usr/local/bin' && cd " .. tostring(path) .. " && yarn")
-  os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever list")
-  os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever stop " .. tostring(sub_domain) .. tostring(name))
-  return os.execute("export PATH='$PATH:/usr/local/bin' && FOREVER_ROOT=scripts forever start --id " .. tostring(sub_domain) .. tostring(name) .. " -l " .. tostring(sub_domain) .. "/" .. tostring(name) .. "/access.log --append " .. tostring(path) .. "/index.js")
+  return write_content(tostring(path) .. "/index.js", script.code)
 end
 return {
   install_service = install_service,
-  install_script = install_script
+  install_script = install_script,
+  deploy_site = deploy_site
 }
