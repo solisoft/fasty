@@ -16,6 +16,7 @@ list_databases = () ->
     db_config.url .. '_api/user/' .. db_config.login .. '/database', 'GET',
     {}, { Authorization: "bearer #{jwt}" }
   )
+  print(from_json(body)['result'])
   from_json(body)['result']
 --------------------------------------------------------------------------------
 auth_arangodb = (db_name) ->
