@@ -51,7 +51,7 @@ install_service = (sub_domain, name)->
     write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
 
   -- Install the service
-  os.execute("cd install_service/#{sub_domain}/#{name}/APP && yarn")
+  os.execute("cd install_service/#{sub_domain}/#{name}/APP && export PATH='$PATH:/usr/local/bin' yarn")
   os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
   os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
 
