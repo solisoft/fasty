@@ -2413,7 +2413,7 @@ riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_
     this.loadcomponent = function(componentIndex) {
       self.loaded = false
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
-      common.get(url + "/cruds/components/component/"+componentIndex+"/"+this.perpage + querystring, function(d) {
+      common.get(url + "/cruds/components/page/"+componentIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -4565,7 +4565,7 @@ riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}
     this.loadpartial = function(partialIndex) {
       self.loaded = false
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
-      common.get(url + "/cruds/partials/partial/"+partialIndex+"/"+this.perpage + querystring, function(d) {
+      common.get(url + "/cruds/partials/page/"+partialIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
