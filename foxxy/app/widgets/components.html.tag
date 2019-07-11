@@ -95,8 +95,8 @@
   </table>
 
   <ul class="uk-pagination">
-    <li if={ component > 0 } ><a onclick={ previouscomponent }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
-    <li if={ (component + 1) * percomponent < count} class="uk-margin-auto-left"><a onclick={ nextcomponent }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+    <li if={ component > 0 } ><a onclick={ previouspage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+    <li if={ (component + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextpage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
   </ul>
 
   <script>
@@ -108,7 +108,7 @@
     }
 
     this.loadcomponent = function(componentIndex) {
-      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/component/"+componentIndex+"/"+per_component, function(d) {
+      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/component/"+componentIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(opts.columns) self.cols = opts.columns
@@ -124,13 +124,13 @@
       riot.mount("#"+opts.id, "component_crud_edit", opts)
     }
 
-    nextcomponent(e) {
+    nextpage(e) {
       e.preventDefault()
       self.component += 1
       self.loadcomponent(self.component + 1)
     }
 
-    previouscomponent(e) {
+    previouspage(e) {
       e.preventDefault()
       self.component -= 1
       self.loadcomponent(self.component + 1)
@@ -403,16 +403,16 @@
       </tbody>
     </table>
     <ul class="uk-pagination">
-      <li if={ component > 0 } ><a onclick={ previouscomponent }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
-      <li if={ (component + 1) * percomponent < count} class="uk-margin-auto-left"><a onclick={ nextcomponent }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+      <li if={ component > 0 } ><a onclick={ previouspage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+      <li if={ (component + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextpage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
     </ul>
-    Per component : {percomponent > 100000 ? 'ALL' : percomponent}
-    <a onclick={ setPercomponent } class="uk-label">25</a>
-    <a onclick={ setPercomponent } class="uk-label">50</a>
-    <a onclick={ setPercomponent } class="uk-label">100</a>
-    <a onclick={ setPercomponent } class="uk-label">500</a>
-    <a onclick={ setPercomponent } class="uk-label">1000</a>
-    <a onclick={ setPercomponent } class="uk-label">ALL</a>
+    Per component : {perpage > 100000 ? 'ALL' : perpage}
+    <a onclick={ setperpage } class="uk-label">25</a>
+    <a onclick={ setperpage } class="uk-label">50</a>
+    <a onclick={ setperpage } class="uk-label">100</a>
+    <a onclick={ setperpage } class="uk-label">500</a>
+    <a onclick={ setperpage } class="uk-label">1000</a>
+    <a onclick={ setperpage } class="uk-label">ALL</a>
   </virtual>
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this component...
@@ -424,7 +424,7 @@
 
     var self        = this
     this.component       = 0
-    this.percomponent    = per_component
+    this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -438,7 +438,7 @@
     this.loadcomponent = function(componentIndex) {
       self.loaded = false
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
-      common.get(url + "/cruds/components/component/"+componentIndex+"/"+this.percomponent + querystring, function(d) {
+      common.get(url + "/cruds/components/component/"+componentIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -493,13 +493,13 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    nextcomponent(e) {
+    nextpage(e) {
       self.component += 1
       self.loadcomponent(self.component + 1)
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    previouscomponent(e) {
+    previouspage(e) {
       self.component -= 1
       self.loadcomponent(self.component + 1)
     }
@@ -524,11 +524,11 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    setPercomponent(e) {
+    setperpage(e) {
       e.preventDefault()
-      var percomponent = parseInt(e.srcElement.innerText)
-      if(e.srcElement.innerText == 'ALL') percomponent = 1000000000;
-      this.percomponent = percomponent
+      var perpage = parseInt(e.srcElement.innerText)
+      if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
+      this.perpage = perpage
       this.loadcomponent(1)
     }
 

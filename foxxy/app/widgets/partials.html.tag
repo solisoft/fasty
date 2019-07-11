@@ -95,8 +95,8 @@
   </table>
 
   <ul class="uk-pagination">
-    <li if={ partial > 0 } ><a onclick={ previouspartial }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
-    <li if={ (partial + 1) * perpartial < count} class="uk-margin-auto-left"><a onclick={ nextpartial }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+    <li if={ partial > 0 } ><a onclick={ previouspage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+    <li if={ (partial + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextpage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
   </ul>
 
   <script>
@@ -108,7 +108,7 @@
     }
 
     this.loadpartial = function(partialIndex) {
-      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/partial/"+partialIndex+"/"+per_partial, function(d) {
+      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/partial/"+partialIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(opts.columns) self.cols = opts.columns
@@ -124,13 +124,13 @@
       riot.mount("#"+opts.id, "partial_crud_edit", opts)
     }
 
-    nextpartial(e) {
+    nextpage(e) {
       e.preventDefault()
       self.partial += 1
       self.loadpartial(self.partial + 1)
     }
 
-    previouspartial(e) {
+    previouspage(e) {
       e.preventDefault()
       self.partial -= 1
       self.loadpartial(self.partial + 1)
@@ -403,16 +403,16 @@
       </tbody>
     </table>
     <ul class="uk-pagination">
-      <li if={ partial > 0 } ><a onclick={ previouspartial }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
-      <li if={ (partial + 1) * perpartial < count} class="uk-margin-auto-left"><a onclick={ nextpartial }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+      <li if={ partial > 0 } ><a onclick={ previouspage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+      <li if={ (partial + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextpage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
     </ul>
-    Per partial : {perpartial > 100000 ? 'ALL' : perpartial}
-    <a onclick={ setPerpartial } class="uk-label">25</a>
-    <a onclick={ setPerpartial } class="uk-label">50</a>
-    <a onclick={ setPerpartial } class="uk-label">100</a>
-    <a onclick={ setPerpartial } class="uk-label">500</a>
-    <a onclick={ setPerpartial } class="uk-label">1000</a>
-    <a onclick={ setPerpartial } class="uk-label">ALL</a>
+    Per partial : {perpage > 100000 ? 'ALL' : perpage}
+    <a onclick={ setperpage } class="uk-label">25</a>
+    <a onclick={ setperpage } class="uk-label">50</a>
+    <a onclick={ setperpage } class="uk-label">100</a>
+    <a onclick={ setperpage } class="uk-label">500</a>
+    <a onclick={ setperpage } class="uk-label">1000</a>
+    <a onclick={ setperpage } class="uk-label">ALL</a>
   </virtual>
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this partial...
@@ -424,7 +424,7 @@
 
     var self        = this
     this.partial       = 0
-    this.perpartial    = per_partial
+    this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -438,7 +438,7 @@
     this.loadpartial = function(partialIndex) {
       self.loaded = false
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
-      common.get(url + "/cruds/partials/partial/"+partialIndex+"/"+this.perpartial + querystring, function(d) {
+      common.get(url + "/cruds/partials/partial/"+partialIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -493,13 +493,13 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    nextpartial(e) {
+    nextpage(e) {
       self.partial += 1
       self.loadpartial(self.partial + 1)
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    previouspartial(e) {
+    previouspage(e) {
       self.partial -= 1
       self.loadpartial(self.partial + 1)
     }
@@ -524,11 +524,11 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    setPerpartial(e) {
+    setperpage(e) {
       e.preventDefault()
-      var perpartial = parseInt(e.srcElement.innerText)
-      if(e.srcElement.innerText == 'ALL') perpartial = 1000000000;
-      this.perpartial = perpartial
+      var perpage = parseInt(e.srcElement.innerText)
+      if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
+      this.perpage = perpage
       this.loadpartial(1)
     }
 

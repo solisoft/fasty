@@ -2190,7 +2190,7 @@ riot.tag2('component_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in
     loadFolder(this.folder_key)
 });
 
-riot.tag2('component_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{component > 0}"><a onclick="{previouscomponent}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(component + 1) * percomponent < count}" class="uk-margin-auto-left"><a onclick="{nextcomponent}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
+riot.tag2('component_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{component > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(component + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
     var self = this
     this.data = []
     this.new_item = function(e) {
@@ -2199,7 +2199,7 @@ riot.tag2('component_crud_index', '<a href="#" class="uk-button uk-button-small 
     }.bind(this)
 
     this.loadcomponent = function(componentIndex) {
-      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/component/"+componentIndex+"/"+per_component, function(d) {
+      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/component/"+componentIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(opts.columns) self.cols = opts.columns
@@ -2215,13 +2215,13 @@ riot.tag2('component_crud_index', '<a href="#" class="uk-button uk-button-small 
       riot.mount("#"+opts.id, "component_crud_edit", opts)
     }.bind(this)
 
-    this.nextcomponent = function(e) {
+    this.nextpage = function(e) {
       e.preventDefault()
       self.component += 1
       self.loadcomponent(self.component + 1)
     }.bind(this)
 
-    this.previouscomponent = function(e) {
+    this.previouspage = function(e) {
       e.preventDefault()
       self.component -= 1
       self.loadcomponent(self.component + 1)
@@ -2395,11 +2395,11 @@ riot.tag2('component_new', '<virtual if="{can_access}"> <h3>Creating component</
     })
 });
 
-riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_key}"></component_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#components/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New component</a> <a if="{!act_as_tree}" href="#components/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New component</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing components</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{component > 0}"><a onclick="{previouscomponent}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(component + 1) * percomponent < count}" class="uk-margin-auto-left"><a onclick="{nextcomponent}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per component : {percomponent > 100000 ? \'ALL\' : percomponent} <a onclick="{setPercomponent}" class="uk-label">25</a> <a onclick="{setPercomponent}" class="uk-label">50</a> <a onclick="{setPercomponent}" class="uk-label">100</a> <a onclick="{setPercomponent}" class="uk-label">500</a> <a onclick="{setPercomponent}" class="uk-label">1000</a> <a onclick="{setPercomponent}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this component... </virtual>', 'components .handle,[data-is="components"] .handle{ cursor: move; }', '', function(opts) {
+riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_key}"></component_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#components/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New component</a> <a if="{!act_as_tree}" href="#components/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New component</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing components</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{component > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(component + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per component : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setperpage}" class="uk-label">25</a> <a onclick="{setperpage}" class="uk-label">50</a> <a onclick="{setperpage}" class="uk-label">100</a> <a onclick="{setperpage}" class="uk-label">500</a> <a onclick="{setperpage}" class="uk-label">1000</a> <a onclick="{setperpage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this component... </virtual>', 'components .handle,[data-is="components"] .handle{ cursor: move; }', '', function(opts) {
 
     var self        = this
     this.component       = 0
-    this.percomponent    = per_component
+    this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -2413,7 +2413,7 @@ riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_
     this.loadcomponent = function(componentIndex) {
       self.loaded = false
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
-      common.get(url + "/cruds/components/component/"+componentIndex+"/"+this.percomponent + querystring, function(d) {
+      common.get(url + "/cruds/components/component/"+componentIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -2463,12 +2463,12 @@ riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_
       route("/components/" + e.item.row._key + "/edit")
     }.bind(this)
 
-    this.nextcomponent = function(e) {
+    this.nextpage = function(e) {
       self.component += 1
       self.loadcomponent(self.component + 1)
     }.bind(this)
 
-    this.previouscomponent = function(e) {
+    this.previouspage = function(e) {
       self.component -= 1
       self.loadcomponent(self.component + 1)
     }.bind(this)
@@ -2490,11 +2490,11 @@ riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_
       })
     }.bind(this)
 
-    this.setPercomponent = function(e) {
+    this.setperpage = function(e) {
       e.preventDefault()
-      var percomponent = parseInt(e.srcElement.innerText)
-      if(e.srcElement.innerText == 'ALL') percomponent = 1000000000;
-      this.percomponent = percomponent
+      var perpage = parseInt(e.srcElement.innerText)
+      if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
+      this.perpage = perpage
       this.loadcomponent(1)
     }.bind(this)
 
@@ -4342,7 +4342,7 @@ riot.tag2('partial_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in p
     loadFolder(this.folder_key)
 });
 
-riot.tag2('partial_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{partial > 0}"><a onclick="{previouspartial}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(partial + 1) * perpartial < count}" class="uk-margin-auto-left"><a onclick="{nextpartial}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
+riot.tag2('partial_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{partial > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(partial + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
     var self = this
     this.data = []
     this.new_item = function(e) {
@@ -4351,7 +4351,7 @@ riot.tag2('partial_crud_index', '<a href="#" class="uk-button uk-button-small uk
     }.bind(this)
 
     this.loadpartial = function(partialIndex) {
-      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/partial/"+partialIndex+"/"+per_partial, function(d) {
+      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/partial/"+partialIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(opts.columns) self.cols = opts.columns
@@ -4367,13 +4367,13 @@ riot.tag2('partial_crud_index', '<a href="#" class="uk-button uk-button-small uk
       riot.mount("#"+opts.id, "partial_crud_edit", opts)
     }.bind(this)
 
-    this.nextpartial = function(e) {
+    this.nextpage = function(e) {
       e.preventDefault()
       self.partial += 1
       self.loadpartial(self.partial + 1)
     }.bind(this)
 
-    this.previouspartial = function(e) {
+    this.previouspage = function(e) {
       e.preventDefault()
       self.partial -= 1
       self.loadpartial(self.partial + 1)
@@ -4547,11 +4547,11 @@ riot.tag2('partial_new', '<virtual if="{can_access}"> <h3>Creating partial</h3> 
     })
 });
 
-riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}"></partial_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#partials/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a> <a if="{!act_as_tree}" href="#partials/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing partials</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{partial > 0}"><a onclick="{previouspartial}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(partial + 1) * perpartial < count}" class="uk-margin-auto-left"><a onclick="{nextpartial}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per partial : {perpartial > 100000 ? \'ALL\' : perpartial} <a onclick="{setPerpartial}" class="uk-label">25</a> <a onclick="{setPerpartial}" class="uk-label">50</a> <a onclick="{setPerpartial}" class="uk-label">100</a> <a onclick="{setPerpartial}" class="uk-label">500</a> <a onclick="{setPerpartial}" class="uk-label">1000</a> <a onclick="{setPerpartial}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this partial... </virtual>', 'partials .handle,[data-is="partials"] .handle{ cursor: move; }', '', function(opts) {
+riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}"></partial_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#partials/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a> <a if="{!act_as_tree}" href="#partials/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing partials</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{partial > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(partial + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per partial : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setperpage}" class="uk-label">25</a> <a onclick="{setperpage}" class="uk-label">50</a> <a onclick="{setperpage}" class="uk-label">100</a> <a onclick="{setperpage}" class="uk-label">500</a> <a onclick="{setperpage}" class="uk-label">1000</a> <a onclick="{setperpage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this partial... </virtual>', 'partials .handle,[data-is="partials"] .handle{ cursor: move; }', '', function(opts) {
 
     var self        = this
     this.partial       = 0
-    this.perpartial    = per_partial
+    this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -4565,7 +4565,7 @@ riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}
     this.loadpartial = function(partialIndex) {
       self.loaded = false
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
-      common.get(url + "/cruds/partials/partial/"+partialIndex+"/"+this.perpartial + querystring, function(d) {
+      common.get(url + "/cruds/partials/partial/"+partialIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -4615,12 +4615,12 @@ riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}
       route("/partials/" + e.item.row._key + "/edit")
     }.bind(this)
 
-    this.nextpartial = function(e) {
+    this.nextpage = function(e) {
       self.partial += 1
       self.loadpartial(self.partial + 1)
     }.bind(this)
 
-    this.previouspartial = function(e) {
+    this.previouspage = function(e) {
       self.partial -= 1
       self.loadpartial(self.partial + 1)
     }.bind(this)
@@ -4642,11 +4642,11 @@ riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}
       })
     }.bind(this)
 
-    this.setPerpartial = function(e) {
+    this.setperpage = function(e) {
       e.preventDefault()
-      var perpartial = parseInt(e.srcElement.innerText)
-      if(e.srcElement.innerText == 'ALL') perpartial = 1000000000;
-      this.perpartial = perpartial
+      var perpage = parseInt(e.srcElement.innerText)
+      if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
+      this.perpage = perpage
       this.loadpartial(1)
     }.bind(this)
 
