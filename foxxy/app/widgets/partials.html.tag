@@ -423,7 +423,7 @@
   <script>
 
     var self        = this
-    this.partial       = 0
+    this.partial    = 0
     this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []

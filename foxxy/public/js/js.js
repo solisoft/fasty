@@ -1470,8 +1470,14 @@ $(function () {
   route('/pages/*', function (folder_key) {
     riot.mount('div#app', 'pages', { folder_key: folder_key })
   })
-  route('/partials', function() { riot.mount('div#app', 'partials') })
-  route('/components', function() { riot.mount('div#app', 'components') })
+  route('/partials', function () { riot.mount('div#app', 'partials') })
+  route('/partials/*', function (folder_key) {
+    riot.mount('div#app', 'partials', { folder_key: folder_key })
+  })
+  route('/components', function () { riot.mount('div#app', 'components') })
+  route('/components/*', function (folder_key) {
+    riot.mount('div#app', 'components', { folder_key: folder_key })
+  })
   route('/spas', function() { riot.mount('div#app', 'spas') })
   route('/redirections', function() { riot.mount('div#app', 'redirections') })
   route('/trads', function() { riot.mount('div#app', 'trads') })
@@ -1511,10 +1517,12 @@ $(function () {
         if(action == "new") { riot.mount('div#app', 'page_new', { folder_key: id }) }
       }
       if(collection == "partials") {
-        if(action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
+        if (action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
+        if(action == "new") { riot.mount('div#app', 'partial_new', { folder_key: id }) }
       }
       if(collection == "components") {
-        if(action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
+        if (action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
+        if(action == "new") { riot.mount('div#app', 'component_new', { folder_key: id }) }
       }
       if(collection == "spas") {
         if(action == "edit") { riot.mount('div#app', 'spa_edit', { spa_id: id }) }
@@ -1542,9 +1550,9 @@ $(function () {
       }
       if(collection == "scripts") {
         if(action == "edit") {
-          riot.mount('div#app', 'script_edit', { script_id: id })  
+          riot.mount('div#app', 'script_edit', { script_id: id })
         }
-      } 
+      }
       /*@{{router_cia}}*/
     }
   })
@@ -2398,7 +2406,7 @@ riot.tag2('component_new', '<virtual if="{can_access}"> <h3>Creating component</
 riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_key}"></component_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#components/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New component</a> <a if="{!act_as_tree}" href="#components/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New component</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing components</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{component > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(component + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per component : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setperpage}" class="uk-label">25</a> <a onclick="{setperpage}" class="uk-label">50</a> <a onclick="{setperpage}" class="uk-label">100</a> <a onclick="{setperpage}" class="uk-label">500</a> <a onclick="{setperpage}" class="uk-label">1000</a> <a onclick="{setperpage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this component... </virtual>', 'components .handle,[data-is="components"] .handle{ cursor: move; }', '', function(opts) {
 
     var self        = this
-    this.component       = 0
+    this.component  = 0
     this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
@@ -4550,7 +4558,7 @@ riot.tag2('partial_new', '<virtual if="{can_access}"> <h3>Creating partial</h3> 
 riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}"></partial_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#partials/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a> <a if="{!act_as_tree}" href="#partials/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing partials</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{partial > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(partial + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per partial : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setperpage}" class="uk-label">25</a> <a onclick="{setperpage}" class="uk-label">50</a> <a onclick="{setperpage}" class="uk-label">100</a> <a onclick="{setperpage}" class="uk-label">500</a> <a onclick="{setperpage}" class="uk-label">1000</a> <a onclick="{setperpage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this partial... </virtual>', 'partials .handle,[data-is="partials"] .handle{ cursor: move; }', '', function(opts) {
 
     var self        = this
-    this.partial       = 0
+    this.partial    = 0
     this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
