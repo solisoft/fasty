@@ -79,5 +79,9 @@ install_script = (sub_domain, name) ->
   write_content("#{path}/package.json", script.package)
   os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
   write_content("#{path}/index.js", script.code)
+--------------------------------------------------------------------------------
+-- external_request
+external_request = (sub_domain, params) ->
+
 -- expose methods
-{ :install_service, :install_script, :deploy_site }
+{ :install_service, :install_script, :deploy_site, :external_request }

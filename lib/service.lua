@@ -55,7 +55,7 @@ install_service = function(sub_domain, name)
   for k, item in pairs(api.tests) do
     write_content(tostring(path) .. "/APP/tests/" .. tostring(item.name) .. ".js", item.javascript)
   end
-  os.execute("cd install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. "/APP && /usr/bin/npm i")
+  os.execute("cd install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. "/APP && export PATH='$PATH:/usr/local/bin' && yarn")
   os.execute("cd install_service/" .. tostring(sub_domain) .. " && zip -rq " .. tostring(name) .. ".zip " .. tostring(name) .. "/")
   os.execute("rm --recursive install_service/" .. tostring(sub_domain) .. "/" .. tostring(name))
   return foxx_upgrade("db_" .. tostring(sub_domain), name, read_zipfile("install_service/" .. tostring(sub_domain) .. "/" .. tostring(name) .. ".zip"))
@@ -66,7 +66,7 @@ deploy_site = function(sub_domain, settings)
   local db_config = require('lapis.config').get("db_" .. tostring(config._name))
   local path = "dump/" .. tostring(sub_domain) .. "/"
   os.execute("mkdir -p " .. tostring(path))
-  os.execute("arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection sripts --collection pages --collection trads --collection datasets --include-system-collections true --server.database db_" .. tostring(sub_domain) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --output-directory " .. tostring(path) .. " --overwrite true")
+  os.execute("arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection uploads --collection folder_path --collection folders --collection datasets --include-system-collections true --server.database db_" .. tostring(sub_domain) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --output-directory " .. tostring(path) .. " --overwrite true")
   os.execute("arangorestore --include-system-collections true --server.database " .. tostring(settings.deploy_secret) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --input-directory " .. tostring(path) .. " --overwrite true")
   return os.execute("rm -Rf " .. tostring(path))
 end
