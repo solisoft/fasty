@@ -5,4 +5,5 @@ function create_collection(collection) {
   if (!db._collection(collection)) {db._createDocumentCollection(collection); }
 }
 
+create_collection('activities');
 create_collection('datasets');

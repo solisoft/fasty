@@ -406,7 +406,7 @@ router.post('/:service/:service_key/:sub', function (req, res) {
       slug = _.kebabCase(slug)
       collection.update(obj, { slug: slug })
     }
-    save_revision(req.session.uid, object, data, object.revisions)
+    save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(object._id, 'created', req.session.uid)
   }
   res.send({ success: errors.length == 0, data: obj, errors: errors });
