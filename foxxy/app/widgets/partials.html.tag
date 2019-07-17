@@ -1,5 +1,71 @@
-<partial_crud_index>
+<partial_folders>
+  <div>
+    <ul class="uk-breadcrumb">
+      <li each={ f in path }><a href="#partials/{f._key}">{ f.name }</a></li>
+      <li>
+        <a if={ path.length > 1 } onclick={renameFolder}><i class="far fa-edit"></i></a>
+        <a onclick={addFolder}><i class="fas fa-plus"></i></a>
+        <a if={ path.length > 1 && folders.length == 0 } onclick={deleteFolder}><i class="fas fa-trash"></i></a>
+      </li>
+    </ul>
+    <ul class="uk-list">
+      <li each={f in folders}><a href="#partials/{f._key}"><i class="far fa-folder" /> {f.name}</a></li>
+    </ul>
+  </div>
+  <script>
+    this.folders = []
+    this.folder = {}
+    this.path = [ this.folder ]
+    this.folder_key = this.opts.folder_key || '';
+    var self = this
 
+    var loadFolder = function(folder_key) {
+      common.get(url + '/cruds/folders/partials/' + folder_key, function(d) {
+        self.folders = d.folders
+        self.path = d.path
+        self.folder = _.last(self.path)
+        self.parent.setFolder(self.folder)
+        self.update()
+      })
+    }
+
+    addFolder(e) {
+      var name = prompt("Folder's name");
+      common.post(url + "/cruds/folders/partials", JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
+        loadFolder(self.folder._key)
+      })
+    }
+
+    renameFolder(e) {
+      var name = prompt("Update Folder's name");
+      common.patch(url + "/cruds/folders/partials", JSON.stringify({ name: name, id: self.folder._key }), function(d) {
+        self.path = d.path
+        self.update()
+      })
+    }
+
+    deleteFolder(e) {
+      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content')
+        .then(function() {
+          var parent = _.last(_.initial(self.path));
+          common.delete(url + "/cruds/folders/partials/" + self.folder._key, function(d) {
+            common.get(url + "/cruds/folders/partials/" + parent._key, function(d) {
+              self.folders = d.folders
+              self.path = d.path
+              loadFolder(parent._key)
+              self.update()
+            })
+          })
+      }, function () {
+        console.log('Rejected.')
+      });
+    }
+
+    loadFolder(this.folder_key)
+  </script>
+</partial_folders>
+
+<partial_crud_index>
   <a href="#" class="uk-button uk-button-small uk-button-default" onclick={ new_item }>
     <i class="fas fa-plus"></i> New { opts.singular }
   </a>
@@ -29,8 +95,8 @@
   </table>
 
   <ul class="uk-pagination">
-    <li if={ page > 0 } ><a onclick={ previousPage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
-    <li if={ (page + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextPage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+    <li if={ partial > 0 } ><a onclick={ previouspage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+    <li if={ (partial + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextpage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
   </ul>
 
   <script>
@@ -41,8 +107,8 @@
       riot.mount("#"+opts.id, "partial_crud_new", opts)
     }
 
-    this.loadPage = function(pageIndex) {
-      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/page/"+pageIndex+"/"+per_page, function(d) {
+    this.loadpartial = function(partialIndex) {
+      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/partial/"+partialIndex+"/"+per_page, function(d) {
         self.data = d.data[0].data
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(opts.columns) self.cols = opts.columns
@@ -50,7 +116,7 @@
         self.update()
       })
     }
-    this.loadPage(1)
+    this.loadpartial(1)
 
     edit(e) {
       e.preventDefault()
@@ -58,23 +124,23 @@
       riot.mount("#"+opts.id, "partial_crud_edit", opts)
     }
 
-    nextPage(e) {
+    nextpage(e) {
       e.preventDefault()
-      self.page += 1
-      self.loadPage(self.page + 1)
+      self.partial += 1
+      self.loadpartial(self.partial + 1)
     }
 
-    previousPage(e) {
+    previouspage(e) {
       e.preventDefault()
-      self.page -= 1
-      self.loadPage(self.page + 1)
+      self.partial -= 1
+      self.loadpartial(self.partial + 1)
     }
 
     destroy_object(e) {
       e.preventDefault()
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/" + opts.id + "/" + e.item.row._key, function() {
-          self.loadPage(1)
+          self.loadpartial(1)
         })
       }, function() {})
     }
@@ -140,11 +206,7 @@
 </partial_crud_new>
 
 <partial_edit>
-
   <virtual if={can_access}>
-    <div uk-alert class="uk-alert-warning" if={locked_by}>
-      <i class="fas fa-lock"></i> This file is locked by { locked_by }
-    </div>
     <ul uk-tab>
       <li><a href="#">partials</a></li>
       <li each={ i, k in sub_models }><a href="#">{ k }</a></li>
@@ -155,6 +217,7 @@
         <h3>Editing partial</h3>
         <form onsubmit="{ save_form }" class="uk-form" id="form_partial">
         </form>
+        <a class="uk-button uk-button-primary" onclick="{ publish }">Publish</a>
         <a class="uk-button uk-button-secondary" onclick="{ duplicate }">Duplicate</a>
       </li>
       <li each={ i, k in sub_models }>
@@ -163,14 +226,13 @@
     </ul>
   </virtual>
   <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
+    Sorry, you can't access this partial...
   </virtual>
 
   <script>
     var self = this
     self.can_access = false
     self.loaded = false
-    self.locked_by = null
 
     save_form(e) {
       e.preventDefault()
@@ -179,7 +241,7 @@
 
     duplicate(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/partials/" + self.partial._key + "/duplicate", function(data) {
+        common.get(url + "/cruds/partials/" + opts.partial_id + "/duplicate", function(data) {
           route('/partials/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
@@ -191,21 +253,36 @@
       }, function() {})
     }
 
+    publish(e) {
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.post(url + "/cruds/partials/" + opts.partial_id + "/publish", JSON.stringify({}), function(data) {
+          UIkit.notification({
+            message : 'Successfully published!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+        })
+      })
+    }
+
     common.get(url + "/cruds/partials/" + opts.partial_id, function(d) {
       self.partial = d.data
       self.fields = d.fields
-      self.locked_by = d.data.locked_by
       self.sub_models = d.fields.sub_models
       var fields = d.fields
-
+      var act_as_tree = d.fields.act_as_tree
 
       if(!_.isArray(fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
+        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
+        var back_url = 'partials'
+        if(act_as_tree) { back_url = 'partials/' + self.partial.folder_key }
         if(self.can_access)
-          common.buildForm(self.partial, fields, '#form_partial', 'partials', function() {
+          common.buildForm(self.partial, fields, '#form_partial', back_url, function() {
             $(".crud").each(function(i, c) {
             var id = $(c).attr("id")
             riot.mount("#" + id, "partial_crud_index", { model: id,
@@ -214,7 +291,7 @@
               singular: self.sub_models[id].singular,
               columns: self.sub_models[id].columns,
               parent_id: opts.partial_id,
-              parent_name: "partials" })
+              parent_name: back_url })
           })
         })
       })
@@ -234,7 +311,7 @@
     </form>
   </virtual>
   <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
+    Sorry, you can't access this partial...
   </virtual>
   <script>
     var self = this
@@ -254,8 +331,15 @@
         if(self.can_access) {
           // Ignore sub models if any
           var fields = d.fields
+          var obj = {}
           if(!_.isArray(fields)) fields = fields.model
-          common.buildForm({}, fields, '#form_new_partial', 'partials');
+          var back_url = 'partials'
+          if(self.opts.folder_key) {
+            fields.push({ r: true, c: "1-1", n: "folder_key", t: "hidden" })
+            obj['folder_key'] = opts.folder_key
+            back_url = 'partials/' + opts.folder_key
+          }
+          common.buildForm(obj, fields, '#form_new_partial', back_url);
         }
       })
     })
@@ -269,11 +353,14 @@
 </partial_new>
 
 <partials>
+  <partial_folders show={loaded} folder_key={folder_key} />
   <virtual if={can_access}>
     <div class="uk-float-right">
-      <a href="#partials/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a>
+      <a if={act_as_tree} href="#partials/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a>
+      <a if={!act_as_tree} href="#partials/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New partial</a>
       <a if={ export } onclick="{ export_data }" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a>
     </div>
+
     <h3>Listing partials</h3>
 
     <form onsubmit={filter} class="uk-margin-top">
@@ -316,19 +403,19 @@
       </tbody>
     </table>
     <ul class="uk-pagination">
-      <li if={ page > 0 } ><a onclick={ previousPage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
-      <li if={ (page + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextPage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
+      <li if={ partial > 0 } ><a onclick={ previouspage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
+      <li if={ (partial + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextpage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
     </ul>
-    Per Page : {perpage > 100000 ? 'ALL' : perpage}
-    <a onclick={ setPerPage } class="uk-label">25</a>
-    <a onclick={ setPerPage } class="uk-label">50</a>
-    <a onclick={ setPerPage } class="uk-label">100</a>
-    <a onclick={ setPerPage } class="uk-label">500</a>
-    <a onclick={ setPerPage } class="uk-label">1000</a>
-    <a onclick={ setPerPage } class="uk-label">ALL</a>
+    Per partial : {perpage > 100000 ? 'ALL' : perpage}
+    <a onclick={ setperpage } class="uk-label">25</a>
+    <a onclick={ setperpage } class="uk-label">50</a>
+    <a onclick={ setperpage } class="uk-label">100</a>
+    <a onclick={ setperpage } class="uk-label">500</a>
+    <a onclick={ setperpage } class="uk-label">1000</a>
+    <a onclick={ setperpage } class="uk-label">ALL</a>
   </virtual>
   <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
+    Sorry, you can't access this partial...
   </virtual>
   <style>
     .handle { cursor: move; }
@@ -336,7 +423,7 @@
   <script>
 
     var self        = this
-    this.page       = 0
+    this.partial    = 0
     this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
@@ -344,10 +431,14 @@
     this.can_access = false
     this.sortable   = false
     this.loaded     = false
+    this.folder     = {}
+    this.folder_key = this.opts.folder_key || ''
+    this.act_as_tree = true
 
-    this.loadPage = function(pageIndex) {
+    this.loadpartial = function(partialIndex) {
       self.loaded = false
-      common.get(url + "/cruds/partials/page/"+pageIndex+"/"+this.perpage, function(d) {
+      var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
+      common.get(url + "/cruds/partials/page/"+partialIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -361,7 +452,13 @@
         })
       })
     }
-    this.loadPage(1)
+
+    ////////////////////////////////////////////////////////////////////////////
+    this.setFolder = function(folder) {
+      self.folder = folder
+      self.act_as_tree = folder !== ''
+      self.loadpartial(1)
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     calc_value(row, col, locale) {
@@ -386,7 +483,7 @@
         })
       }
       else {
-        self.loadPage(1)
+        self.loadpartial(1)
       }
     }
 
@@ -396,22 +493,22 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    nextPage(e) {
-      self.page += 1
-      self.loadPage(self.page + 1)
+    nextpage(e) {
+      self.partial += 1
+      self.loadpartial(self.partial + 1)
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    previousPage(e) {
-      self.page -= 1
-      self.loadPage(self.page + 1)
+    previouspage(e) {
+      self.partial -= 1
+      self.loadpartial(self.partial + 1)
     }
 
     ////////////////////////////////////////////////////////////////////////////
     destroy_object(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/partials/" + e.item.row._key, function() {
-          self.loadPage(self.page + 1)
+          self.loadpartial(self.partial + 1)
         })
       }, function() {})
     }
@@ -427,12 +524,12 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    setPerPage(e) {
+    setperpage(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
-      this.loadPage(1)
+      this.loadpartial(1)
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -459,8 +556,10 @@
           ghostClass: 'blue-background-class',
           handle: '.fa-grip-vertical',
           onSort: function (/**Event*/evt) {
+            var folder_key = "?folder_key=" + self.folder._key
+            if(!self.act_as_tree) folder_key = ''
             common.put(
-              url + 'cruds/partials/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              url + 'cruds/partials/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
               function() {}
             )
           },

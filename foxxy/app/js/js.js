@@ -39,8 +39,14 @@ $(function () {
   route('/pages/*', function (folder_key) {
     riot.mount('div#app', 'pages', { folder_key: folder_key })
   })
-  route('/partials', function() { riot.mount('div#app', 'partials') })
-  route('/components', function() { riot.mount('div#app', 'components') })
+  route('/partials', function () { riot.mount('div#app', 'partials') })
+  route('/partials/*', function (folder_key) {
+    riot.mount('div#app', 'partials', { folder_key: folder_key })
+  })
+  route('/components', function () { riot.mount('div#app', 'components') })
+  route('/components/*', function (folder_key) {
+    riot.mount('div#app', 'components', { folder_key: folder_key })
+  })
   route('/spas', function() { riot.mount('div#app', 'spas') })
   route('/redirections', function() { riot.mount('div#app', 'redirections') })
   route('/trads', function() { riot.mount('div#app', 'trads') })
@@ -80,10 +86,12 @@ $(function () {
         if(action == "new") { riot.mount('div#app', 'page_new', { folder_key: id }) }
       }
       if(collection == "partials") {
-        if(action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
+        if (action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
+        if(action == "new") { riot.mount('div#app', 'partial_new', { folder_key: id }) }
       }
       if(collection == "components") {
-        if(action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
+        if (action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
+        if(action == "new") { riot.mount('div#app', 'component_new', { folder_key: id }) }
       }
       if(collection == "spas") {
         if(action == "edit") { riot.mount('div#app', 'spa_edit', { spa_id: id }) }
@@ -111,9 +119,9 @@ $(function () {
       }
       if(collection == "scripts") {
         if(action == "edit") {
-          riot.mount('div#app', 'script_edit', { script_id: id })  
+          riot.mount('div#app', 'script_edit', { script_id: id })
         }
-      } 
+      }
       /*@{{router_cia}}*/
     }
   })

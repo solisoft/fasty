@@ -65,6 +65,8 @@ const model = function () {
     //slug: ["title"],
     sort: "SORT doc.name ASC",
     search: ["name"],
+    act_as_tree: true,
+
     //includes: {
     //  conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
     //  merges: ", customer: c "

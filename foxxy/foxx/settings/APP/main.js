@@ -76,16 +76,6 @@ router.get('/', function (req, res) {
 .header('X-Session-Id')
 .description(`Returns first settings`);
 // -----------------------------------------------------------------------------
-router.get('/check_form', function (req, res) {
-    var errors = []
-  try {
-    errors = joi.validate(JSON.parse(req.queryParams.data), schema, { abortEarly: false }).error.details
-  } catch(e) {}
-  res.send({errors: errors });
-})
-.header('X-Session-Id')
-.description('Check the form for live validation');
-// -----------------------------------------------------------------------------
 router.post('/:id', function (req, res) {
   const body = JSON.parse(req.body.toString())
   var obj = db.settings.document(req.pathParams.id)
@@ -94,7 +84,7 @@ router.post('/:id', function (req, res) {
   try {
     var schema = {}
     _.each(model.fields, function (f) {
-      schema[f.n] = eval(validate)
+      schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
     })
 
     errors = joi.validate(body, schema, { abortEarly: false }).error.details

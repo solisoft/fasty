@@ -53,6 +53,8 @@ const model = function() {
       read: ['designer', 'developer', 'admin'],
       write: ['designer', 'developer', 'admin']
     },
+    act_as_tree: true,
+
     //columns: [
     //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
     //    values: { true: "online", false: "offline" },
