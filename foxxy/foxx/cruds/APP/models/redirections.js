@@ -41,12 +41,15 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 const model = function () {
   var layouts = db._query(`FOR doc in layouts RETURN [doc._id, doc.name]`).toArray()
   var spas = db._query(`FOR doc in spas RETURN [doc._id, doc.name]`).toArray()
+  var helpers = db._query(`FOR doc in helpers RETURN [doc._id, doc.shortcut]`).toArray()
   return {
     model: [
-      { r: true, c: "1-2", n: "route", t: "string", j: "joi.string().required()", l: "Route" },
-      { r: false, c: "1-2", n: "class", t: "string", j: "joi.any()", l: "Classe" },
-      { r: true, c: "1-2", n: "spa_id", t: "list", j: "joi.string().required()", l: "Single Page Application", d: spas },
-      { r: false, c: "1-2", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: layouts }
+      { r: true, c: "1-3", n: "route", t: "string", j: "joi.string().required()", l: "Route" },
+      { r: false, c: "1-3", n: "class", t: "string", j: "joi.any()", l: "Classe" },
+      { r: false, c: "1-3", n: "type", t: "list", j: "joi.any()", l: "Type", d: [['spa', 'SPA'], ['helper', 'Helper']] },
+      { r: true, c: "1-3", n: "spa_id", t: "list", j: "joi.any()", l: "Single Page Application", d: spas },
+      { r: false, c: "1-3", n: "helper_id", t: "list", j: "joi.any()", l: "Helper", d: helpers },
+      { r: false, c: "1-3", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: layouts }
     ],
     roles: {
       read: ['developer', 'admin'],
