@@ -18,13 +18,13 @@ prepare_headers = (html, data, params)->
   if(data.item.og_title and data.item.og_title[params.lang])
     headers = "<title>#{data.item.og_title[params.lang]}</title>"
   if(data.item.description and data.item.description[params.lang])
-    headers ..= "<meta name='description' content='#{data.item.description[params.lang]}'>"
+    headers ..= "<meta name=\"description\" content=\"#{data.item.description[params.lang]}\" />"
   if(data.item.og_title and data.item.og_title[params.lang])
-    headers ..= "<meta property='og:title' content='#{data.item.og_title[params.lang]}' />"
+    headers ..= "<meta property=\"og:title\" content=\"#{data.item.og_title[params.lang]}\" />"
   if(data.item.og_img and data.item.og_img[params.lang])
-    headers ..= "<meta property='og:image' content='#{data.item.og_img[params.lang]}' />"
+    headers ..= "<meta property=\"og:image\" content=\"#{data.item.og_img[params.lang]}\" />"
   if(data.item.og_type and data.item.og_type[params.lang])
-    headers ..= "<meta property='og:type' content='#{data.item.og_type[params.lang]}' />"
+    headers ..= "<meta property=\"og:type\" content=\"#{data.item.og_type[params.lang]}\" />"
 
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
