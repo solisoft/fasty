@@ -117,8 +117,9 @@ load_redirection = (db_name, params) ->
 prepare_bindvars = (splat, aql_request) ->
   bindvar = {}
   for k, v in pairs(splat) do
+    v = unescape(v)
     v = tonumber(v) if v\match('^%d+$')
-    bindvar[k] = unescape(v) if aql_request\find('@' .. k)
+    bindvar[k] = v if aql_request\find('@' .. k)
   bindvar
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
