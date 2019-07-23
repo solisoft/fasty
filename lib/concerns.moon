@@ -3,7 +3,7 @@ stringy = require 'stringy'
 import aql, document_get from require 'lib.arango'
 import table_deep_merge from require 'lib.utils'
 import http_get from require 'lib.http_client'
-import from_json, to_json, trim from require 'lapis.util'
+import from_json, to_json, trim, unescape from require 'lapis.util'
 --------------------------------------------------------------------------------
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ prepare_bindvars = (splat, aql_request) ->
   bindvar = {}
   for k, v in pairs(splat) do
     v = tonumber(v) if v\match('^%d+$')
-    bindvar[k] = v if aql_request\find('@' .. k)
+    bindvar[k] = unescape(v) if aql_request\find('@' .. k)
   bindvar
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params) ->
