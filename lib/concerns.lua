@@ -39,16 +39,16 @@ prepare_headers = function(html, data, params)
     headers = "<title>" .. tostring(data.item.og_title[params.lang]) .. "</title>"
   end
   if (data.item.description and data.item.description[params.lang]) then
-    headers = headers .. "<meta name='description' content='" .. tostring(data.item.description[params.lang]) .. "'>"
+    headers = headers .. "<meta name=\"description\" content=\"" .. tostring(data.item.description[params.lang]) .. "\" />"
   end
   if (data.item.og_title and data.item.og_title[params.lang]) then
-    headers = headers .. "<meta property='og:title' content='" .. tostring(data.item.og_title[params.lang]) .. "' />"
+    headers = headers .. "<meta property=\"og:title\" content=\"" .. tostring(data.item.og_title[params.lang]) .. "\" />"
   end
   if (data.item.og_img and data.item.og_img[params.lang]) then
-    headers = headers .. "<meta property='og:image' content='" .. tostring(data.item.og_img[params.lang]) .. "' />"
+    headers = headers .. "<meta property=\"og:image\" content=\"" .. tostring(data.item.og_img[params.lang]) .. "\" />"
   end
   if (data.item.og_type and data.item.og_type[params.lang]) then
-    headers = headers .. "<meta property='og:type' content='" .. tostring(data.item.og_type[params.lang]) .. "' />"
+    headers = headers .. "<meta property=\"og:type\" content=\"" .. tostring(data.item.og_type[params.lang]) .. "\" />"
   end
   return html:gsub('@headers', headers)
 end

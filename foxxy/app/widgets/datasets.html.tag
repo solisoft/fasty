@@ -326,6 +326,7 @@
           common.buildForm(self.dataset, self.fields, '#form_dataset', back_url, function() {
             $(".crud").each(function(i, c) {
               var id = $(c).attr("id")
+              console.log(id)
               riot.mount("#" + id, "dataset_crud_index", { model: id,
                 fields: self.sub_models[id].fields,
                 key: self.sub_models[id].key,
