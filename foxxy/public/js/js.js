@@ -2646,17 +2646,18 @@ riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk
     this.on('updated', function() {
       if(self.sortable) {
         var el = document.getElementById('sublist');
-        var sortable = new Sortable(el, {
-          animation: 150,
-          ghostClass: 'blue-background-class',
-          handle: '.fa-grip-vertical',
-          onSort: function ( evt) {
-            common.put(
-              url + 'datasets/'+ opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
-              function() {}
-            )
-          },
-        });
+        if(el)
+          var sortable = new Sortable(el, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            handle: '.fa-grip-vertical',
+            onSort: function ( evt) {
+              common.put(
+                url + 'datasets/'+ opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+                function() {}
+              )
+            },
+          });
       }
     })
 });
@@ -2969,6 +2970,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
             )
           },
         });
+
       }
     })
 });
