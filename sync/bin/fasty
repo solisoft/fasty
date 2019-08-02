@@ -38,9 +38,11 @@ var check_json = function(json, folder, fullname, api) {
         fs.writeFileSync(endpathname + '/' + obj.name + '.js', header + " js\n" + obj.js)
       }
       if (k == "components") {
+        console.log(obj.path)
         fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
       }
       if (k == "partials") {
+        console.log(obj.path)
         fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
       }
       if (k == "aqls") {

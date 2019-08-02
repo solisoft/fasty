@@ -25,6 +25,9 @@ var save_revision = function (uid, object, data, max) {
 // GET /sync
 router.get('/:token', function (req, res) {
   var data = {}
+  var root_component = db.folders.firstExample({ is_root: true, object_type: 'components' })
+  var root_partial = db.folders.firstExample({ is_root: true, object_type: 'partials' })
+
   if (_settings.secret == req.pathParams.token) {
     data = db._query(`
     LET layouts = (
@@ -32,9 +35,15 @@ router.get('/:token', function (req, res) {
       RETURN { id: l._id, name: l.name, html: l.html, scss: l.scss, js: l.javascript, locked_by: l.locked_by }
     )
     LET components = (
-      FOR c IN components RETURN { id: c._id, name: c.name, html: c.html, locked_by: c.locked_by }
+      FOR c IN components
+        LET path = (FOR vertex IN OUTBOUND SHORTEST_PATH c._id TO @root_component GRAPH 'folderGraph' RETURN vertex.name)
+        RETURN { id: c._id, name: c.name, html: c.html, locked_by: c.locked_by, path: REVERSE(path) }
     )
-    LET partials = (FOR p IN partials RETURN { id: p._id, name: p.slug, html: p.html, locked_by: p.locked_by })
+    LET partials = (
+      FOR p IN partials
+        LET path = (FOR vertex IN OUTBOUND SHORTEST_PATH c._id TO @root_partial GRAPH 'folderGraph' RETURN vertex.name)
+        RETURN { id: p._id, name: p.slug, html: p.html, locked_by: p.locked_by, path: REVERSE(path) }
+    )
     LET aqls = (FOR a IN aqls RETURN { id: a._id, name: a.slug, aql: a.aql, locked_by: a.locked_by })
     LET datatypes = (
       FOR d IN datatypes
@@ -65,7 +74,7 @@ router.get('/:token', function (req, res) {
     )
 
     RETURN { layouts, components, partials, aqls, datatypes, apis, scripts }
-    `).toArray()[0]
+    `, { root_component, root_partial }).toArray()[0]
   }
   res.json(data)
 })

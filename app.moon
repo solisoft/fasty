@@ -36,7 +36,7 @@ class extends lapis.Application
   layout: false -- we don't need a layout, it will be loaded dynamically
   ------------------------------------------------------------------------------
   load_settings = (sub_domain) =>
-    jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil
+    jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or list_databases! == nil
     if list_databases!["db_#{sub_domain}"] == nil
       no_db[sub_domain] = true
     else
@@ -44,7 +44,9 @@ class extends lapis.Application
         LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)
         LET g_redirections = (FOR doc IN redirections RETURN doc)
         LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))
-        LET g_components = (FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }]))
+        LET g_components = (
+          FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])
+        )
         LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
         LET g_helpers = (
           FOR h IN helpers
