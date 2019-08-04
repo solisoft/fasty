@@ -26,12 +26,12 @@ Install foxxy & foxx-cli as global npm modules
 `sudo npm install -g foxxy`
 `sudo npm install -g foxx-cli`
 
-Create a database called `db_cms` and install services on it :
+Create a database called `db_demo` and install services on it :
 
 - `touch .arangodb.yml` (useless, will be removed)
 - Go to the foxxy folder and run
-- `foxxy upgrade settings --server fasty --database db_cms`
-- `foxxy upgrade --server fasty --database db_cms`
+- `foxxy upgrade settings --server fasty --database db_demo`
+- `foxxy upgrade --server fasty --database db_demo`
 
 # Upgrade ArangoDB version
 
