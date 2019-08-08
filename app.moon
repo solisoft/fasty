@@ -137,7 +137,7 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
+    dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params), headers: { "expires": "Expires: Wed, 25 Nov 2300 00:00:00 GMT" }
   ------------------------------------------------------------------------------
   -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>
