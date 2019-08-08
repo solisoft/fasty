@@ -12,11 +12,6 @@ do
   local _obj_0 = require('lib.basic_auth')
   basic_auth, is_auth = _obj_0.basic_auth, _obj_0.is_auth
 end
-local hmac_sha1, encode_base64
-do
-  local _obj_0 = require('lapis.util.encoding')
-  hmac_sha1, encode_base64 = _obj_0.hmac_sha1, _obj_0.encode_base64
-end
 local auth_arangodb, aql, list_databases
 do
   local _obj_0 = require('lib.arango')
@@ -116,7 +111,11 @@ do
       })[1]
       return {
         content_type = "application/javascript"
-      }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params)
+      }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
+        headers = {
+          ["expires"] = "Expires: Wed, 25 Nov 2300 00:00:00 GMT"
+        }
+      }
     end,
     [{
       css = '/:lang/:layout/css/:rev.css'
@@ -141,7 +140,11 @@ do
       })[1]
       return {
         content_type = "text/css"
-      }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params)
+      }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params), {
+        headers = {
+          ["expires"] = "Expires: Wed, 25 Nov 2300 00:00:00 GMT"
+        }
+      }
     end,
     [{
       component = '/:lang/:key/component/:rev.tag'

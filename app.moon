@@ -8,7 +8,6 @@ config  = require('lapis.config').get!
 import cached from require 'lapis.cache'
 import check_valid_lang from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
-import hmac_sha1, encode_base64 from require 'lapis.util.encoding'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
@@ -103,7 +102,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: Wed, 25 Nov 2300 00:00:00 GMT" }
   ------------------------------------------------------------------------------
   -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -126,7 +125,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
+    content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": "Expires: Wed, 25 Nov 2300 00:00:00 GMT" }
   ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
