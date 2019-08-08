@@ -294,7 +294,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         output = translations[item][params.lang]
 
     -- {{ external | url }}
-    output = http_get(item, {}) if action == 'external'
+    if action == 'external'
+      output = http_get(item, {}) if action == 'external'
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output))
 

@@ -103,6 +103,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js)",
       { "key": "#{@params.layout}" }
     )[1]
+    print(js)
     content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
   ------------------------------------------------------------------------------
   -- css

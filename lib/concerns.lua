@@ -329,7 +329,9 @@ dynamic_replace = function(db_name, html, global_data, history, params)
       end
     end
     if action == 'external' then
-      output = http_get(item, { })
+      if action == 'external' then
+        output = http_get(item, { })
+      end
     end
     html = html:gsub(escape_pattern(widget), escape_pattern(output))
   end
