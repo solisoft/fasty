@@ -91,7 +91,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: Wed, 25 Nov 2300 00:00:00 GMT" }
   ------------------------------------------------------------------------------
   -- js_vendors
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
@@ -114,7 +114,7 @@ class extends lapis.Application
       { "key": "#{@params.layout}" }
     )[1]
     scss = sass.compile(css, 'compressed')
-    content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
+    content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": "Expires: Wed, 25 Nov 2300 00:00:00 GMT" }
   ------------------------------------------------------------------------------
   -- css_vendors
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
