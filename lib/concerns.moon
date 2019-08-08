@@ -12,7 +12,9 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params)->
+  html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{data.layout._rev}.js")
   html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
+  html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{data.layout._rev}.css")
   html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
   headers = "<title>#{data.item.name}</title>"
   if(data.item.og_title and data.item.og_title[params.lang])

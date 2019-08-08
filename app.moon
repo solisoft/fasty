@@ -89,7 +89,18 @@ class extends lapis.Application
     load_settings(@, sub_domain)
     js = aql(
       "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN CONCAT(doc.i_js, '\n', doc.javascript)",
+      "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
+      { "key": "#{@params.layout}" }
+    )[1]
+    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+  ------------------------------------------------------------------------------
+  -- js_vendors
+  [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
+    sub_domain = stringy.split(@req.headers.host, '.')[1]
+    load_settings(@, sub_domain)
+    js = aql(
+      "db_#{sub_domain}",
+      "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js)",
       { "key": "#{@params.layout}" }
     )[1]
     content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
@@ -100,11 +111,22 @@ class extends lapis.Application
     load_settings(@, sub_domain)
     css = aql(
       "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN { css: doc.i_css, scss: doc.scss }",
+      "FOR doc in layouts FILTER doc._key == @key RETURN doc.scss",
       { "key": "#{@params.layout}" }
     )[1]
-    scss = sass.compile(css.scss, 'compressed')
-    content_type: "text/css", dynamic_replace("db_#{sub_domain}", css.css .. "\n" .. scss, {}, {}, @params)
+    scss = sass.compile(css, 'compressed')
+    content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
+  ------------------------------------------------------------------------------
+  -- css_vendors
+  [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
+    sub_domain = stringy.split(@req.headers.host, '.')[1]
+    load_settings(@, sub_domain)
+    css = aql(
+      "db_#{sub_domain}",
+      "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
+      { "key": "#{@params.layout}" }
+    )[1]
+    content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
   ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>

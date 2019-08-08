@@ -99,7 +99,19 @@ do
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
       load_settings(self, sub_domain)
-      local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN CONCAT(doc.i_js, '\n', doc.javascript)", {
+      local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript", {
+        ["key"] = tostring(self.params.layout)
+      })[1]
+      return {
+        content_type = "application/javascript"
+      }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params)
+    end,
+    [{
+      js_vendors = '/:lang/:layout/vendors/:rev.js'
+    }] = function(self)
+      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+      load_settings(self, sub_domain)
+      local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js)", {
         ["key"] = tostring(self.params.layout)
       })[1]
       return {
@@ -111,13 +123,25 @@ do
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
       load_settings(self, sub_domain)
-      local css = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN { css: doc.i_css, scss: doc.scss }", {
+      local css = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.scss", {
         ["key"] = tostring(self.params.layout)
       })[1]
-      local scss = sass.compile(css.scss, 'compressed')
+      local scss = sass.compile(css, 'compressed')
       return {
         content_type = "text/css"
-      }, dynamic_replace("db_" .. tostring(sub_domain), css.css .. "\n" .. scss, { }, { }, self.params)
+      }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params)
+    end,
+    [{
+      css_vendors = '/:lang/:layout/vendors/:rev.css'
+    }] = function(self)
+      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+      load_settings(self, sub_domain)
+      local css = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css", {
+        ["key"] = tostring(self.params.layout)
+      })[1]
+      return {
+        content_type = "text/css"
+      }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params)
     end,
     [{
       component = '/:lang/:key/component/:rev.tag'
