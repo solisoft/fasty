@@ -13,8 +13,8 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params)->
-  jshmac = string.sub(encode_with_secret(data.layout.i_js, ''), 1, 20)\gsub("%.", "-")
-  csshmac = string.sub(encode_with_secret(data.layout.i_css, ''), 1, 20)\gsub("%.", "-")
+  jshmac = encode_with_secret(data.layout.i_js, '')\gsub("%.", "-")
+  csshmac = encode_with_secret(data.layout.i_css, '')\gsub("%.", "-")
   html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{jshmac}.js")
   html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
   html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{csshmac}.css")
