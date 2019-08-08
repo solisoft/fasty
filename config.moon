@@ -29,7 +29,7 @@ config "db_production", ->
   pass  "password"
 
 -- for test purpose
-config "db_127", ->
+config "db_test", ->
   url "http://172.31.0.6:8529/"
   name "cms"
   login "root"

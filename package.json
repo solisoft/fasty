@@ -1,7 +1,7 @@
 {
-  "name": "cypress-example-docker-circle",
-  "version": "3.0.0",
-  "description": "Cypress + Docker + CircleCI = ❤️",
+  "name": "fasty",
+  "version": "1.0.0",
+  "description": "a Blazing Fast App builder",
   "scripts": {
     "test-junit": "cypress run --reporter junit --reporter-options 'mochaFile=junit-results/my-test-output.xml'",
     "test-multiple": "cypress run --reporter mocha-multi-reporters --reporter-options configFile=config.json"
@@ -10,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "cypress": "3.3.1",
+    "cypress": "3.4.1",
     "mocha": "^4.0.1",
     "mocha-junit-reporter": "^1.13.0",
     "mocha-multi-reporters": "^1.1.4"

@@ -16,8 +16,7 @@ describe('My First Test', function () {
     cy.get('body').should('contain', 'Listing partials')
     cy.url().should('eq', host + '/static/admin/index.html#partials')
     cy.contains('New partial').click()
-    cy.url().should('eq', host + '/static/admin/index.html#partials/new')
-    
+    cy.url().should('match', /static\/admin\/index.html#partials\/\d+\/new/)
   })
 
   it('Test AQLs', function () {

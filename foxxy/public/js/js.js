@@ -845,7 +845,7 @@ require.register("js/editor.js", function(exports, require, module) {
                     },
                     success: function (data) {
                       setTimeout(function () {
-                        $(el).html('<div data-type="img" class="drag drop" data-editable="true"><img src="https://resize.ovh/o/' + data.filename + '"></div>')
+                        $(el).html('<img src="https://resize.ovh/o/' + data.filename + '" />')
                       }, 100)
                       clear_empty_drags()
                     }

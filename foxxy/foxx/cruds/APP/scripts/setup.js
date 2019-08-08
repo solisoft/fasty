@@ -134,7 +134,14 @@ var create_collection = function(collection) {
         }
       })
     }
-
+    if(collection == 'folders') {
+      db._collection('folders').save({
+        "name": "Root",
+        "is_root": true,
+        "object_type": "pages",
+        "parent_id": null
+      })
+    }
     if(collection == 'partials') {
       var layout = db._collection('layouts').firstExample({})
       db._collection(collection).save({

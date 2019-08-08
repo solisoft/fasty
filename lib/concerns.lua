@@ -9,10 +9,10 @@ local table_deep_merge
 table_deep_merge = require('lib.utils').table_deep_merge
 local http_get
 http_get = require('lib.http_client').http_get
-local from_json, to_json, trim
+local from_json, to_json, trim, unescape
 do
   local _obj_0 = require('lapis.util')
-  from_json, to_json, trim = _obj_0.from_json, _obj_0.to_json, _obj_0.trim
+  from_json, to_json, trim, unescape = _obj_0.from_json, _obj_0.to_json, _obj_0.trim, _obj_0.unescape
 end
 local splat_to_table
 splat_to_table = function(splat, sep)
@@ -155,6 +155,7 @@ local prepare_bindvars
 prepare_bindvars = function(splat, aql_request)
   local bindvar = { }
   for k, v in pairs(splat) do
+    v = unescape(v)
     if v:match('^%d+$') then
       v = tonumber(v)
     end
