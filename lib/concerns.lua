@@ -34,8 +34,8 @@ escape_pattern = function(text)
 end
 local prepare_headers
 prepare_headers = function(html, data, params)
-  local jshmac = string.sub(encode_with_secret(data.layout.i_js, ''), 1, 20):gsub("%.", "-")
-  local csshmac = string.sub(encode_with_secret(data.layout.i_css, ''), 1, 20):gsub("%.", "-")
+  local jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]:gsub("/", "-")
+  local csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]:gsub("/", "-")
   html = html:gsub('@js_vendors', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/vendors/" .. tostring(jshmac) .. ".js")
   html = html:gsub('@js', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/js/" .. tostring(data.layout._rev) .. ".js")
   html = html:gsub('@css_vendors', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/vendors/" .. tostring(csshmac) .. ".css")
