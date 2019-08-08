@@ -99,7 +99,11 @@ do
       })[1]
       return {
         content_type = "application/javascript"
-      }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params)
+      }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
+        headers = {
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+        }
+      }
     end,
     [{
       js_vendors = '/:lang/:layout/vendors/:rev.js'
@@ -113,7 +117,7 @@ do
         content_type = "application/javascript"
       }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
         headers = {
-          ["expires"] = "Expires: Wed, 25 Nov 2300 00:00:00 GMT"
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
         }
       }
     end,
@@ -128,7 +132,11 @@ do
       local scss = sass.compile(css, 'compressed')
       return {
         content_type = "text/css"
-      }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params)
+      }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params), {
+        headers = {
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+        }
+      }
     end,
     [{
       css_vendors = '/:lang/:layout/vendors/:rev.css'
@@ -142,7 +150,7 @@ do
         content_type = "text/css"
       }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params), {
         headers = {
-          ["expires"] = "Expires: Wed, 25 Nov 2300 00:00:00 GMT"
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
         }
       }
     end,
@@ -157,7 +165,11 @@ do
           ["key"] = tostring(key)
         })[1] .. "\n")
       end
-      return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params)
+      return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params), {
+        headers = {
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+        }
+      }
     end,
     [{
       page_no_lang = '/:all/:slug'
@@ -203,6 +215,12 @@ do
         end
         html = dynamic_replace(db_name, html, global_data, { }, self.params)
         local infos = page_info(db_name, self.params.slug, self.params.lang)
+        if infos == nil then
+          infos = {
+            ['page'] = { },
+            ['folder'] = { }
+          }
+        end
         basic_auth(self, settings[sub_domain], infos)
         if is_auth(self, settings[sub_domain], infos) then
           if html ~= 'null' then

@@ -26,7 +26,7 @@ class extends lapis.Application
     if config._name == "production" then
       print(to_json(err))
       print(to_json(trace))
-      { render: "error_500" }
+      { render: "error_500", status: 500 }
     else
       super err, trace
 
@@ -176,7 +176,7 @@ class extends lapis.Application
 
       html = dynamic_replace(db_name, html, global_data, {}, @params)
       infos = page_info(db_name, @params.slug, @params.lang)
-
+      infos = { 'page': {}, 'folder': {} } if infos == nil
       basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
       if is_auth(@, settings[sub_domain], infos)
         if html ~= 'null'
