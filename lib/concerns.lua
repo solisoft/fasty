@@ -9,6 +9,8 @@ local table_deep_merge
 table_deep_merge = require('lib.utils').table_deep_merge
 local http_get
 http_get = require('lib.http_client').http_get
+local encode_with_secret
+encode_with_secret = require('lapis.util.encoding').encode_with_secret
 local from_json, to_json, trim, unescape
 do
   local _obj_0 = require('lapis.util')
@@ -32,9 +34,11 @@ escape_pattern = function(text)
 end
 local prepare_headers
 prepare_headers = function(html, data, params)
-  html = html:gsub('@js_vendors', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/vendors/" .. tostring(data.layout._rev) .. ".js")
+  local jshmac = string.sub(encode_with_secret(data.layout.i_js, ''), 1, 20):gsub("%.", "-")
+  local csshmac = string.sub(encode_with_secret(data.layout.i_css, ''), 1, 20):gsub("%.", "-")
+  html = html:gsub('@js_vendors', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/vendors/" .. tostring(jshmac) .. ".js")
   html = html:gsub('@js', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/js/" .. tostring(data.layout._rev) .. ".js")
-  html = html:gsub('@css_vendors', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/vendors/" .. tostring(data.layout._rev) .. ".css")
+  html = html:gsub('@css_vendors', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/vendors/" .. tostring(csshmac) .. ".css")
   html = html:gsub('@css', "/" .. tostring(params.lang) .. "/" .. tostring(data.layout._key) .. "/css/" .. tostring(data.layout._rev) .. ".css")
   local headers = "<title>" .. tostring(data.item.name) .. "</title>"
   if (data.item.og_title and data.item.og_title[params.lang]) then

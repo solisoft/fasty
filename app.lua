@@ -111,7 +111,7 @@ do
     }] = function(self)
       local sub_domain = stringy.split(self.req.headers.host, '.')[1]
       load_settings(self, sub_domain)
-      local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js)", {
+      local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js", {
         ["key"] = tostring(self.params.layout)
       })[1]
       return {

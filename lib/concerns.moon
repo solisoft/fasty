@@ -3,6 +3,7 @@ stringy = require 'stringy'
 import aql, document_get from require 'lib.arango'
 import table_deep_merge from require 'lib.utils'
 import http_get from require 'lib.http_client'
+import encode_with_secret from require 'lapis.util.encoding'
 import from_json, to_json, trim, unescape from require 'lapis.util'
 --------------------------------------------------------------------------------
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
@@ -12,9 +13,11 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params)->
-  html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{data.layout._rev}.js")
+  jshmac = string.sub(encode_with_secret(data.layout.i_js, ''), 1, 20)\gsub("%.", "-")
+  csshmac = string.sub(encode_with_secret(data.layout.i_css, ''), 1, 20)\gsub("%.", "-")
+  html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{jshmac}.js")
   html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
-  html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{data.layout._rev}.css")
+  html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{csshmac}.css")
   html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
   headers = "<title>#{data.item.name}</title>"
   if(data.item.og_title and data.item.og_title[params.lang])
