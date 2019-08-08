@@ -1,7 +1,7 @@
 import { utils } from "mocha";
 
 var host = 'http://test.127.0.0.1.xip.io:8080'
-describe('My First Test', function () {
+describe('Core tests', function () {
 
   beforeEach(function () {
     cy.visit(host + '/static/admin/index.html')
@@ -25,10 +25,16 @@ describe('My First Test', function () {
   it('Test Helpers', function () {
   })
 
-  it('Test AQLs', function () {
+  it('Test Layouts', function () {
   })
 
   it('Test components', function () {
+  })
+
+  it('Test API', function () {
+  })
+
+  it('Test Scripts', function () {
   })
 
   it('test {{ partial ... }}', function () {
@@ -45,4 +51,23 @@ describe('My First Test', function () {
 
   it('test {{ helper ... }}', function () {
   })
+
+  it('test {{ lang }}', function () {
+  })
+
+  it('test {{ settings ... }}', function () {
+  })
+
+  it('test {{ spa ... }}', function () {
+  })
+
+  it('test {{ splat ... }}', function () {
+  })
+
+  it('test {{ aql ... }}', function () {
+  })
+
+  it('test {{ external ... }}', function () {
+  })
+
 })
