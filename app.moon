@@ -100,10 +100,9 @@ class extends lapis.Application
     load_settings(@, sub_domain)
     js = aql(
       "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js)",
+      "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
       { "key": "#{@params.layout}" }
     )[1]
-    print(js)
     content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
   ------------------------------------------------------------------------------
   -- css
