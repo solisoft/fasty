@@ -845,7 +845,7 @@ require.register("js/editor.js", function(exports, require, module) {
                     },
                     success: function (data) {
                       setTimeout(function () {
-                        $(el).html('<img src="https://resize.ovh/o/' + data.filename + '" />')
+                        $(el).html('<img sizes="(max-width: 320px) 280px, (max-width: 480px) 440px, 800px" srcset="https://resize.ovh/r/' + data.filename + '/320 320w, https://resize.ovh/r/' + data.filename + '/480 480w, https://resize.ovh/o/' + data.filename + ' 800w"src="https://resize.ovh/o/' + data.filename + '" />')
                       }, 100)
                       clear_empty_drags()
                     }
