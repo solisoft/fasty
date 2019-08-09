@@ -845,7 +845,7 @@ require.register("js/editor.js", function(exports, require, module) {
                     },
                     success: function (data) {
                       setTimeout(function () {
-                        $(el).html('<img sizes="(max-width: 320px) 280px, (max-width: 480px) 440px, 800px" srcset="https://resize.ovh/r/' + data.filename + '/320 320w, https://resize.ovh/r/' + data.filename + '/480 480w, https://resize.ovh/o/' + data.filename + ' 800w"src="https://resize.ovh/o/' + data.filename + '" />')
+                        $(el).html('<picture> <source media="(max-width: 480px)" srcset="ehttps://resize.ovh/r/' + data.filename + '/480"><source media="(max-width: 799px)" srcset="ehttps://resize.ovh/r/' + data.filename + '/799"><source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '"> <img src="https://resize.ovh/o/' + data.filename + '" alt="Chris debout tenant sa fille Elva dans ses bras"> </picture>')
                       }, 100)
                       clear_empty_drags()
                     }
