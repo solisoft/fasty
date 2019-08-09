@@ -300,7 +300,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'external'
       output = http_get(item, {}) if action == 'external'
 
-    html = html\gsub(escape_pattern(widget), escape_pattern(output))
+    html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
 
   html
 --------------------------------------------------------------------------------
