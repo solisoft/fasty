@@ -93,7 +93,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
     page_partial = load_document_by_slug(db_name, 'page', 'partials')
     if uselayout
       html = prepare_headers(data.layout.html, data, params)
-      html = data.layout.html\gsub(
+      html = html\gsub(
         '@yield',
         escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params))
       )
