@@ -294,10 +294,13 @@
       Save content to localStorage
     */
     var save_content = function () {
+      var t1 = +new Date()
       var history = JSON.parse(LGet('editor-history') || '[]')
       history.push($(self).find('.edit-mode .page-content').html())
       history.splice(0, history.length - 10);
       LSet('editor-history', JSON.stringify(history))
+      var t2 = +new Date()
+      console.log("Save content : ", t2 - t1)
     }
 
     /*
@@ -483,7 +486,6 @@
       Export base element as json structure
     */
     var run_export = function (base) {
-      var t1 = +new Date()
       var data = []
       $(base).find('> .cms_row').each(function (i, row) {
 
@@ -519,8 +521,6 @@
       })
 
       $(base).find('[data-exported]').removeAttr('data-exported')
-      var t2 = +new Date()
-      console.log("Run export took : ",t2-t1)
       return data
     }
 
