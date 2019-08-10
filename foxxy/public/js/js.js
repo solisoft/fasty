@@ -1098,7 +1098,7 @@ require.register("js/editor.js", function(exports, require, module) {
       Export base element as json structure
     */
     var run_export = function (base) {
-
+      var t1 = +new Date()
       var data = []
       $(base).find('> .cms_row').each(function (i, row) {
 
@@ -1134,6 +1134,8 @@ require.register("js/editor.js", function(exports, require, module) {
       })
 
       $(base).find('[data-exported]').removeAttr('data-exported')
+      var t1 = +new Date()
+      console.log("Run export took : ", t2-t1)
       return data
     }
 
