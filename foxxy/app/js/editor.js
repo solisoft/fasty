@@ -519,8 +519,8 @@
       })
 
       $(base).find('[data-exported]').removeAttr('data-exported')
-      var t1 = +new Date()
-      console.log("Run export took : ", t2-t1)
+      var t2 = +new Date()
+      console.log("Run export took : ",t2-t1)
       return data
     }
 
