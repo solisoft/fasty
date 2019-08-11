@@ -295,10 +295,12 @@
     */
     var save_content = function () {
       var t1 = +new Date()
+      /*
       var history = JSON.parse(LGet('editor-history') || '[]')
       history.push($(self).find('.edit-mode .page-content').html())
       history.splice(0, history.length - 10);
       LSet('editor-history', JSON.stringify(history))
+      */
       var t2 = +new Date()
       console.log("Save content : ", t2 - t1)
     }
