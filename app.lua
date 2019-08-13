@@ -70,7 +70,7 @@ do
     [{
       root = '/(:lang)'
     }] = function(self)
-      sub_domain = sub_domain_account(self)
+      sub_domain_account(self)
       if self.req.headers['x-forwarded-host'] then
         self.req.headers['host'] = self.req.headers['x-forwarded-host']
         self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
@@ -84,6 +84,7 @@ do
           self.session.lang = self.params.lang
         end
         load_settings(self, sub_domain)
+        print(to_json(settings))
         self.session.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
         local home = from_json(settings[sub_domain].home)
         self.params.lang = self.session.lang

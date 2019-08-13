@@ -114,7 +114,7 @@ class extends lapis.Application
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
       if @params.lang then @session.lang = @params.lang
-      load_settings(@, sub_domain)
+      load_settings(@)
       print(to_json(settings))
       @session.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
 
