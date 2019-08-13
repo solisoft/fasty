@@ -105,7 +105,7 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
-    sub_domain = sub_domain_account(@)
+    sub_domain_account(@)
 
     if @req.headers['x-forwarded-host'] then
       @req.headers['host'] = @req.headers['x-forwarded-host']
@@ -115,7 +115,6 @@ class extends lapis.Application
     else
       if @params.lang then @session.lang = @params.lang
       load_settings(@, sub_domain)
-
       @session.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
 
       home = from_json(settings[sub_domain].home)
