@@ -80,10 +80,10 @@ do
           redirect_to = 'need_a_db'
         }
       else
-        load_settings(self, sub_domain)
         if self.params.lang then
           self.session.lang = self.params.lang
         end
+        load_settings(self, sub_domain)
         self.session.lang = check_valid_lang(settings[sub_domain].langs, self.session.lang)
         local home = from_json(settings[sub_domain].home)
         self.params.lang = self.session.lang
@@ -295,9 +295,6 @@ do
   end
   sub_domain_account = function(self)
     sub_domain = stringy.split(self.req.headers.host, '.')[1]
-    if sub_domain == '127' then
-      sub_domain = 'demo'
-    end
   end
   display_page = function(self)
     self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)

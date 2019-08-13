@@ -116,7 +116,7 @@ class extends lapis.Application
       if @params.lang then @session.lang = @params.lang
       load_settings(@, sub_domain)
 
-      @session.lang = check_valid_lang(settings[sub_domain].langs, @session.lang)
+      @session.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
 
       home = from_json(settings[sub_domain].home)
       @params.lang = @session.lang
