@@ -183,7 +183,7 @@ do
           redirect_to = '/need_a_db'
         }
       else
-        load_settings(self, sub_domain)
+        load_settings(self)
         if not (self.session.lang) then
           self.session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
         end
@@ -199,7 +199,7 @@ do
           redirect_to = '/need_a_db'
         }
       else
-        load_settings(self, sub_domain)
+        load_settings(self)
         return display_page(self)
       end
     end,
@@ -284,6 +284,7 @@ do
   self:enable("etlua")
   load_settings = function(self)
     sub_domain_account(self)
+    print(to_json(sub_domain))
     if jwt[sub_domain] == nil or list_databases() == nil then
       jwt[sub_domain] = auth_arangodb(sub_domain)
     end
