@@ -68,8 +68,8 @@ class extends lapis.Application
   -- sub_domain_account
   sub_domain_account = () =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-    sub_domain = 'demo' if sub_domain == '127'
-  ------------------------------------------------------------------------------
+
+  ----------------------------------------------------------------------------
   -- display_page()
   display_page = () =>
 
