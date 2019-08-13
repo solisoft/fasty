@@ -39,7 +39,6 @@ class extends lapis.Application
   -- load_settings
   load_settings = () =>
     sub_domain_account(@)
-    print(to_json(sub_domain))
     jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or list_databases! == nil
     if list_databases!["db_#{sub_domain}"] == nil
       no_db[sub_domain] = true
@@ -68,7 +67,12 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- sub_domain_account
   sub_domain_account = () =>
+
+    print(to_json(@req.headers.host))
+
     sub_domain = stringy.split(@req.headers.host, '.')[1]
+
+    print(to_json(sub_domain))
 
   ----------------------------------------------------------------------------
   -- display_page()

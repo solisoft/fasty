@@ -284,7 +284,6 @@ do
   self:enable("etlua")
   load_settings = function(self)
     sub_domain_account(self)
-    print(to_json(sub_domain))
     if jwt[sub_domain] == nil or list_databases() == nil then
       jwt[sub_domain] = auth_arangodb(sub_domain)
     end
@@ -296,7 +295,9 @@ do
     end
   end
   sub_domain_account = function(self)
+    print(to_json(self.req.headers.host))
     sub_domain = stringy.split(self.req.headers.host, '.')[1]
+    return print(to_json(sub_domain))
   end
   display_page = function(self)
     self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
