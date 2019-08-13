@@ -19,6 +19,8 @@ jwt = {}
 global_data = {}
 settings = {}
 no_db = {}
+sub_domain = ''
+
 --------------------------------------------------------------------------------
 -- App
 class extends lapis.Application
@@ -34,7 +36,9 @@ class extends lapis.Application
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   ------------------------------------------------------------------------------
-  load_settings = (sub_domain) =>
+  -- load_settings
+  load_settings = () =>
+    sub_domain_account(@)
     jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or list_databases! == nil
     if list_databases!["db_#{sub_domain}"] == nil
       no_db[sub_domain] = true
@@ -61,12 +65,47 @@ class extends lapis.Application
       ')[1]
       settings[sub_domain] = global_data.settings[1]
   ------------------------------------------------------------------------------
+  -- sub_domain_account
+  sub_domain_account = () =>
+    sub_domain = stringy.split(@req.headers.host, '.')[1]
+    sub_domain = 'demo' if sub_domain == '127'
+  ------------------------------------------------------------------------------
+  -- display_page()
+  display_page = () =>
+
+    @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
+    @session.lang = @params.lang
+    db_name = "db_#{sub_domain}"
+    redirection = load_redirection(db_name, @params)
+
+    html = ''
+    if redirection == nil
+      html = dynamic_page(
+        db_name,
+        load_page_by_slug(db_name, @params.slug, @params.lang),
+        @params, global_data
+      )
+    else
+      html = redirection
+
+    html = dynamic_replace(db_name, html, global_data, {}, @params)
+    infos = page_info(db_name, @params.slug, @params.lang)
+    infos = { 'page': {}, 'folder': {} } if infos == nil
+    basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
+    if is_auth(@, settings[sub_domain], infos)
+      if html ~= 'null'
+        html
+      else
+        status: 404, render: 'error_404'
+    else
+      status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
+  ------------------------------------------------------------------------------
   -- need_a_db
   [need_a_db: '/need_a_db']: => render: true
   ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
+    sub_domain = sub_domain_account(@)
 
     if @req.headers['x-forwarded-host'] then
       @req.headers['host'] = @req.headers['x-forwarded-host']
@@ -80,12 +119,16 @@ class extends lapis.Application
       @session.lang = check_valid_lang(settings[sub_domain].langs, @session.lang)
 
       home = from_json(settings[sub_domain].home)
-      redirect_to: "/#{@session.lang}/#{home['all']}/#{home['slug']}"
+      @params.lang = @session.lang
+      @params.all = home['all']
+      @params.slug = home['slug']
+
+      display_page(@)
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
-    load_settings(@, sub_domain)
+
+    load_settings(@)
     js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
@@ -95,8 +138,7 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- js_vendors
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
-    load_settings(@, sub_domain)
+    load_settings(@)
     js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
@@ -106,8 +148,7 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
-    load_settings(@, sub_domain)
+    load_settings(@)
     css = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.scss",
@@ -118,8 +159,7 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- css_vendors
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
-    load_settings(@, sub_domain)
+    load_settings(@)
     css = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
@@ -129,8 +169,7 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
-    load_settings(@, sub_domain)
+    load_settings(@)
     html = ''
     for i, key in pairs(stringy.split(@params.key, '-'))
       html ..= aql(
@@ -145,52 +184,27 @@ class extends lapis.Application
       @req.headers['host'] = @req.headers['x-forwarded-host']
       @req.parsed_url['host'] = @req.headers['x-forwarded-host']
 
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
+    sub_domain_account(@)
+
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
       unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
-      redirect_to: "/#{@session.lang}/#{@params.all}/#{@params.slug}"
+      display_page(@)
   ------------------------------------------------------------------------------
   -- page
   [page: '/:lang/:all/:slug(/*)']: =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
-    db_name = "db_#{sub_domain}"
+    sub_domain_account(@)
+
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@, sub_domain)
-      @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
-      @session.lang = @params.lang
-
-      redirection = load_redirection(db_name, @params)
-
-      html = ''
-      if redirection == nil
-        html = dynamic_page(
-          db_name,
-          load_page_by_slug(db_name, @params.slug, @params.lang),
-          @params, global_data
-        )
-      else
-        html = redirection
-
-      html = dynamic_replace(db_name, html, global_data, {}, @params)
-      infos = page_info(db_name, @params.slug, @params.lang)
-      infos = { 'page': {}, 'folder': {} } if infos == nil
-      basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
-      if is_auth(@, settings[sub_domain], infos)
-        if html ~= 'null'
-          html
-        else
-          status: 404, render: 'error_404'
-      else
-        status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
+      display_page(@)
   ------------------------------------------------------------------------------
   -- install service
   [service: '/service/:name']: respond_to {
     POST: =>
-      sub_domain = stringy.split(@req.headers.host, '.')[1]
-      load_settings(@, sub_domain)
+      load_settings(@)
 
       if @params.token == settings[sub_domain].token
         install_service(sub_domain, @params.name)
@@ -202,8 +216,7 @@ class extends lapis.Application
   -- install script
   [service: '/script/:name']: respond_to {
     POST: =>
-      sub_domain = stringy.split(@req.headers.host, '.')[1]
-      load_settings(@, sub_domain)
+      load_settings(@)
 
       if @params.token == settings[sub_domain].token
         install_script(sub_domain, @params.name)
@@ -215,8 +228,7 @@ class extends lapis.Application
   -- deploy site
   [service: '/deploy']: respond_to {
     POST: =>
-      sub_domain = stringy.split(@req.headers.host, '.')[1]
-      load_settings(@, sub_domain)
+      load_settings(@)
 
       if @params.token == settings[sub_domain].token
         deploy_site(sub_domain, settings[sub_domain])

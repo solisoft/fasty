@@ -41,9 +41,10 @@ local jwt = { }
 local global_data = { }
 local settings = { }
 local no_db = { }
+local sub_domain = ''
 do
   local _class_0
-  local load_settings
+  local load_settings, sub_domain_account, display_page
   local _parent_0 = lapis.Application
   local _base_0 = {
     handle_error = function(self, err, trace)
@@ -51,7 +52,8 @@ do
         print(to_json(err))
         print(to_json(trace))
         return {
-          render = "error_500"
+          render = "error_500",
+          status = 500
         }
       else
         return _class_0.__parent.__base.handle_error(self, err, trace)
@@ -68,7 +70,7 @@ do
     [{
       root = '/(:lang)'
     }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+      sub_domain = sub_domain_account(self)
       if self.req.headers['x-forwarded-host'] then
         self.req.headers['host'] = self.req.headers['x-forwarded-host']
         self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
@@ -84,16 +86,16 @@ do
         end
         self.session.lang = check_valid_lang(settings[sub_domain].langs, self.session.lang)
         local home = from_json(settings[sub_domain].home)
-        return {
-          redirect_to = "/" .. tostring(self.session.lang) .. "/" .. tostring(home['all']) .. "/" .. tostring(home['slug'])
-        }
+        self.params.lang = self.session.lang
+        self.params.all = home['all']
+        self.params.slug = home['slug']
+        return display_page(self)
       end
     end,
     [{
       js = '/:lang/:layout/js/:rev.js'
     }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      load_settings(self, sub_domain)
+      load_settings(self)
       local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript", {
         ["key"] = tostring(self.params.layout)
       })[1]
@@ -108,8 +110,7 @@ do
     [{
       js_vendors = '/:lang/:layout/vendors/:rev.js'
     }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      load_settings(self, sub_domain)
+      load_settings(self)
       local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js", {
         ["key"] = tostring(self.params.layout)
       })[1]
@@ -124,8 +125,7 @@ do
     [{
       css = '/:lang/:layout/css/:rev.css'
     }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      load_settings(self, sub_domain)
+      load_settings(self)
       local css = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.scss", {
         ["key"] = tostring(self.params.layout)
       })[1]
@@ -141,8 +141,7 @@ do
     [{
       css_vendors = '/:lang/:layout/vendors/:rev.css'
     }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      load_settings(self, sub_domain)
+      load_settings(self)
       local css = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css", {
         ["key"] = tostring(self.params.layout)
       })[1]
@@ -157,8 +156,7 @@ do
     [{
       component = '/:lang/:key/component/:rev.tag'
     }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      load_settings(self, sub_domain)
+      load_settings(self)
       local html = ''
       for i, key in pairs(stringy.split(self.params.key, '-')) do
         html = html .. (aql("db_" .. tostring(sub_domain), "FOR doc in components FILTER doc._key == @key RETURN doc.html", {
@@ -178,7 +176,7 @@ do
         self.req.headers['host'] = self.req.headers['x-forwarded-host']
         self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
       end
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
+      sub_domain_account(self)
       if no_db[sub_domain] then
         return {
           redirect_to = '/need_a_db'
@@ -188,65 +186,27 @@ do
         if not (self.session.lang) then
           self.session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
         end
-        return {
-          redirect_to = "/" .. tostring(self.session.lang) .. "/" .. tostring(self.params.all) .. "/" .. tostring(self.params.slug)
-        }
+        return display_page(self)
       end
     end,
     [{
       page = '/:lang/:all/:slug(/*)'
     }] = function(self)
-      local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-      local db_name = "db_" .. tostring(sub_domain)
+      sub_domain_account(self)
       if no_db[sub_domain] then
         return {
           redirect_to = '/need_a_db'
         }
       else
         load_settings(self, sub_domain)
-        self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
-        self.session.lang = self.params.lang
-        local redirection = load_redirection(db_name, self.params)
-        local html = ''
-        if redirection == nil then
-          html = dynamic_page(db_name, load_page_by_slug(db_name, self.params.slug, self.params.lang), self.params, global_data)
-        else
-          html = redirection
-        end
-        html = dynamic_replace(db_name, html, global_data, { }, self.params)
-        local infos = page_info(db_name, self.params.slug, self.params.lang)
-        if infos == nil then
-          infos = {
-            ['page'] = { },
-            ['folder'] = { }
-          }
-        end
-        basic_auth(self, settings[sub_domain], infos)
-        if is_auth(self, settings[sub_domain], infos) then
-          if html ~= 'null' then
-            return html
-          else
-            return {
-              status = 404,
-              render = 'error_404'
-            }
-          end
-        else
-          return {
-            status = 401,
-            headers = {
-              ['WWW-Authenticate'] = 'Basic realm=\"admin\"'
-            }
-          }
-        end
+        return display_page(self)
       end
     end,
     [{
       service = '/service/:name'
     }] = respond_to({
       POST = function(self)
-        local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-        load_settings(self, sub_domain)
+        load_settings(self)
         if self.params.token == settings[sub_domain].token then
           install_service(sub_domain, self.params.name)
           return 'service installed'
@@ -261,8 +221,7 @@ do
       service = '/script/:name'
     }] = respond_to({
       POST = function(self)
-        local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-        load_settings(self, sub_domain)
+        load_settings(self)
         if self.params.token == settings[sub_domain].token then
           install_script(sub_domain, self.params.name)
           return 'script installed'
@@ -277,8 +236,7 @@ do
       service = '/deploy'
     }] = respond_to({
       POST = function(self)
-        local sub_domain = stringy.split(self.req.headers.host, '.')[1]
-        load_settings(self, sub_domain)
+        load_settings(self)
         if self.params.token == settings[sub_domain].token then
           deploy_site(sub_domain, settings[sub_domain])
           return 'site deployed'
@@ -323,7 +281,8 @@ do
   _base_0.__class = _class_0
   local self = _class_0
   self:enable("etlua")
-  load_settings = function(self, sub_domain)
+  load_settings = function(self)
+    sub_domain_account(self)
     if jwt[sub_domain] == nil or list_databases() == nil then
       jwt[sub_domain] = auth_arangodb(sub_domain)
     end
@@ -332,6 +291,50 @@ do
     else
       global_data = aql("db_" .. tostring(sub_domain), '\n        LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n        LET g_redirections = (FOR doc IN redirections RETURN doc)\n        LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n        LET g_components = (\n          FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])\n        )\n        LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n        LET g_helpers = (\n          FOR h IN helpers\n            FOR p IN partials\n              FILTER h.partial_key == p._key\n              FOR a IN aqls\n                FILTER h.aql_key == a._key\n                RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n        )\n        RETURN { components: g_components, settings: g_settings,\n          redirections: g_redirections, aqls: g_aqls,\n          trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n      ')[1]
       settings[sub_domain] = global_data.settings[1]
+    end
+  end
+  sub_domain_account = function(self)
+    sub_domain = stringy.split(self.req.headers.host, '.')[1]
+    if sub_domain == '127' then
+      sub_domain = 'demo'
+    end
+  end
+  display_page = function(self)
+    self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
+    self.session.lang = self.params.lang
+    local db_name = "db_" .. tostring(sub_domain)
+    local redirection = load_redirection(db_name, self.params)
+    local html = ''
+    if redirection == nil then
+      html = dynamic_page(db_name, load_page_by_slug(db_name, self.params.slug, self.params.lang), self.params, global_data)
+    else
+      html = redirection
+    end
+    html = dynamic_replace(db_name, html, global_data, { }, self.params)
+    local infos = page_info(db_name, self.params.slug, self.params.lang)
+    if infos == nil then
+      infos = {
+        ['page'] = { },
+        ['folder'] = { }
+      }
+    end
+    basic_auth(self, settings[sub_domain], infos)
+    if is_auth(self, settings[sub_domain], infos) then
+      if html ~= 'null' then
+        return html
+      else
+        return {
+          status = 404,
+          render = 'error_404'
+        }
+      end
+    else
+      return {
+        status = 401,
+        headers = {
+          ['WWW-Authenticate'] = 'Basic realm=\"admin\"'
+        }
+      }
     end
   end
   if _parent_0.__inherited then
