@@ -188,7 +188,7 @@ class extends lapis.Application
 
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
-      load_settings(@, sub_domain)
+      load_settings(@)
       unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
       display_page(@)
   ------------------------------------------------------------------------------
@@ -198,7 +198,7 @@ class extends lapis.Application
 
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
-      load_settings(@, sub_domain)
+      load_settings(@)
       display_page(@)
   ------------------------------------------------------------------------------
   -- install service
