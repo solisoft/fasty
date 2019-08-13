@@ -67,9 +67,8 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- sub_domain_account
   sub_domain_account = () =>
-    print(to_json(@req.headers))
+    print(to_json(@req.headers.host))
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-    print(to_json(sub_domain))
 
   ----------------------------------------------------------------------------
   -- display_page()
@@ -108,10 +107,6 @@ class extends lapis.Application
   -- root
   [root: '/(:lang)']: =>
     sub_domain_account(@)
-
-    if @req.headers['x-forwarded-host'] then
-      @req.headers['host'] = @req.headers['x-forwarded-host']
-      @req.parsed_url['host'] = @req.headers['x-forwarded-host']
 
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
