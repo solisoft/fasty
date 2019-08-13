@@ -67,11 +67,8 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- sub_domain_account
   sub_domain_account = () =>
-
-    print(to_json(@req.headers.host))
-
+    print(to_json(@req.headers))
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-
     print(to_json(sub_domain))
 
   ----------------------------------------------------------------------------
