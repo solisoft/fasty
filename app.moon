@@ -68,11 +68,9 @@ class extends lapis.Application
   -- sub_domain_account
   sub_domain_account = () =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-
   ----------------------------------------------------------------------------
   -- display_page()
   display_page = () =>
-
     @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
     @session.lang = @params.lang
     db_name = "db_#{sub_domain}"
@@ -123,7 +121,6 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
-
     load_settings(@)
     js = aql(
       "db_#{sub_domain}",
@@ -206,7 +203,7 @@ class extends lapis.Application
   }
   ------------------------------------------------------------------------------
   -- install script
-  [service: '/script/:name']: respond_to {
+  [script: '/script/:name']: respond_to {
     POST: =>
       load_settings(@)
 
@@ -218,7 +215,7 @@ class extends lapis.Application
   }
   ------------------------------------------------------------------------------
   -- deploy site
-  [service: '/deploy']: respond_to {
+  [deploy: '/deploy']: respond_to {
     POST: =>
       load_settings(@)
 
