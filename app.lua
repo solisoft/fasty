@@ -83,7 +83,7 @@ do
         if self.params.lang then
           self.session.lang = self.params.lang
         end
-        load_settings(self, sub_domain)
+        load_settings(self)
         print(to_json(settings))
         self.session.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
         local home = from_json(settings[sub_domain].home)
