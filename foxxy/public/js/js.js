@@ -715,9 +715,9 @@ require.register("js/editor.js", function(exports, require, module) {
           break
         case 'code':
           var codes = []
-          codes.push('<code class="html">' + htmlEntities('<h1>Some html code</h1>') + '</code>')
-          codes.push('<code class="javascript">console.log("JS ... really ? ")</code>')
-          codes.push('<code class="ruby">puts "I Love Ruby"</code>')
+          codes.push('<code class="language-html">' + htmlEntities('<h1>Some html code</h1>') + '</code>')
+          codes.push('<code class="language-javascript">console.log("JS ... really ? ")</code>')
+          codes.push('<code class="language-ruby">puts "I Love Ruby"</code>')
           before = '<div class="sg-row cms_row" data-type="code"><div class="col-12 cms_col">'
           html = '<div data-type="code" class="drag drop" data-editable="true"><pre>' + codes[loopid] + '</pre></div>'
           after = '</div></div>'
@@ -1218,7 +1218,7 @@ require.register("js/editor.js", function(exports, require, module) {
           if (raw_object.data('type') == 'code') {
             $(self).find(".editor-code").show()
             $(self).find('#ace-editor-' + object_name).show()
-
+            $(self).find("input[data-name=lang]").val(raw_object.find("code:first")[0].className.replace('language-', ''))
             ace_editor.session.setMode('ace/mode/' + mode);
             ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
             ace_editor.getSession().setValue($(this).text());
