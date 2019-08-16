@@ -153,7 +153,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     item    = keywords[2] if keywords[2]
     dataset = keywords[3] if keywords[3]
     args    = splat_to_table(keywords[4], '#') if keywords[4]
-    print(to_json(keywords[4]))
 
     -- {{ settings | key }}
     -- e.g. {{ settings | chatroom_url }}
