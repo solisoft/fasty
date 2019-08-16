@@ -729,14 +729,12 @@ require.register("js/editor.js", function(exports, require, module) {
           html = '<div data-type="embed" class="drag drop" data-editable="true" data-html="' + data.replace(/"/g, "&quot;") + '">' + data + '</div>'
           after = '</div></div>'
           break
-
         case 'html5':
           before = '<div class="sg-row cms_row" data-type="embed"><div class="col-12 cms_col">'
           var data = '<p>HTML5 Code here</p>'
           html = '<div data-type="embed" class="drag drop" data-editable="true" data-html="' + data.replace(/"/g, "&quot;") + '">' + data + '</div>'
           after = '</div></div>'
           break
-
         case 'col2':
           before = ''
           html = '<div class="sg-row cms_row sub_row drag drop" data-type="col2"><div class="col-6 cms_col"></div><div class="col-6 cms_col"></div></div>'
@@ -776,12 +774,6 @@ require.register("js/editor.js", function(exports, require, module) {
       loopid++
 
       return full ? $(before + html + after) : $(html)
-    }
-
-    var highlight = function () {
-      $('pre code').each(function (i, block) {
-        hljs.highlightBlock(block)
-      })
     }
 
     /*
@@ -845,7 +837,15 @@ require.register("js/editor.js", function(exports, require, module) {
                     },
                     success: function (data) {
                       setTimeout(function () {
-                        $(el).html('<picture> <source media="(max-width: 480px)" srcset="https://resize.ovh/r/' + data.filename + '/480"><source media="(max-width: 799px)" srcset="https://resize.ovh/r/' + data.filename + '/799"><source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '"> <img src="https://resize.ovh/o/' + data.filename + '" alt=""> </picture>')
+                        var picture = '<picture>'
+                        picture += '<source media="(max-width: 480px)" srcset="https://resize.ovh/r/' + data.filename + '/480">'
+                        picture += '<source media="(max-width: 480px)" srcset="https://resize.ovh/r/' + data.filename + '/480/webp" type="image/webp">'
+                        picture += '<source media="(max-width: 799px)" srcset="https://resize.ovh/r/' + data.filename + '/799">'
+                        picture += '<source media="(max-width: 799px)" srcset="https://resize.ovh/r/' + data.filename + '/799/webp" type="image/webp">'
+                        picture += '<source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '">'
+                        picture += '<source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '/webp" type="image/webp">'
+                        picture += '</picture>'
+                        $(el).html(picture)
                       }, 100)
                       clear_empty_drags()
                     }
@@ -991,7 +991,7 @@ require.register("js/editor.js", function(exports, require, module) {
 
         prepare_drag($('.drag'));
         prepare_drop($('.drop'));
-        highlight()
+
       } else {
         try {
           const tmp = from
@@ -1152,7 +1152,7 @@ require.register("js/editor.js", function(exports, require, module) {
       set_empty_rows()
       prepare_drag($(self).find(".drag"));
       prepare_drag($(self).find(".drop"))
-      highlight();
+      ;
       activate_events()
       remove_drag_attributes()
 
@@ -1218,12 +1218,6 @@ require.register("js/editor.js", function(exports, require, module) {
           if (raw_object.data('type') == 'code') {
             $(self).find(".editor-code").show()
             $(self).find('#ace-editor-' + object_name).show()
-            var mode = 'html'
-            if (raw_object.find('code').hasClass('ruby')) mode = 'ruby';
-            if (raw_object.find('code').hasClass('css')) mode = 'css';
-            if (raw_object.find('code').hasClass('javascript')) mode = 'javascript';
-            if (raw_object.find('code').hasClass('json')) mode = 'json';
-            $(self).find("input[data-name=lang]").val(mode)
 
             ace_editor.session.setMode('ace/mode/' + mode);
             ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
@@ -1278,7 +1272,7 @@ require.register("js/editor.js", function(exports, require, module) {
         save_content()
 
         set_empty_rows()
-        highlight()
+
 
         return false
       })
@@ -1356,7 +1350,7 @@ require.register("js/editor.js", function(exports, require, module) {
             <div id="trumbowyg-'+object_name+'"></div>\
             <div><label>Container Class</label><input type="text" data-name="container-class" class="uk-input"></div>\
             <div><label>Row Class</label><input type="text" data-name="row-class" class="uk-input"></div>\
-            <div class="editor-code"><label>Row Class</label><input type="text" data-name="lang" class="uk-input"></div>\
+            <div class="editor-code"><label>Language</label><input type="text" data-name="lang" class="uk-input"></div>\
             <div class="editor-code editor-simplecode"><label>Code</label><div id="ace-editor-'+object_name+'" class="ace-editor"></div></div>\
           </div>\
         </div>\
@@ -1402,7 +1396,7 @@ require.register("js/editor.js", function(exports, require, module) {
         }
         var content = ace_editor.getSession().getValue()
         if (editObj.data('type') == 'code') {
-          var mode = $(self).find("input[data-name=lang]").val()
+          var mode = 'language-' + $(self).find("input[data-name=lang]").val()
           editObj.html('<pre><code class="' + mode + '">' + htmlEntities(content) + '</code></pre>')
         }
         if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img'].indexOf(editObj.data('type')) >= 0) {
@@ -1416,15 +1410,9 @@ require.register("js/editor.js", function(exports, require, module) {
           editObj.html($('#trumbowyg-'+object_name).trumbowyg('html'))
         }
         editObj.attr('data-attr', JSON.stringify(attributes))
-        highlight()
+
       }
     }
-
-    //$("body").on("keyup", "input[data-name=lang], input[data-name=row-class], input[data-name=container-class]", function () { save_editor() })
-
-    ace_editor.getSession().on('change', function () {
-      //save_editor()
-    })
 
     return this;
   };
