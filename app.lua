@@ -71,10 +71,6 @@ do
       root = '/(:lang)'
     }] = function(self)
       sub_domain_account(self)
-      if self.req.headers['x-forwarded-host'] then
-        self.req.headers['host'] = self.req.headers['x-forwarded-host']
-        self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
-      end
       if no_db[sub_domain] then
         return {
           redirect_to = 'need_a_db'
@@ -173,10 +169,6 @@ do
     [{
       page_no_lang = '/:all/:slug'
     }] = function(self)
-      if self.req.headers['x-forwarded-host'] then
-        self.req.headers['host'] = self.req.headers['x-forwarded-host']
-        self.req.parsed_url['host'] = self.req.headers['x-forwarded-host']
-      end
       sub_domain_account(self)
       if no_db[sub_domain] then
         return {
@@ -219,7 +211,7 @@ do
       end
     }),
     [{
-      service = '/script/:name'
+      script = '/script/:name'
     }] = respond_to({
       POST = function(self)
         load_settings(self)
@@ -234,7 +226,7 @@ do
       end
     }),
     [{
-      service = '/deploy'
+      deploy = '/deploy'
     }] = respond_to({
       POST = function(self)
         load_settings(self)
@@ -295,9 +287,7 @@ do
     end
   end
   sub_domain_account = function(self)
-    print(to_json(self.req.headers.host))
     sub_domain = stringy.split(self.req.headers.host, '.')[1]
-    return print(to_json(sub_domain))
   end
   display_page = function(self)
     self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)

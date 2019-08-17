@@ -68,11 +68,9 @@ class extends lapis.Application
   -- sub_domain_account
   sub_domain_account = () =>
     sub_domain = stringy.split(@req.headers.host, '.')[1]
-
   ----------------------------------------------------------------------------
   -- display_page()
   display_page = () =>
-
     @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
     @session.lang = @params.lang
     db_name = "db_#{sub_domain}"
@@ -111,7 +109,6 @@ class extends lapis.Application
     else
       if @params.lang then @session.lang = @params.lang
       load_settings(@)
-      print(to_json(settings))
       @session.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
 
       home = from_json(settings[sub_domain].home)
@@ -123,14 +120,13 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
-
     load_settings(@)
     js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
+    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
   ------------------------------------------------------------------------------
   -- js_vendors
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
@@ -140,7 +136,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
+    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
   ------------------------------------------------------------------------------
   -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -151,7 +147,7 @@ class extends lapis.Application
       { "key": "#{@params.layout}" }
     )[1]
     scss = sass.compile(css, 'compressed')
-    content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
+    content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
   ------------------------------------------------------------------------------
   -- css_vendors
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
@@ -161,7 +157,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
+    content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
   ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
@@ -206,7 +202,7 @@ class extends lapis.Application
   }
   ------------------------------------------------------------------------------
   -- install script
-  [service: '/script/:name']: respond_to {
+  [script: '/script/:name']: respond_to {
     POST: =>
       load_settings(@)
 
@@ -218,7 +214,7 @@ class extends lapis.Application
   }
   ------------------------------------------------------------------------------
   -- deploy site
-  [service: '/deploy']: respond_to {
+  [deploy: '/deploy']: respond_to {
     POST: =>
       load_settings(@)
 
