@@ -5,7 +5,6 @@ do
   local _obj_0 = require('lapis.util')
   from_json, to_json = _obj_0.from_json, _obj_0.to_json
 end
-local http = require('lapis.nginx.http')
 local config = require('lapis.config').get()
 local jwt = ''
 local db_config = { }

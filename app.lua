@@ -80,7 +80,6 @@ do
           self.session.lang = self.params.lang
         end
         load_settings(self)
-        print(to_json(settings))
         self.session.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
         local home = from_json(settings[sub_domain].home)
         self.params.lang = self.session.lang
@@ -100,7 +99,7 @@ do
         content_type = "application/javascript"
       }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
         headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
         }
       }
     end,
@@ -115,7 +114,7 @@ do
         content_type = "application/javascript"
       }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
         headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
         }
       }
     end,
@@ -131,7 +130,7 @@ do
         content_type = "text/css"
       }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params), {
         headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
         }
       }
     end,
@@ -146,7 +145,7 @@ do
         content_type = "text/css"
       }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params), {
         headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
         }
       }
     end,

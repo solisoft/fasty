@@ -1,7 +1,6 @@
 import table_merge from require 'lib.utils'
 import from_json, to_json from require 'lapis.util'
 
-http  = require 'lapis.nginx.http'
 config = require('lapis.config').get!
 
 jwt       = ''
