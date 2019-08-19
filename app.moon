@@ -22,6 +22,39 @@ no_db = {}
 sub_domain = ''
 
 --------------------------------------------------------------------------------
+-- sub_domain_account
+sub_domain_account = () =>
+  sub_domain = stringy.split(@req.headers.host, '.')[1]
+--------------------------------------------------------------------------------
+-- load_settings
+load_settings = () =>
+  sub_domain_account(@)
+  jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or list_databases! == nil
+  if list_databases!["db_#{sub_domain}"] == nil
+    no_db[sub_domain] = true
+  else
+    global_data = aql("db_#{sub_domain}", '
+      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)
+      LET g_redirections = (FOR doc IN redirections RETURN doc)
+      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))
+      LET g_components = (
+        FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])
+      )
+      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
+      LET g_helpers = (
+        FOR h IN helpers
+          FOR p IN partials
+            FILTER h.partial_key == p._key
+            FOR a IN aqls
+              FILTER h.aql_key == a._key
+              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])
+      )
+      RETURN { components: g_components, settings: g_settings,
+        redirections: g_redirections, aqls: g_aqls,
+        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
+    ')[1]
+    settings[sub_domain] = global_data.settings[1]
+--------------------------------------------------------------------------------
 -- App
 class extends lapis.Application
   handle_error: (err, trace) =>
@@ -35,39 +68,6 @@ class extends lapis.Application
   @enable "etlua"
 
   layout: false -- we don't need a layout, it will be loaded dynamically
-  ------------------------------------------------------------------------------
-  -- load_settings
-  load_settings = () =>
-    sub_domain_account(@)
-    jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or list_databases! == nil
-    if list_databases!["db_#{sub_domain}"] == nil
-      no_db[sub_domain] = true
-    else
-      global_data = aql("db_#{sub_domain}", '
-        LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)
-        LET g_redirections = (FOR doc IN redirections RETURN doc)
-        LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))
-        LET g_components = (
-          FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])
-        )
-        LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
-        LET g_helpers = (
-          FOR h IN helpers
-            FOR p IN partials
-              FILTER h.partial_key == p._key
-              FOR a IN aqls
-                FILTER h.aql_key == a._key
-                RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])
-        )
-        RETURN { components: g_components, settings: g_settings,
-          redirections: g_redirections, aqls: g_aqls,
-          trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
-      ')[1]
-      settings[sub_domain] = global_data.settings[1]
-  ------------------------------------------------------------------------------
-  -- sub_domain_account
-  sub_domain_account = () =>
-    sub_domain = stringy.split(@req.headers.host, '.')[1]
   ----------------------------------------------------------------------------
   -- display_page()
   display_page = () =>
@@ -103,6 +103,7 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
+    print(to_json(@req.headers))
     sub_domain_account(@)
 
     if no_db[sub_domain] then redirect_to: 'need_a_db'
@@ -126,7 +127,10 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params) --, headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+    if config._name == "production"
+      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    else
+      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
   ------------------------------------------------------------------------------
   -- js_vendors
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
@@ -136,7 +140,11 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params) --, headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+    if config._name == "production"
+      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    else
+      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+
   ------------------------------------------------------------------------------
   -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -147,7 +155,10 @@ class extends lapis.Application
       { "key": "#{@params.layout}" }
     )[1]
     scss = sass.compile(css, 'compressed')
-    content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params) --, headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+    if config._name == "production"
+      content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
+    else
+      content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
   ------------------------------------------------------------------------------
   -- css_vendors
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
@@ -157,7 +168,10 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
       { "key": "#{@params.layout}" }
     )[1]
-    content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params) --, headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+    if config._name == "production"
+      content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
+    else
+      content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
   ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
@@ -168,7 +182,11 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params) --, headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
+    if config._name == "production"
+      dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
+    else
+      dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
+
   ------------------------------------------------------------------------------
   -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>

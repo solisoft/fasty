@@ -42,9 +42,26 @@ local global_data = { }
 local settings = { }
 local no_db = { }
 local sub_domain = ''
+local sub_domain_account
+sub_domain_account = function(self)
+  sub_domain = stringy.split(self.req.headers.host, '.')[1]
+end
+local load_settings
+load_settings = function(self)
+  sub_domain_account(self)
+  if jwt[sub_domain] == nil or list_databases() == nil then
+    jwt[sub_domain] = auth_arangodb(sub_domain)
+  end
+  if list_databases()["db_" .. tostring(sub_domain)] == nil then
+    no_db[sub_domain] = true
+  else
+    global_data = aql("db_" .. tostring(sub_domain), '\n      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n      LET g_redirections = (FOR doc IN redirections RETURN doc)\n      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n      LET g_components = (\n        FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])\n      )\n      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n      LET g_helpers = (\n        FOR h IN helpers\n          FOR p IN partials\n            FILTER h.partial_key == p._key\n            FOR a IN aqls\n              FILTER h.aql_key == a._key\n              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n      )\n      RETURN { components: g_components, settings: g_settings,\n        redirections: g_redirections, aqls: g_aqls,\n        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n    ')[1]
+    settings[sub_domain] = global_data.settings[1]
+  end
+end
 do
   local _class_0
-  local load_settings, sub_domain_account, display_page
+  local display_page
   local _parent_0 = lapis.Application
   local _base_0 = {
     handle_error = function(self, err, trace)
@@ -95,13 +112,19 @@ do
       local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript", {
         ["key"] = tostring(self.params.layout)
       })[1]
-      return {
-        content_type = "application/javascript"
-      }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
-        headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+      if config._name == "production" then
+        return {
+          content_type = "application/javascript"
+        }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params)
+      else
+        return {
+          content_type = "application/javascript"
+        }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
+          headers = {
+            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+          }
         }
-      }
+      end
     end,
     [{
       js_vendors = '/:lang/:layout/vendors/:rev.js'
@@ -110,13 +133,19 @@ do
       local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js", {
         ["key"] = tostring(self.params.layout)
       })[1]
-      return {
-        content_type = "application/javascript"
-      }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
-        headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+      if config._name == "production" then
+        return {
+          content_type = "application/javascript"
+        }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params)
+      else
+        return {
+          content_type = "application/javascript"
+        }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
+          headers = {
+            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+          }
         }
-      }
+      end
     end,
     [{
       css = '/:lang/:layout/css/:rev.css'
@@ -126,13 +155,19 @@ do
         ["key"] = tostring(self.params.layout)
       })[1]
       local scss = sass.compile(css, 'compressed')
-      return {
-        content_type = "text/css"
-      }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params), {
-        headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+      if config._name == "production" then
+        return {
+          content_type = "text/css"
+        }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params)
+      else
+        return {
+          content_type = "text/css"
+        }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params), {
+          headers = {
+            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+          }
         }
-      }
+      end
     end,
     [{
       css_vendors = '/:lang/:layout/vendors/:rev.css'
@@ -141,13 +176,19 @@ do
       local css = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css", {
         ["key"] = tostring(self.params.layout)
       })[1]
-      return {
-        content_type = "text/css"
-      }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params), {
-        headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+      if config._name == "production" then
+        return {
+          content_type = "text/css"
+        }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params)
+      else
+        return {
+          content_type = "text/css"
+        }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params), {
+          headers = {
+            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+          }
         }
-      }
+      end
     end,
     [{
       component = '/:lang/:key/component/:rev.tag'
@@ -159,11 +200,15 @@ do
           ["key"] = tostring(key)
         })[1] .. "\n")
       end
-      return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params), {
-        headers = {
-          ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+      if config._name == "production" then
+        return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params)
+      else
+        return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params), {
+          headers = {
+            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+          }
         }
-      }
+      end
     end,
     [{
       page_no_lang = '/:all/:slug'
@@ -273,21 +318,6 @@ do
   _base_0.__class = _class_0
   local self = _class_0
   self:enable("etlua")
-  load_settings = function(self)
-    sub_domain_account(self)
-    if jwt[sub_domain] == nil or list_databases() == nil then
-      jwt[sub_domain] = auth_arangodb(sub_domain)
-    end
-    if list_databases()["db_" .. tostring(sub_domain)] == nil then
-      no_db[sub_domain] = true
-    else
-      global_data = aql("db_" .. tostring(sub_domain), '\n        LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n        LET g_redirections = (FOR doc IN redirections RETURN doc)\n        LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n        LET g_components = (\n          FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])\n        )\n        LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n        LET g_helpers = (\n          FOR h IN helpers\n            FOR p IN partials\n              FILTER h.partial_key == p._key\n              FOR a IN aqls\n                FILTER h.aql_key == a._key\n                RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n        )\n        RETURN { components: g_components, settings: g_settings,\n          redirections: g_redirections, aqls: g_aqls,\n          trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n      ')[1]
-      settings[sub_domain] = global_data.settings[1]
-    end
-  end
-  sub_domain_account = function(self)
-    sub_domain = stringy.split(self.req.headers.host, '.')[1]
-  end
   display_page = function(self)
     self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
     self.session.lang = self.params.lang

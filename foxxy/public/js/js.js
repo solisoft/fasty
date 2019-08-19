@@ -613,6 +613,7 @@ module.exports = Common;
 });
 
 require.register("js/editor.js", function(exports, require, module) {
+/* jshint asi: true */
 (function ($) {
 
   $.fn.contentEditor = function (options) {
@@ -677,42 +678,42 @@ require.register("js/editor.js", function(exports, require, module) {
           before = '<div class="sg-row cms_row" data-type="h1"><div class="col-12 cms_col">'
           html = '<h1 data-type="h1" class="drag drop" data-editable="true">Macaroon donut tiramisu sweet roll.</h1>'
           after = '</div></div>'
-          break
+          break;
         case 'h2':
           before = '<div class="sg-row cms_row" data-type="h2"><div class="col-12 cms_col">'
           html = '<h2 data-type="h2" class="drag drop" data-editable="true">Macaroon donut tiramisu sweet roll.</h2>'
           after = '</div></div>'
-          break
+          break;
         case 'h3':
           before = '<div class="sg-row cms_row" data-type="h3"><div class="col-12 cms_col">'
           html = '<h3 data-type="h3" class="drag drop" data-editable="true">Macaroon donut tiramisu sweet roll.</h3>'
           after = '</div></div>'
-          break
+          break;
         case 'h4':
           before = '<div class="sg-row cms_row" data-type="h4"><div class="col-12 cms_col">'
           html = '<h4 data-type="h4" class="drag drop" data-editable="true">Macaroon donut tiramisu sweet roll.</h4>'
           after = '</div></div>'
-          break
+          break;
         case 'h5':
           before = '<div class="sg-row cms_row" data-type="h5"><div class="col-12 cms_col">'
           html = '<h5 data-type="h5" class="drag drop" data-editable="true">Macaroon donut tiramisu sweet roll.</h5>'
           after = '</div></div>'
-          break
+          break;
         case 'h6':
           before = '<div class="sg-row cms_row" data-type="h6"><div class="col-12 cms_col">'
           html = '<h6 data-type="h6" class="drag drop" data-editable="true">Macaroon donut tiramisu sweet roll.</h6>'
           after = '</div></div>'
-          break
+          break;
         case 'img':
           before = '<div class="sg-row cms_row" data-type="img"><div class="col-12 cms_col">'
           html = '<div data-type="img" class="drag drop" data-editable="true"><img src="https://via.placeholder.com/1200x600" alt=""></div>'
           after = '</div></div>'
-          break
+          break;
         case 'text':
           before = '<div class="sg-row cms_row" data-type="text"><div class="col-12 cms_col">'
           html = '<div data-type="text" class="drag drop" data-editable="true"><p style="text-align: justify;">' + ipsum(5) + '</p></div>'
           after = '</div></div>'
-          break
+          break;
         case 'code':
           var codes = []
           codes.push('<code class="language-html">' + htmlEntities('<h1>Some html code</h1>') + '</code>')
@@ -721,7 +722,7 @@ require.register("js/editor.js", function(exports, require, module) {
           before = '<div class="sg-row cms_row" data-type="code"><div class="col-12 cms_col">'
           html = '<div data-type="code" class="drag drop" data-editable="true"><pre>' + codes[loopid] + '</pre></div>'
           after = '</div></div>'
-          break
+          break;
         case 'video':
           var ids = ['AWKEWqx8OyA', 'TmDKbUrSYxQ', 'X8zLJlU_-60']
           var data = '<div style="position:relative;padding-top:56.25%;"><iframe src="https://www.youtube.com/embed/' + ids[loopid] + '" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe></div>'

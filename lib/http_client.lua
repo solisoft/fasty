@@ -3,7 +3,6 @@ do
   local _obj_0 = require('lapis.util')
   from_json, to_json = _obj_0.from_json, _obj_0.to_json
 end
-local http = require('lapis.nginx.http')
 local http_request
 http_request = function(url, method, body, headers)
   if headers == nil then
