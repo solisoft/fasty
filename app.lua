@@ -112,7 +112,7 @@ do
       local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript", {
         ["key"] = tostring(self.params.layout)
       })[1]
-      if config._name == "production" then
+      if self.req.headers['x-forwarded-host'] ~= nil then
         return {
           content_type = "application/javascript"
         }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params)
@@ -133,7 +133,7 @@ do
       local js = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js", {
         ["key"] = tostring(self.params.layout)
       })[1]
-      if config._name == "production" then
+      if self.req.headers['x-forwarded-host'] ~= nil then
         return {
           content_type = "application/javascript"
         }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params)
@@ -155,7 +155,7 @@ do
         ["key"] = tostring(self.params.layout)
       })[1]
       local scss = sass.compile(css, 'compressed')
-      if config._name == "production" then
+      if self.req.headers['x-forwarded-host'] ~= nil then
         return {
           content_type = "text/css"
         }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params)
@@ -176,7 +176,7 @@ do
       local css = aql("db_" .. tostring(sub_domain), "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css", {
         ["key"] = tostring(self.params.layout)
       })[1]
-      if config._name == "production" then
+      if self.req.headers['x-forwarded-host'] ~= nil then
         return {
           content_type = "text/css"
         }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params)
@@ -200,7 +200,7 @@ do
           ["key"] = tostring(key)
         })[1] .. "\n")
       end
-      if config._name == "production" then
+      if self.req.headers['x-forwarded-host'] ~= nil then
         return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params)
       else
         return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params), {
