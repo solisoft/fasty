@@ -103,7 +103,6 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
-    print(to_json(@req.headers))
     sub_domain_account(@)
 
     if no_db[sub_domain] then redirect_to: 'need_a_db'
@@ -127,7 +126,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
       { "key": "#{@params.layout}" }
     )[1]
-    if config._name == "production"
+    if @req.headers['x-forwarded-host'] != nil
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     else
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
@@ -140,7 +139,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
       { "key": "#{@params.layout}" }
     )[1]
-    if config._name == "production"
+    if @req.headers['x-forwarded-host'] != nil
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     else
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
@@ -155,7 +154,7 @@ class extends lapis.Application
       { "key": "#{@params.layout}" }
     )[1]
     scss = sass.compile(css, 'compressed')
-    if config._name == "production"
+    if @req.headers['x-forwarded-host'] != nil
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
     else
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
@@ -168,7 +167,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
       { "key": "#{@params.layout}" }
     )[1]
-    if config._name == "production"
+    if @req.headers['x-forwarded-host'] != nil
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
     else
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
@@ -182,7 +181,7 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    if config._name == "production"
+    if @req.headers['x-forwarded-host'] != nil
       dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
     else
       dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
