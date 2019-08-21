@@ -642,7 +642,7 @@ require.register("js/editor.js", function(exports, require, module) {
         { id: 'video', icon: 'fas fa-video', title: 'video' },
         { id: 'html5', icon: 'fab fa-html5', title: 'html5' }
       ],
-    }, options);
+    }, options)
 
     var dragObj, activeObj, loopid = 0, editObj, ace_editor;
 
