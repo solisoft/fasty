@@ -159,7 +159,9 @@ load_redirection = function(db_name, params)
 end
 local prepare_bindvars
 prepare_bindvars = function(splat, aql_request)
-  local bindvar = { }
+  local bindvar = {
+    ["page"] = 1
+  }
   for k, v in pairs(splat) do
     v = unescape(v)
     if v:match('^%d+$') then
@@ -235,7 +237,9 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         history[widget] = true
         local partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial then
-          local db_data = { }
+          local db_data = {
+            ["page"] = 1
+          }
           if dataset == 'arango' then
             if args['req'] then
               args['aql'] = aql(db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql', {

@@ -121,7 +121,7 @@ load_redirection = (db_name, params) ->
   else nil
 --------------------------------------------------------------------------------
 prepare_bindvars = (splat, aql_request) ->
-  bindvar = { "page" : 1 }
+  bindvar = { "page": 1 }
   for k, v in pairs(splat) do
     v = unescape(v)
     v = tonumber(v) if v\match('^%d+$')
