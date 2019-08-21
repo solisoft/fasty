@@ -200,7 +200,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         history[widget] = true
         partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial
-          db_data = {}
+          db_data = { "page": 1 }
           if dataset == 'arango'
             -- check if it's a stored procedure
             if args['req']
