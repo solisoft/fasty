@@ -86,9 +86,13 @@ class extends lapis.Application
     else
       html = redirection
 
-    html = dynamic_replace(db_name, html, global_data, {}, @params)
     infos = page_info(db_name, @params.slug, @params.lang)
     infos = { 'page': {}, 'folder': {} } if infos == nil
+
+    if infos.page.og_aql and infos.page.og_aql[@params.lang]
+      @params.og_data = aql(db_name, infos.page.og_aql[@params.lang])
+
+    html = dynamic_replace(db_name, html, global_data, {}, @params)
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
     if is_auth(@, settings[sub_domain], infos)
       if html ~= 'null'

@@ -136,16 +136,13 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   splat = {}
   splat = splat_to_table(params.splat) if params.splat
 
+  print(to_json(params))
   -- {{ lang }}
   html = html\gsub('{{ lang }}', params.lang)
 
   for widget in string.gmatch(html, '{{.-}}') do
-    output = ''
-    action = ''
-    item = ''
-    dataset = ''
-    args = {}
-    keywords = {}
+    output, action, item, dataset = '', '', '', ''
+    args, keywords = {}, {}
 
     widget_no_deco, _ = widget\gsub("{{ ", "")\gsub(" }}", "")
     table.insert(keywords, trim(k)) for i, k in pairs(stringy.split(widget_no_deco, '|'))
