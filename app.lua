@@ -329,7 +329,6 @@ do
     else
       html = redirection
     end
-    html = dynamic_replace(db_name, html, global_data, { }, self.params)
     local infos = page_info(db_name, self.params.slug, self.params.lang)
     if infos == nil then
       infos = {
@@ -337,6 +336,10 @@ do
         ['folder'] = { }
       }
     end
+    if infos.page.og_aql and infos.page.og_aql[self.params.lang] then
+      self.params.og_data = aql(db_name, infos.page.og_aql[self.params.lang])[1]
+    end
+    html = dynamic_replace(db_name, html, global_data, { }, self.params)
     basic_auth(self, settings[sub_domain], infos)
     if is_auth(self, settings[sub_domain], infos) then
       if html ~= 'null' then

@@ -136,7 +136,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   splat = {}
   splat = splat_to_table(params.splat) if params.splat
 
-  print(to_json(params))
   -- {{ lang }}
   html = html\gsub('{{ lang }}', params.lang)
 
