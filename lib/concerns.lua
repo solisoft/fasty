@@ -183,8 +183,6 @@ dynamic_replace = function(db_name, html, global_data, history, params)
   if params.splat then
     splat = splat_to_table(params.splat)
   end
-  print(to_json(params))
-  print("---------------------------------------------------------------------")
   html = html:gsub('{{ lang }}', params.lang)
   for widget in string.gmatch(html, '{{.-}}') do
     local output, action, item, dataset = '', '', '', ''
@@ -337,6 +335,11 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     if action == 'external' then
       if action == 'external' then
         output = http_get(item, { })
+      end
+    end
+    if action == 'og_data' then
+      if params.og_data then
+        output = params.og_data[item]
       end
     end
     if output ~= '' then
