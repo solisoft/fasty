@@ -66,7 +66,11 @@ deploy_site = function(sub_domain, settings)
   local db_config = require('lapis.config').get("db_" .. tostring(config._name))
   local path = "dump/" .. tostring(sub_domain) .. "/"
   os.execute("mkdir -p " .. tostring(path))
-  os.execute("arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection uploads --collection folder_path --collection folders --include-system-collections true --server.database db_" .. tostring(sub_domain) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --output-directory " .. tostring(path) .. " --overwrite true")
+  local command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection uploads --collection folder_path --collection folders --include-system-collections true --server.database db_" .. tostring(sub_domain) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --output-directory " .. tostring(path) .. " --overwrite true"
+  if from_json(settings[1].home)['deploy_datasets'] then
+    command = command .. " --collection datasets"
+  end
+  os.execute(command)
   os.execute("arangorestore --include-system-collections true --server.database " .. tostring(settings.deploy_secret) .. " --server.username " .. tostring(db_config.login) .. " --server.password " .. tostring(db_config.pass) .. " --server.endpoint http+tcp://172.31.0.6:8529 --input-directory " .. tostring(path) .. " --overwrite true")
   return os.execute("rm -Rf " .. tostring(path))
 end

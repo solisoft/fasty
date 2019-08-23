@@ -146,7 +146,7 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
 end
 local load_redirection
 load_redirection = function(db_name, params)
-  local request = "\n  FOR r IN redirections\n  FILTER r.route == @slug\n  LET spa = (FOR s IN spas FILTER s._id == r.spa_id RETURN s)[0]\n  LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]\n  RETURN { item: r, spa_name: spa.name, layout }\n  "
+  local request = "\n  FOR r IN redirections\n    FILTER r.route == @slug\n    LET spa = (FOR s IN spas FILTER s._id == r.spa_id RETURN s)[0]\n    LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]\n    RETURN { item: r, spa_name: spa.name, layout }\n  "
   local redirection = aql(db_name, request, {
     slug = params.slug
   })[1]
@@ -159,9 +159,10 @@ load_redirection = function(db_name, params)
 end
 local prepare_bindvars
 prepare_bindvars = function(splat, aql_request)
-  local bindvar = {
-    ["page"] = 1
-  }
+  local bindvar = { }
+  if aql_request:find('@page') then
+    bindvar["page"] = 1
+  end
   for k, v in pairs(splat) do
     v = unescape(v)
     if v:match('^%d+$') then

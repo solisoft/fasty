@@ -105,10 +105,10 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 load_redirection = (db_name, params) ->
   request = "
   FOR r IN redirections
-  FILTER r.route == @slug
-  LET spa = (FOR s IN spas FILTER s._id == r.spa_id RETURN s)[0]
-  LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]
-  RETURN { item: r, spa_name: spa.name, layout }
+    FILTER r.route == @slug
+    LET spa = (FOR s IN spas FILTER s._id == r.spa_id RETURN s)[0]
+    LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]
+    RETURN { item: r, spa_name: spa.name, layout }
   "
   redirection = aql(db_name, request, { slug: params.slug })[1]
 
