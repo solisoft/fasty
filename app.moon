@@ -90,7 +90,11 @@ class extends lapis.Application
     infos = { 'page': {}, 'folder': {} } if infos == nil
 
     if infos.page.og_aql and infos.page.og_aql[@params.lang]
-      @params.og_data = aql(db_name, infos.page.og_aql[@params.lang])[1]
+      splat = {}
+      splat = splat_to_table(params.splat) if params.splat
+
+      bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang])
+      @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
 
     html = dynamic_replace(db_name, html, global_data, {}, @params)
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
