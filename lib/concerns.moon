@@ -124,7 +124,7 @@ prepare_bindvars = (splat, aql_request) ->
   bindvar = { }
   bindvar["page"] = 1 if aql_request\find('@page')
   for k, v in pairs(splat) do
-    v = unescape(v)
+    v = unescape(tostring(v))
     v = tonumber(v) if v\match('^%d+$')
     bindvar[k] = v if aql_request\find('@' .. k)
   bindvar
