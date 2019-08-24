@@ -9,7 +9,7 @@ import from_json, to_json, trim, unescape from require 'lapis.util'
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
 escape_pattern = (text) ->
-  str, _ = text\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
+  str, _ = tostring(text)\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params)->
