@@ -32,10 +32,10 @@ do
   local _obj_0 = require('lib.service')
   install_service, install_script, deploy_site = _obj_0.install_service, _obj_0.install_script, _obj_0.deploy_site
 end
-local dynamic_replace, dynamic_page, page_info, load_page_by_slug, load_redirection
+local dynamic_replace, dynamic_page, page_info, splat_to_table, load_page_by_slug, load_redirection, prepare_bindvars
 do
   local _obj_0 = require('lib.concerns')
-  dynamic_replace, dynamic_page, page_info, load_page_by_slug, load_redirection = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.page_info, _obj_0.load_page_by_slug, _obj_0.load_redirection
+  dynamic_replace, dynamic_page, page_info, splat_to_table, load_page_by_slug, load_redirection, prepare_bindvars = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.page_info, _obj_0.splat_to_table, _obj_0.load_page_by_slug, _obj_0.load_redirection, _obj_0.prepare_bindvars
 end
 local jwt = { }
 local global_data = { }
@@ -337,7 +337,12 @@ do
       }
     end
     if infos.page.og_aql and infos.page.og_aql[self.params.lang] then
-      self.params.og_data = aql(db_name, infos.page.og_aql[self.params.lang])[1]
+      local splat = { }
+      if self.params.splat then
+        splat = splat_to_table(params.splat)
+      end
+      local bindvars = prepare_bindvars(splat, infos.page.og_aql[self.params.lang])
+      self.params.og_data = aql(db_name, infos.page.og_aql[self.params.lang], bindvars)[1]
     end
     html = dynamic_replace(db_name, html, global_data, { }, self.params)
     basic_auth(self, settings[sub_domain], infos)

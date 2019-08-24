@@ -355,5 +355,6 @@ return {
   escape_pattern = escape_pattern,
   dynamic_replace = dynamic_replace,
   load_redirection = load_redirection,
-  page_info = page_info
+  page_info = page_info,
+  prepare_bindvars = prepare_bindvars
 }

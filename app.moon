@@ -91,7 +91,7 @@ class extends lapis.Application
 
     if infos.page.og_aql and infos.page.og_aql[@params.lang]
       splat = {}
-      splat = splat_to_table(params.splat) if params.splat
+      splat = splat_to_table(params.splat) if @params.splat
 
       bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang])
       @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
