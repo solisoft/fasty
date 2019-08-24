@@ -307,4 +307,4 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 --------------------------------------------------------------------------------
 -- expose methods
 { :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern,
-  :dynamic_replace, :load_redirection, :page_info }
+  :dynamic_replace, :load_redirection, :page_info, :prepare_bindvars }

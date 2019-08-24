@@ -12,8 +12,8 @@ import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
 import install_service, install_script, deploy_site from require 'lib.service'
-import dynamic_replace, dynamic_page, page_info
-       load_page_by_slug, load_redirection from require 'lib.concerns'
+import dynamic_replace, dynamic_page, page_info, splat_to_table
+       load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
 jwt = {}
 global_data = {}
