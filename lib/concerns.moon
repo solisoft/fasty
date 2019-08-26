@@ -9,7 +9,7 @@ import from_json, to_json, trim, unescape from require 'lapis.util'
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
 escape_pattern = (text) ->
-  str, _ = text\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
+  str, _ = tostring(text)\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params)->
@@ -125,7 +125,7 @@ prepare_bindvars = (splat, aql_request) ->
   bindvar = { }
   bindvar["page"] = 1 if aql_request\find('@page')
   for k, v in pairs(splat) do
-    v = unescape(v)
+    v = unescape(tostring(v))
     v = tonumber(v) if v\match('^%d+$')
     bindvar[k] = v if aql_request\find('@' .. k)
   bindvar

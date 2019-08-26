@@ -339,7 +339,12 @@ do
       }
     end
     if infos.page.og_aql and infos.page.og_aql[self.params.lang] then
-      self.params.og_data = aql(db_name, infos.page.og_aql[self.params.lang])[1]
+      local splat = { }
+      if self.params.splat then
+        splat = splat_to_table(params.splat)
+      end
+      local bindvars = prepare_bindvars(splat, infos.page.og_aql[self.params.lang])
+      self.params.og_data = aql(db_name, infos.page.og_aql[self.params.lang], bindvars)[1]
     end
     html = dynamic_replace(db_name, html, global_data, { }, self.params)
     basic_auth(self, settings[sub_domain], infos)
