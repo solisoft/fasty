@@ -324,7 +324,6 @@ do
     local db_name = "db_" .. tostring(sub_domain)
     local redirection = load_redirection(db_name, self.params)
     local current_page = load_page_by_slug(db_name, self.params.slug, self.params.lang)
-    global_data.page = current_page
     local html = ''
     if redirection == nil then
       html = dynamic_page(db_name, current_page, self.params, global_data)
@@ -341,7 +340,7 @@ do
     if infos.page.og_aql and infos.page.og_aql[self.params.lang] then
       local splat = { }
       if self.params.splat then
-        splat = splat_to_table(params.splat)
+        splat = splat_to_table(self.params.splat)
       end
       local bindvars = prepare_bindvars(splat, infos.page.og_aql[self.params.lang])
       self.params.og_data = aql(db_name, infos.page.og_aql[self.params.lang], bindvars)[1]

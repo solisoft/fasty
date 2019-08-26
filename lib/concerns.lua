@@ -29,7 +29,7 @@ splat_to_table = function(splat, sep)
 end
 local escape_pattern
 escape_pattern = function(text)
-  local str, _ = text:gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
+  local str, _ = tostring(text):gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   return str
 end
 local prepare_headers
@@ -165,7 +165,7 @@ prepare_bindvars = function(splat, aql_request)
     bindvar["page"] = 1
   end
   for k, v in pairs(splat) do
-    v = unescape(v)
+    v = unescape(tostring(v))
     if v:match('^%d+$') then
       v = tonumber(v)
     end
@@ -211,7 +211,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
       output = splat[item]
     end
     if action == 'html' then
-      output = etlua2html(global_data.current_page.item.html.json, global_data.page_partial, params)
+      output = etlua2html(from_json(item), global_data.page_partial, params)
     end
     if action == 'page' then
       if history[widget] == nil then
