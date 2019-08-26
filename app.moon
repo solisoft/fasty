@@ -76,7 +76,6 @@ class extends lapis.Application
     db_name = "db_#{sub_domain}"
     redirection = load_redirection(db_name, @params)
     current_page = load_page_by_slug(db_name, @params.slug, @params.lang)
-    global_data.current_page = current_page
 
     html = ''
     if redirection == nil
