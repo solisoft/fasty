@@ -53,7 +53,7 @@ services:
       frontend:
 
   arangodb:
-    image: arangodb/arangodb-preview:3.5.0-rc.7
+    image: arangodb/arangodb:3.5.0
     restart: always
     environment:
       ARANGO_ROOT_PASSWORD: password
