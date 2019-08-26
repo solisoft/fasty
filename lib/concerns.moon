@@ -165,8 +165,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'html'
       request = "FOR item IN datasets FILTER item.type == @type FILTER item._key == @key "
       request ..= 'RETURN item'
-      dataset = aql(db_name, request, { type: item, key: dataset })[1]
-      output = etlua2html(dataset[args.field.json], global_data.page_partial, params)
+      object = aql(db_name, request, { type: item, key: dataset })[1]
+      output = to_json(object) -- etlua2html(object[args.field.json], global_data.page_partial, params)
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
     if action == 'page'
