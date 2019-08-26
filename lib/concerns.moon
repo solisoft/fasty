@@ -163,7 +163,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ html | field }}
     if action == 'html'
-      output = etlua2html(global_data.current_page.item.html.json, global_data.page_partial, params)
+
+      output = "TEST" -- etlua2html(global_data.current_page.item.html.json, global_data.page_partial, params)
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
     if action == 'page'
