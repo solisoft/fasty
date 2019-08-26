@@ -211,13 +211,16 @@ dynamic_replace = function(db_name, html, global_data, history, params)
       output = splat[item]
     end
     if action == 'html' then
-      local request = "FOR item IN datasets FILTER item._id == @key "
-      request = request .. 'RETURN item'
-      local object = aql(db_name, request, {
-        key = 'datasets/' .. item
-      })[1]
-      local page_partial = load_document_by_slug(db_name, 'page', 'partials')
-      output = etlua2html(object[dataset]['json'], page_partial, params)
+      if dataset ~= '' then
+        local request = "FOR item IN datasets FILTER item._id == @key "
+        request = request .. 'RETURN item'
+        local object = aql(db_name, request, {
+          key = 'datasets/' .. item
+        })[1]
+        output = etlua2html(object[dataset].json, global_data.page_partial, params)
+      else
+        output = etlua2html(params.og_data[item], global_data.page_partial, params)
+      end
     end
     if action == 'page' then
       if history[widget] == nil then

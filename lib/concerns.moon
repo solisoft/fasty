@@ -161,13 +161,18 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ splat | salon }}
     if action == 'splat' and splat[item] then output = splat[item]
 
-    -- {{ html | field }}
+    -- {{ html | key | field }}
+    -- {{ html | key }} data will then come from params og_data.json
+    -- Using og_data reduce http calls
     if action == 'html'
-      request = "FOR item IN datasets FILTER item._id == @key "
-      request ..= 'RETURN item'
-      object = aql(db_name, request, { key: 'datasets/' .. item })[1]
-      page_partial = load_document_by_slug(db_name, 'page', 'partials')
-      output = etlua2html(object[dataset].json, page_partial, params)
+      if dataset ~= ''
+        request = "FOR item IN datasets FILTER item._id == @key "
+        request ..= 'RETURN item'
+        object = aql(db_name, request, { key: 'datasets/' .. item })[1]
+        output = etlua2html(object[dataset].json, global_data.page_partial, params)
+      else
+        output = etlua2html(params.og_data[item], global_data.page_partial, params)
+
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
     if action == 'page'
