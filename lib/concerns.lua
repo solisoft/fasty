@@ -135,6 +135,7 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
   local html = to_json(data)
   if data then
     local page_partial = load_document_by_slug(db_name, 'page', 'partials')
+    global_data.page_partial = page_partial
     if uselayout then
       html = prepare_headers(data.layout.html, data, params)
       html = html:gsub('@yield', escape_pattern(etlua2html(data.item.html[params['lang']].json, page_partial, params)))
@@ -208,6 +209,9 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     end
     if action == 'splat' and splat[item] then
       output = splat[item]
+    end
+    if action == 'html' then
+      output = etlua2html(global_data.current_page.item.html.json, global_data.page_partial, params)
     end
     if action == 'page' then
       if history[widget] == nil then
@@ -355,5 +359,6 @@ return {
   escape_pattern = escape_pattern,
   dynamic_replace = dynamic_replace,
   load_redirection = load_redirection,
-  page_info = page_info
+  page_info = page_info,
+  prepare_bindvars = prepare_bindvars
 }

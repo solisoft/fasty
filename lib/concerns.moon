@@ -91,6 +91,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
   html = to_json(data)
   if data
     page_partial = load_document_by_slug(db_name, 'page', 'partials')
+    global_data.page_partial = page_partial
     if uselayout
       html = prepare_headers(data.layout.html, data, params)
       html = html\gsub(
@@ -160,6 +161,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ splat | salon }}
     if action == 'splat' and splat[item] then output = splat[item]
 
+    -- {{ html | field }}
+    if action == 'html'
+      output = etlua2html(global_data.current_page.item.html.json, global_data.page_partial, params)
     -- {{ page | slug }}
     -- e.g. {{ page | home | <dataset> }}
     if action == 'page'

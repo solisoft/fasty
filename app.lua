@@ -32,10 +32,10 @@ do
   local _obj_0 = require('lib.service')
   install_service, install_script, deploy_site = _obj_0.install_service, _obj_0.install_script, _obj_0.deploy_site
 end
-local dynamic_replace, dynamic_page, page_info, load_page_by_slug, load_redirection
+local dynamic_replace, dynamic_page, page_info, splat_to_table, load_page_by_slug, load_redirection, prepare_bindvars
 do
   local _obj_0 = require('lib.concerns')
-  dynamic_replace, dynamic_page, page_info, load_page_by_slug, load_redirection = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.page_info, _obj_0.load_page_by_slug, _obj_0.load_redirection
+  dynamic_replace, dynamic_page, page_info, splat_to_table, load_page_by_slug, load_redirection, prepare_bindvars = _obj_0.dynamic_replace, _obj_0.dynamic_page, _obj_0.page_info, _obj_0.splat_to_table, _obj_0.load_page_by_slug, _obj_0.load_redirection, _obj_0.prepare_bindvars
 end
 local jwt = { }
 local global_data = { }
@@ -323,9 +323,11 @@ do
     self.session.lang = self.params.lang
     local db_name = "db_" .. tostring(sub_domain)
     local redirection = load_redirection(db_name, self.params)
+    local current_page = load_page_by_slug(db_name, self.params.slug, self.params.lang)
+    global_data.page = current_page
     local html = ''
     if redirection == nil then
-      html = dynamic_page(db_name, load_page_by_slug(db_name, self.params.slug, self.params.lang), self.params, global_data)
+      html = dynamic_page(db_name, current_page, self.params, global_data)
     else
       html = redirection
     end

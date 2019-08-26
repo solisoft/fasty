@@ -75,14 +75,12 @@ class extends lapis.Application
     @session.lang = @params.lang
     db_name = "db_#{sub_domain}"
     redirection = load_redirection(db_name, @params)
+    current_page = load_page_by_slug(db_name, @params.slug, @params.lang)
+    global_data.page = current_page
 
     html = ''
     if redirection == nil
-      html = dynamic_page(
-        db_name,
-        load_page_by_slug(db_name, @params.slug, @params.lang),
-        @params, global_data
-      )
+      html = dynamic_page(db_name, current_page, @params, global_data)
     else
       html = redirection
 
