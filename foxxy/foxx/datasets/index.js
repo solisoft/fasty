@@ -641,3 +641,32 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   .header('foxx-locale')
   .header('X-Session-Id')
   .description('Swap 2 items');
+
+////////////////////////////////////////////////////////////////////////////////
+// GET /datasets/:service/stats/:tag
+router.get('/:service/stats/:tag', function (req, res) {
+  var results = db._query(`
+    LET tags = (
+      FOR d IN datasets
+        FILTER d.type == @service
+        COLLECT tag = d[@tag] INTO tags
+        FILTER tag != NULL
+        RETURN FLATTEN(tag)
+    )
+    FOR tag IN UNIQUE(FLATTEN(tags))
+      SORT tag
+      LET size = (
+        FOR d IN datasets
+          FILTER d.type == @service AND CONTAINS(d.tags, tag)
+          COLLECT WITH COUNT INTO size
+          RETURN size
+      )[0]
+
+      RETURN { tag, size }
+  `, { tag: req.pathParams.tag, service: req.pathParams.service })
+
+  res.send(results);
+})
+  .header('foxx-locale')
+  .header('X-Session-Id')
+  .description('Get tag statistic usages');

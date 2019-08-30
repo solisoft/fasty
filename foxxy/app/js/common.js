@@ -249,11 +249,10 @@ var Common = {
       _this.startEditor(e[0], e[1], e[2])
     })
     wysiwygs.forEach(function(e, i) {
-      const editor = pell.init({
-        element: document.getElementById("wysiwyg_"+e),
-        onChange: function(html) { $("#"+e).val(html) }
+      $("#wysiwyg_"+e).trumbowyg().on('tbwchange', function() {
+        $("#"+e).val($("#wysiwyg_"+e).trumbowyg('html'))
       })
-      editor.content.innerHTML = $("#"+e).val()
+      $("#wysiwyg_"+e).trumbowyg('html', $("#"+e).val());
     })
     $("button").attr("type", "button") // TODO : remove once Pell accept PR
     positions.forEach(function(p, i) {
