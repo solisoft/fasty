@@ -117,7 +117,7 @@ var Common = {
           if(l.t === "text") _html += '<textarea id="'+l.n+'" class="uk-textarea" name="'+ l.n +'" style="'+l.s+'">'+ value +'</textarea><div data-hint="'+ l.n +'" class="uk-text-danger"></div>'
             if(l.t === "wysiwyg") {
             wysiwygs.push(l.n)
-            _html += '<div id="wysiwyg_'+l.n+'"></div><input type="hidden" id="'+l.n+'" name="'+ l.n +'" value="" /><div data-hint="'+ l.n +'" class="uk-text-danger"></div>'
+            _html += '<textarea id="'+l.n+'" name="'+ l.n +'" ></textarea><div data-hint="'+ l.n +'" class="uk-text-danger"></div>'
             values.push([l.n, value])
           }
           if(l.t.match(/^code/)) {
@@ -249,10 +249,7 @@ var Common = {
       _this.startEditor(e[0], e[1], e[2])
     })
     wysiwygs.forEach(function(e, i) {
-      $("#wysiwyg_"+e).trumbowyg().on('tbwchange', function() {
-        $("#"+e).val($("#wysiwyg_"+e).trumbowyg('html'))
-      })
-      $("#wysiwyg_"+e).trumbowyg('html', $("#"+e).val());
+      $("#"+e).trumbowyg();
     })
     $("button").attr("type", "button") // TODO : remove once Pell accept PR
     positions.forEach(function(p, i) {
