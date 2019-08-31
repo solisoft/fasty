@@ -1,7 +1,7 @@
 local config = require("lapis.config")
 config("development", function()
   port(8080)
-  return measure_performance(true)
+  return measure_performance(false)
 end)
 config("production", function()
   port(80)

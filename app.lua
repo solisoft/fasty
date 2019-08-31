@@ -12,6 +12,8 @@ do
   local _obj_0 = require('lib.basic_auth')
   basic_auth, is_auth = _obj_0.basic_auth, _obj_0.is_auth
 end
+local after_dispatch
+after_dispatch = require('lapis.nginx.context').after_dispatch
 local auth_arangodb, aql, list_databases
 do
   local _obj_0 = require('lib.arango')
@@ -318,6 +320,13 @@ do
   })
   _base_0.__class = _class_0
   local self = _class_0
+  self:before_filter(function(self)
+    return after_dispatch(function()
+      if config.measure_performance then
+        return print(to_json(ngx.ctx.performance))
+      end
+    end)
+  end)
   self:enable("etlua")
   display_page = function(self)
     self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
