@@ -8,7 +8,6 @@ config  = require('lapis.config').get!
 import cached from require 'lapis.cache'
 import check_valid_lang from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
-import after_dispatch from require 'lapis.nginx.context'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
@@ -58,11 +57,6 @@ load_settings = () =>
 --------------------------------------------------------------------------------
 -- App
 class extends lapis.Application
-  @before_filter =>
-    after_dispatch ->
-      if config.measure_performance
-        print to_json(ngx.ctx.performance)
-
   handle_error: (err, trace) =>
     if config._name == "production" then
       print(to_json(err))
