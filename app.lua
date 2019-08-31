@@ -42,6 +42,7 @@ local global_data = { }
 local settings = { }
 local no_db = { }
 local sub_domain = ''
+local expire_at = 'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60 * 60 * 24 * 365)
 local sub_domain_account
 sub_domain_account = function(self)
   sub_domain = stringy.split(self.req.headers.host, '.')[1]
@@ -121,7 +122,7 @@ do
           content_type = "application/javascript"
         }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
           headers = {
-            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+            ["expires"] = expire_at
           }
         }
       end
@@ -142,7 +143,7 @@ do
           content_type = "application/javascript"
         }, dynamic_replace("db_" .. tostring(sub_domain), js, { }, { }, self.params), {
           headers = {
-            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+            ["expires"] = expire_at
           }
         }
       end
@@ -164,7 +165,7 @@ do
           content_type = "text/css"
         }, dynamic_replace("db_" .. tostring(sub_domain), scss, { }, { }, self.params), {
           headers = {
-            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+            ["expires"] = expire_at
           }
         }
       end
@@ -185,7 +186,7 @@ do
           content_type = "text/css"
         }, dynamic_replace("db_" .. tostring(sub_domain), css, { }, { }, self.params), {
           headers = {
-            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 365)
+            ["expires"] = expire_at
           }
         }
       end
@@ -205,7 +206,7 @@ do
       else
         return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params), {
           headers = {
-            ["expires"] = "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60 * 60 * 24 * 7)
+            ["expires"] = expire_at
           }
         }
       end
@@ -337,7 +338,7 @@ do
         ['folder'] = { }
       }
     end
-    if infos.page.og_aql and infos.page.og_aql[self.params.lang] then
+    if infos.page.og_aql and infos.page.og_aql[self.params.lang] and infos.page.og_aql[self.params.lang] ~= '' then
       local splat = { }
       if self.params.splat then
         splat = splat_to_table(self.params.splat)

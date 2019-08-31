@@ -20,7 +20,7 @@ global_data = {}
 settings = {}
 no_db = {}
 sub_domain = ''
-
+expire_at = 'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
 -- sub_domain_account
 sub_domain_account = () =>
@@ -86,7 +86,7 @@ class extends lapis.Application
     infos = page_info(db_name, @params.slug, @params.lang)
     infos = { 'page': {}, 'folder': {} } if infos == nil
 
-    if infos.page.og_aql and infos.page.og_aql[@params.lang]
+    if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
       splat = splat_to_table(@params.splat) if @params.splat
 
@@ -134,7 +134,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     else
-      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
   -- js_vendors
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
@@ -147,7 +147,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     else
-      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": expire_at }
 
   ------------------------------------------------------------------------------
   -- css
@@ -162,7 +162,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
     else
-      content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+      content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
   -- css_vendors
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
@@ -175,7 +175,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
     else
-      content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*365) }
+      content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
@@ -189,7 +189,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
     else
-      dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params), headers: { "expires": "Expires: " .. os.date("%a, %d %b %Y %H:%M:%S GMT", os.time() + 60*60*24*7) }
+      dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params), headers: { "expires": expire_at }
 
   ------------------------------------------------------------------------------
   -- page_no_lang
