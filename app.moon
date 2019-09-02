@@ -59,9 +59,9 @@ load_settings = () =>
 class extends lapis.Application
   handle_error: (err, trace) =>
     if config._name == "production" then
-      print(to_json(err))
-      print(to_json(trace))
-      { render: "error_500", status: 500 }
+      print(to_json(err) .. to_json(trace))
+      @err = err
+      render: "error_500", status: 500
     else
       super err, trace
 

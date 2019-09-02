@@ -47,7 +47,7 @@
 
     .layer:after {
       font: 80px/0.65 'Pacifico', 'Kaushan Script', Futura, 'Roboto', 'Trebuchet MS', Helvetica, sans-serif;
-      content: 'Oops!\aSomething Went\aWrong !!';
+      content: 'Oops!\aSomething Went\aWrong !!\a';
       line-height: 120%;
       white-space: pre;
       text-align: center;
@@ -177,9 +177,15 @@
     a {
       color: dodgerblue;
     }
+    .white {
+      color: white;
+      text-align: center;
+      font: 18px 'Pacifico', 'Kaushan Script', Futura, 'Roboto', 'Trebuchet MS', Helvetica, sans-serif;
+    }
     </style>
 </head>
 <body>
+  <div class="white"><%= err %></div>
   <div class="stage">
     <div class="layer"></div>
     <div class="layer"></div>
@@ -202,6 +208,7 @@
     <div class="layer"></div>
     <div class="layer"></div>
   </div>
+
 </body>
 </html>
 
