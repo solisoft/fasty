@@ -325,6 +325,7 @@
 
     common.get(url + "/cruds/pages/fields", function(d) {
       common.get(url + "/auth/whoami", function(me) {
+        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
@@ -446,6 +447,7 @@
         self.count = d.data[0].count
         self.sortable = !!d.model.sortable
         common.get(url + "/auth/whoami", function(me) {
+          localStorage.setItem('resize_api_key', me.resize_api_key)
           self.loaded = true
           self.can_access = d.model.roles === undefined || _.includes(d.model.roles.read, me.role)
           self.update()

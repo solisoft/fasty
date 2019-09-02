@@ -318,6 +318,7 @@
 
       if(!_.isArray(self.fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
+        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
@@ -367,6 +368,7 @@
 
     common.get(url + "/datasets/"+ opts.datatype + "/fields", function(d) {
       common.get(url + "/auth/whoami", function(me) {
+        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
@@ -488,6 +490,7 @@
         self.count = d.data[0].count
         self.sortable = !!model.sortable
         common.get(url + "/auth/whoami", function(me) {
+          localStorage.setItem('resize_api_key', me.resize_api_key)
           self.loaded = true
           self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
           self.update()
