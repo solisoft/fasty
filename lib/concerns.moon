@@ -1,7 +1,7 @@
 etlua   = require 'etlua'
 stringy = require 'stringy'
 import aql, document_get from require 'lib.arango'
-import table_deep_merge from require 'lib.utils'
+import table_deep_merge, to_timestamp from require 'lib.utils'
 import http_get from require 'lib.http_client'
 import encode_with_secret from require 'lapis.util.encoding'
 import from_json, to_json, trim, unescape from require 'lapis.util'
@@ -35,7 +35,10 @@ prepare_headers = (html, data, params)->
 --------------------------------------------------------------------------------
 etlua2html = (json, partial, params) ->
   template = etlua.compile(partial.item.html)
-  template({ 'dataset': json, 'to_json': to_json, 'lang': params.lang, 'params': params })
+  template({
+    'dataset': json, 'to_json': to_json,
+    'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
+  })
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object) ->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"

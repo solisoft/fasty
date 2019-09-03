@@ -1,5 +1,6 @@
 import from_json, to_json from require 'lapis.util'
 stringy = require 'stringy'
+date = require 'date'
 --------------------------------------------------------------------------------
 -- Merge 2 table
 table_merge = (t1, t2) ->
@@ -34,5 +35,9 @@ map = (tbl, f)->
   for k,v in pairs tbl do data[k] = f(v)
   data
 --------------------------------------------------------------------------------
+to_timestamp = (d) ->
+  d1 = date(d)
+  date.diff(d1, date.epoch!)\spanseconds!
+--------------------------------------------------------------------------------
 -- expose methods
-{ :table_merge, :table_deep_merge, :table_index, :check_valid_lang, :map }
+{ :table_merge, :table_deep_merge, :table_index, :check_valid_lang, :map, :to_timestamp }
