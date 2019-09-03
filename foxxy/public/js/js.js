@@ -2326,7 +2326,6 @@ riot.tag2('component_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href
 
       if(!_.isArray(fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
-        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
@@ -2754,6 +2753,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
       if(!_.isArray(self.fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
+        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
@@ -2794,6 +2794,7 @@ riot.tag2('dataset_new', '<virtual if="{can_access}"> <h3>Creating {opts.datatyp
 
     common.get(url + "/datasets/"+ opts.datatype + "/fields", function(d) {
       common.get(url + "/auth/whoami", function(me) {
+        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
@@ -2849,6 +2850,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
         self.count = d.data[0].count
         self.sortable = !!model.sortable
         common.get(url + "/auth/whoami", function(me) {
+          localStorage.setItem('resize_api_key', me.resize_api_key)
           self.loaded = true
           self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
           self.update()
@@ -4123,6 +4125,7 @@ riot.tag2('page_new', '<virtual if="{can_access}"> <h3>Creating page</h3> <form 
 
     common.get(url + "/cruds/pages/fields", function(d) {
       common.get(url + "/auth/whoami", function(me) {
+        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
@@ -4175,6 +4178,7 @@ riot.tag2('pages', '<page_folders show="{loaded}" folder_key="{folder_key}"></pa
         self.count = d.data[0].count
         self.sortable = !!d.model.sortable
         common.get(url + "/auth/whoami", function(me) {
+          localStorage.setItem('resize_api_key', me.resize_api_key)
           self.loaded = true
           self.can_access = d.model.roles === undefined || _.includes(d.model.roles.read, me.role)
           self.update()
@@ -4480,7 +4484,6 @@ riot.tag2('partial_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
       if(!_.isArray(fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
-        localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
