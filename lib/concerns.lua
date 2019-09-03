@@ -5,8 +5,11 @@ do
   local _obj_0 = require('lib.arango')
   aql, document_get = _obj_0.aql, _obj_0.document_get
 end
-local table_deep_merge
-table_deep_merge = require('lib.utils').table_deep_merge
+local table_deep_merge, to_timestamp
+do
+  local _obj_0 = require('lib.utils')
+  table_deep_merge, to_timestamp = _obj_0.table_deep_merge, _obj_0.to_timestamp
+end
 local http_get
 http_get = require('lib.http_client').http_get
 local encode_with_secret
@@ -65,7 +68,8 @@ etlua2html = function(json, partial, params)
     ['dataset'] = json,
     ['to_json'] = to_json,
     ['lang'] = params.lang,
-    ['params'] = params
+    ['params'] = params,
+    ['to_timestamp'] = to_timestamp
   })
 end
 local load_document_by_slug
@@ -144,6 +148,8 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
       end
       if (data.item.raw_html and type(data.item.raw_html[params['lang']]) == 'string') then
         html = html:gsub('@raw_yield', escape_pattern(data.item.raw_html[params['lang']]))
+      else
+        html = html:gsub('@raw_yield', '')
       end
     else
       html = etlua2html(data.item.html.json, page_partial, params)

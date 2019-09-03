@@ -4,6 +4,7 @@ do
   from_json, to_json = _obj_0.from_json, _obj_0.to_json
 end
 local stringy = require('stringy')
+local date = require('date')
 local table_merge
 table_merge = function(t1, t2)
   for k, v in ipairs(t2) do
@@ -54,10 +55,16 @@ map = function(tbl, f)
   end
   return data
 end
+local to_timestamp
+to_timestamp = function(d)
+  local d1 = date(d)
+  return date.diff(d1, date.epoch()):spanseconds()
+end
 return {
   table_merge = table_merge,
   table_deep_merge = table_deep_merge,
   table_index = table_index,
   check_valid_lang = check_valid_lang,
-  map = map
+  map = map,
+  to_timestamp = to_timestamp
 }
