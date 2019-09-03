@@ -66,9 +66,8 @@ do
   local _parent_0 = lapis.Application
   local _base_0 = {
     handle_error = function(self, err, trace)
-      if config._name == "development" then
-        print(to_json(err))
-        print(to_json(trace))
+      if config._name == "production" then
+        print(to_json(err) .. to_json(trace))
         self.err = err
         return {
           render = "error_500",
