@@ -209,7 +209,7 @@ router.get('/:service/search/:term', function (req, res) {
   var locale = req.headers['foxx-locale']
   if (locale.match(/[a-z]+/) == null) locale = 'en'
   let order = object.sort || 'SORT doc._key DESC'
-  if (model.sortable) order = 'SORT doc.order ASC'
+  if (object.sortable) order = 'SORT doc.order ASC'
 
   let includes = ''
   let include_merge = ''
