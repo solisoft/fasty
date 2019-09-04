@@ -661,7 +661,7 @@ router.get('/:service/stats/:tag', function (req, res) {
           COLLECT WITH COUNT INTO size
           RETURN size
       )[0]
-
+      SORT size DESC
       RETURN { tag, size }
   `, { tag: req.pathParams.tag, service: req.pathParams.service })
 

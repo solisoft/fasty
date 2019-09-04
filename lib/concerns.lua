@@ -142,14 +142,14 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
     global_data.page_partial = page_partial
     if uselayout then
       html = prepare_headers(data.layout.html, data, params)
-      local json = data.item.html[params['lang']].json
-      if (type(json) == 'table' and next(json) ~= nil) then
-        html = html:gsub('@yield', escape_pattern(etlua2html(json, page_partial, params)))
-      end
       if (data.item.raw_html and type(data.item.raw_html[params['lang']]) == 'string') then
         html = html:gsub('@raw_yield', escape_pattern(data.item.raw_html[params['lang']]))
       else
         html = html:gsub('@raw_yield', '')
+      end
+      local json = data.item.html[params['lang']].json
+      if (type(json) == 'table' and next(json) ~= nil) then
+        html = html:gsub('@yield', escape_pattern(etlua2html(json, page_partial, params)))
       end
     else
       html = etlua2html(data.item.html.json, page_partial, params)
