@@ -133,10 +133,15 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
     folder_params = { folder: req.queryParams.folder }
   }
 
+  var fields = ["_id", "_key"]
+  fields.push(_.map(model.columns, function(d) { return d.name }))
+  console.log(fields)
+  console.log(model.columns)
   var bindVars = _.merge({
     "datatype": req.pathParams.service,
     "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
-    "perpage": parseInt(req.pathParams.perpage)
+    "perpage": parseInt(req.pathParams.perpage),
+    "fields": _.flatten(fields)
   }, folder_params)
 
   var aql = `
@@ -147,10 +152,11 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
       ${folder} ${order} ${includes}
       LIMIT @offset, @perpage
-      RETURN MERGE(doc, { image: image ${include_merge} })
+      RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
   )
   RETURN { count: count, data: data }
   `
+
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }); }
 
   res.send({ model: model, data: db._query(aql, bindVars).toArray() });
