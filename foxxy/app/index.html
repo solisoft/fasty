@@ -75,8 +75,10 @@
       var hostname = document.location.hostname
       var subdomain = hostname.split('.')[0]
 
+      var configs = require('js/config.js')
+
       var host = 'http://localhost:8530/_db'
-      if(hostname.indexOf('127.0.0.1') < 0) { host = 'https://foxxy.ovh/fasty' }
+      _.each(configs, function(k, v) { if(hostname.indexOf(k) >= 0) host = v })
 
       var url = host + '/db_' + subdomain + '/'
 

@@ -23,10 +23,8 @@
       var subdomain = hostname.split('.')[0]
 
       var host = 'http://localhost:8530/_db'
+      _.each(configs, function(k, v) { if(hostname.indexOf(k) >= 0) host = v })
 
-      if(hostname.indexOf('127.0.0.1') < 0) {
-        host = 'https://foxxy.ovh/fasty'
-      }
       var url = host + "/db_" + subdomain + "/"
 
       var common = require("js/common.js");

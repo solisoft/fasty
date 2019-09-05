@@ -135,8 +135,6 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
 
   var fields = ["_id", "_key"]
   fields.push(_.map(model.columns, function(d) { return d.name }))
-  console.log(fields)
-  console.log(model.columns)
   var bindVars = _.merge({
     "datatype": req.pathParams.service,
     "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
@@ -225,14 +223,22 @@ router.get('/:service/search/:term', function (req, res) {
   }
 
   if (locale.match(/[a-z]+/) == null) locale = 'en'
-  var bindVars = { "type": req.pathParams.service, "term": req.pathParams.term }
+
+  var fields = ["_id", "_key"]
+  fields.push(_.map(object.columns, function(d) { return d.name }))
+
+  var bindVars = {
+    "type": req.pathParams.service,
+    "term": req.pathParams.term,
+    "fields": _.flatten(fields)
+  }
   var aql = `
   FOR doc IN FULLTEXT(datasets, 'search.${locale}', @term)
     FILTER doc.type == @type
     LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
     ${order} ${includes}
     LIMIT 100
-    RETURN MERGE(doc, { image: image ${include_merge} })
+    RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
   `
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }) }
 

@@ -41,7 +41,7 @@ router.get('/:token', function (req, res) {
     )
     LET partials = (
       FOR p IN partials
-        LET path = (FOR vertex IN OUTBOUND SHORTEST_PATH c._id TO @root_partial GRAPH 'folderGraph' RETURN vertex.name)
+        LET path = (FOR vertex IN OUTBOUND SHORTEST_PATH p._id TO @root_partial GRAPH 'folderGraph' RETURN vertex.name)
         RETURN { id: p._id, name: p.slug, html: p.html, locked_by: p.locked_by, path: REVERSE(path) }
     )
     LET aqls = (FOR a IN aqls RETURN { id: a._id, name: a.slug, aql: a.aql, locked_by: a.locked_by })
