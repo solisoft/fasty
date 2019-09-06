@@ -120,7 +120,7 @@ class extends lapis.Application
       @params.lang = @session.lang
       @params.all = home['all']
       @params.slug = home['slug']
-      print(to_json(home))
+
       if type(home['root_redirection']) == "string"
         redirect_to: home['root_redirection']
       else
