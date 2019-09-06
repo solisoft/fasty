@@ -352,8 +352,11 @@ router.post('/:service', function (req, res) {
         }
         return field_name == '_key' ? obj._key : value
       })
-      slug = _.kebabCase(slug)
-      collection.update(obj, { slug: slug })
+
+      if(data['slug'] == '') {
+        slug = _.kebabCase(slug)
+        collection.update(obj, { slug: slug })
+      }
     }
     save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(obj._id, 'created', req.session.uid)
@@ -415,8 +418,10 @@ router.post('/:service/:service_key/:sub', function (req, res) {
         }
         return field_name == '_key' ? obj._key : value
       })
-      slug = _.kebabCase(slug)
-      collection.update(obj, { slug: slug })
+      if(data['slug'] == '') {
+        slug = _.kebabCase(slug)
+        collection.update(obj, { slug: slug })
+      }
     }
     save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(object._id, 'created', req.session.uid)
@@ -472,7 +477,7 @@ router.post('/:service/:id', function (req, res) {
         }
         return field_name == '_key' ? doc._key : value
       })
-      if(data['slug'] =='') data['slug'] = _.kebabCase(slug)
+      if(data['slug'] == '') data['slug'] = _.kebabCase(slug)
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
