@@ -120,8 +120,10 @@ class extends lapis.Application
       @params.lang = @session.lang
       @params.all = home['all']
       @params.slug = home['slug']
-
-      display_page(@)
+      if home['root_redirection']
+        redirect_to: home['root_redirection']
+      else
+        display_page(@)
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
