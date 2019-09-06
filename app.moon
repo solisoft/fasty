@@ -131,7 +131,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
       { "key": "#{@params.layout}" }
     )[1]
-    if @req.headers['x-forwarded-host'] != nil then
+    if @req.headers['x-forwarded-for'] != nil then
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     else
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": expire_at }
@@ -144,7 +144,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
       { "key": "#{@params.layout}" }
     )[1]
-    if @req.headers['x-forwarded-host'] != nil then
+    if @req.headers['x-forwarded-for'] != nil then
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     else
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": expire_at }
@@ -159,7 +159,7 @@ class extends lapis.Application
       { "key": "#{@params.layout}" }
     )[1]
     scss = sass.compile(css, 'compressed')
-    if @req.headers['x-forwarded-host'] != nil then
+    if @req.headers['x-forwarded-for'] != nil then
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
     else
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": expire_at }
@@ -172,7 +172,7 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
       { "key": "#{@params.layout}" }
     )[1]
-    if @req.headers['x-forwarded-host'] != nil then
+    if @req.headers['x-forwarded-for'] != nil then
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
     else
       content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": expire_at }
@@ -186,7 +186,7 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    if @req.headers['x-forwarded-host'] != nil then
+    if @req.headers['x-forwarded-for'] != nil then
       dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
     else
       dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params), headers: { "expires": expire_at }
