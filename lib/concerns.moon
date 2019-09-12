@@ -30,6 +30,7 @@ prepare_headers = (html, data, params)->
     headers ..= "<meta property=\"og:image\" content=\"#{data.item.og_img[params.lang]}\" />"
   if(data.item.og_type and data.item.og_type[params.lang])
     headers ..= "<meta property=\"og:type\" content=\"#{data.item.og_type[params.lang]}\" />"
+  print(to_json(data.item))
   if(data.item.canonical and data.item.canonical[params.lang])
     headers ..= "<link rel=\"canonical\" href=\"#{data.item.canonical[params.lang]}\" />"
   html\gsub('@headers', headers)
