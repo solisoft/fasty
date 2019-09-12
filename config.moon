@@ -17,20 +17,20 @@ config "test", ->
   measure_performance true
 
 config "db_development", ->
-  url "http://172.31.0.6:8529/"
+  url "http://12.12.0.6:8529/"
   name "cms"
   login "root"
   pass  "password"
 
 config "db_production", ->
-  url "http://172.31.0.6:8529/"
+  url "http://12.12.0.6:8529/"
   name "cms"
   login "root"
   pass  "password"
 
 -- for test purpose
 config "db_test", ->
-  url "http://172.31.0.6:8529/"
+  url "http://12.12.0.6:8529/"
   name "cms"
   login "root"
   pass  "password"

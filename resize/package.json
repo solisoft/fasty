@@ -1,0 +1,29 @@
+{
+  "name": "img.solisoft.net",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "arangojs": "^6.10.0",
+    "aws-sdk": "^2.295.0",
+    "body-parser": "^1.15.2",
+    "express": "^4.16.1",
+    "js-yaml": "^3.10.0",
+    "lodash": "^4.17.4",
+    "morgan": "^1.7.0",
+    "multer": "^1.1.0",
+    "node-ovh-objectstorage": "^1.0.2",
+    "node-ovh-storage": "^0.1.3",
+    "node-uuid": "^1.4.7",
+    "pug": "^2.0.0-beta4",
+    "request": "^2.81.0",
+    "safe-buffer": "^5.1.2",
+    "sharp": "^0.15.1"
+  }
+}
