@@ -181,8 +181,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       else
         output = etlua2html(params.og_data[item], global_data.page_partial, params)
 
-    -- {{ page | slug }}
-    -- e.g. {{ page | home | <dataset> }}
+    -- {{ page | <slug or field> (| <datatype>) }}
+    -- e.g. {{ page | set_a_slug_here }}
+    -- e.g. {{ page | slug | posts }}
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
