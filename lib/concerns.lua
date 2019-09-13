@@ -59,6 +59,9 @@ prepare_headers = function(html, data, params)
   if (data.item.og_type and data.item.og_type[params.lang]) then
     headers = headers .. "<meta property=\"og:type\" content=\"" .. tostring(data.item.og_type[params.lang]) .. "\" />"
   end
+  if (data.item.canonical and data.item.canonical[params.lang]) then
+    headers = headers .. "<link rel=\"canonical\" href=\"" .. tostring(data.item.canonical[params.lang]) .. "\" />"
+  end
   return html:gsub('@headers', headers)
 end
 local etlua2html

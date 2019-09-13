@@ -30,7 +30,9 @@ prepare_headers = (html, data, params)->
     headers ..= "<meta property=\"og:image\" content=\"#{data.item.og_img[params.lang]}\" />"
   if(data.item.og_type and data.item.og_type[params.lang])
     headers ..= "<meta property=\"og:type\" content=\"#{data.item.og_type[params.lang]}\" />"
-
+  print(to_json(data.item))
+  if(data.item.canonical and data.item.canonical[params.lang])
+    headers ..= "<link rel=\"canonical\" href=\"#{data.item.canonical[params.lang]}\" />"
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
 etlua2html = (json, partial, params) ->
@@ -181,8 +183,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       else
         output = etlua2html(params.og_data[item], global_data.page_partial, params)
 
-    -- {{ page | slug }}
-    -- e.g. {{ page | home | <dataset> }}
+    -- {{ page | <slug or field> (| <datatype>) }}
+    -- e.g. {{ page | set_a_slug_here }}
+    -- e.g. {{ page | slug | posts }}
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
