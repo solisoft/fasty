@@ -326,11 +326,11 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ dataset | key | field }}
     if action == 'dataset'
-      request = "FOR item IN datasets FILTER item.slug == @key "
-      request ..= 'RETURN item'
+      request = "FOR item IN datasets FILTER item.slug == @key RETURN item"
       object = aql(db_name, request, { key: item })[1]
       if object
         output = object[dataset]
+      else output = ' '
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
 
