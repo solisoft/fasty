@@ -326,9 +326,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ dataset | key | field }}
     if action == 'dataset'
-      item = item.split("=")
+      item = stringy.split(item, "=")
       request = "FOR item IN datasets FILTER item.@field == @value RETURN item"
-      object = aql(db_name, request, { field: item[0], value: filed[1] })[1]
+      object = aql(db_name, request, { field: item[1], value: filed[2] })[1]
       if object
         output = object[dataset]
       else output = ' '
