@@ -270,6 +270,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         partial = load_document_by_slug(db_name, item, 'partials', false)
         if partial
           output = partial.item.html
+          output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ riot | slug(#slug2...) | <mount> }}
     -- e.g. {{ riot | demo | mount }}
