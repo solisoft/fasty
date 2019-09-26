@@ -263,7 +263,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
           if dataset != 'do_not_eval'
             output = etlua2html(db_data, partial, params)
-            output = dynamic_replace(db_name, output, global_data, history, params)
+
+          output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ riot | slug(#slug2...) | <mount> }}
     -- e.g. {{ riot | demo | mount }}
