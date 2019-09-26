@@ -233,10 +233,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             bindvar = prepare_bindvars(splat, args['aql'])
 
             -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
+            -- @bindvar must be present in the request
             for str in string.gmatch(args['aql'], '__IF (%w-)__') do
               unless bindvar[str] then
-                args['aql'] = args['aql']\gsub('__IF ' .. str ..
-                              '__.-__END ' .. str .. '__', '')
+                args['aql'] = args['aql']\gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
               else
                 args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
                 args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')

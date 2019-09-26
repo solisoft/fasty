@@ -1204,9 +1204,11 @@ require.register("js/editor.js", function(exports, require, module) {
         editObj = $(this)
         raw_object = $(this.outerHTML)
         if (raw_object.data("attr")) {
+          $(self).find("input[data-name=col-class]").val(raw_object.data("attr")['col-class'])
           $(self).find("input[data-name=row-class]").val(raw_object.data("attr")['row-class'])
           $(self).find("input[data-name=container-class]").val(raw_object.data("attr")['container-class'])
         } else {
+          $(self).find("input[data-name=col-class]").val('')
           $(self).find("input[data-name=row-class]").val('')
           $(self).find("input[data-name=container-class]").val('')
         }
@@ -1358,6 +1360,7 @@ require.register("js/editor.js", function(exports, require, module) {
             <div id="trumbowyg-'+object_name+'"></div>\
             <div><label>Container Class</label><input type="text" data-name="container-class" class="uk-input"></div>\
             <div><label>Row Class</label><input type="text" data-name="row-class" class="uk-input"></div>\
+            <div><label>Col Class</label><input type="text" data-name="col-class" class="uk-input"></div>\
             <div class="editor-code"><label>Language</label><input type="text" data-name="lang" class="uk-input"></div>\
             <div class="editor-code editor-simplecode"><label>Code</label><div id="ace-editor-'+object_name+'" class="ace-editor"></div></div>\
           </div>\
@@ -1399,6 +1402,7 @@ require.register("js/editor.js", function(exports, require, module) {
     var save_editor = function () {
       if (editObj) {
         var attributes = {
+          'col-class': $('input[data-name=col-class]').val(),
           'row-class': $('input[data-name=row-class]').val(),
           'container-class': $('input[data-name=container-class]').val()
         }
