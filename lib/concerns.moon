@@ -212,7 +212,17 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
       output = dynamic_replace(db_name, output, global_data, history, params)
 
-    -- {{ partial | slug | <dataset> | <args> }}
+    -- {{ include | slug }}
+    -- Include partial's html value without evaluating ir
+    if action == 'include'
+      if history[widget] == nil -- prevent stack level too deep
+        history[widget] = true
+        partial = load_document_by_slug(db_name, item, 'partials', false)
+        if partial
+          output = partial.item.html
+          output = dynamic_replace(db_name, output, global_data, history, params)
+
+-- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
@@ -260,16 +270,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             db_data = table_deep_merge(db_data, { _params: args })
 
           output = etlua2html(db_data, partial, params)
-          output = dynamic_replace(db_name, output, global_data, history, params)
-
-    -- {{ include | slug }}
-    -- Include partial's html value without evaluating ir
-    if action == 'include'
-      if history[widget] == nil -- prevent stack level too deep
-        history[widget] = true
-        partial = load_document_by_slug(db_name, item, 'partials', false)
-        if partial
-          output = partial.item.html
           output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ riot | slug(#slug2...) | <mount> }}
