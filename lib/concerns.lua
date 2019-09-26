@@ -370,6 +370,19 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         output = params.og_data[item]
       end
     end
+    if action == 'dataset' then
+      item = stringy.split(item, "=")
+      local request = "FOR item IN datasets FILTER item.@field == @value RETURN item"
+      local object = aql(db_name, request, {
+        field = item[1],
+        value = item[2]
+      })[1]
+      if object then
+        output = object[dataset]
+      else
+        output = ' '
+      end
+    end
     if output ~= '' then
       html = html:gsub(escape_pattern(widget), escape_pattern(output))
     end

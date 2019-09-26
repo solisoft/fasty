@@ -259,6 +259,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           if args['use_params']
             db_data = table_deep_merge(db_data, { _params: args })
 
+          partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
           output = etlua2html(db_data, partial, params)
           output = dynamic_replace(db_name, output, global_data, history, params)
 
