@@ -217,58 +217,58 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      if history[widget] == nil -- prevent stack level too deep
-        history[widget] = true
-        partial = load_document_by_slug(db_name, item, 'partials', false)
-        if partial
-          db_data = { "page": 1 }
-          if dataset == 'arango'
-            -- check if it's a stored procedure
-            if args['req']
-              args['aql'] = aql(
-                db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
-                { slug: args['req'] }
-              )[1]
+      -- if history[widget] == nil -- prevent stack level too deep
+      --  history[widget] = true
+      partial = load_document_by_slug(db_name, item, 'partials', false)
+      if partial
+        db_data = { "page": 1 }
+        if dataset == 'arango'
+          -- check if it's a stored procedure
+          if args['req']
+            args['aql'] = aql(
+              db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
+              { slug: args['req'] }
+            )[1]
 
-            -- prepare the bindvar variable with variable found in the request
-            -- but also on the parameters sent as args
-            bindvar = prepare_bindvars(table_deep_merge(splat, args), args['aql'])
+          -- prepare the bindvar variable with variable found in the request
+          -- but also on the parameters sent as args
+          bindvar = prepare_bindvars(table_deep_merge(splat, args), args['aql'])
 
-            -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
-            -- @bindvar must be present in the request
-            for str in string.gmatch(args['aql'], '__IF (%w-)__') do
-              unless bindvar[str] then
-                args['aql'] = args['aql']\gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
-              else
-                args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
-                args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')
+          -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
+          -- @bindvar must be present in the request
+          for str in string.gmatch(args['aql'], '__IF (%w-)__') do
+            unless bindvar[str] then
+              args['aql'] = args['aql']\gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
+            else
+              args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
+              args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')
 
-            -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
-            for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
-              if bindvar[str] then
-                args['aql'] = args['aql']\gsub(
-                  '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
-                )
-              else
-                args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
-                args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
+          -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
+          for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
+            if bindvar[str] then
+              args['aql'] = args['aql']\gsub(
+                '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
+              )
+            else
+              args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
+              args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
-            db_data = { results: aql(db_name, args['aql'], bindvar) }
-            db_data = table_deep_merge(db_data, { _params: args })
+          db_data = { results: aql(db_name, args['aql'], bindvar) }
+          db_data = table_deep_merge(db_data, { _params: args })
 
-          if dataset == 'rest'
-            db_data = from_json(http_get(args['url'], args['headers']))
-          if args['use_params']
-            db_data = table_deep_merge(db_data, { _params: args })
+        if dataset == 'rest'
+          db_data = from_json(http_get(args['url'], args['headers']))
+        if args['use_params']
+          db_data = table_deep_merge(db_data, { _params: args })
 
-          partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
+        partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
 
-          if dataset != 'do_not_eval'
-            output = etlua2html(db_data, partial, params)
-          else
-            output = partial.item.html
+        if dataset != 'do_not_eval'
+          output = etlua2html(db_data, partial, params)
+        else
+          output = partial.item.html
 
-          output = dynamic_replace(db_name, output, global_data, history, params)
+        output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ riot | slug(#slug2...) | <mount> }}
     -- e.g. {{ riot | demo | mount }}
