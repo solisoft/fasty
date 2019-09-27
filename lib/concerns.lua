@@ -303,7 +303,12 @@ dynamic_replace = function(db_name, html, global_data, history, params)
               _params = args
             })
           end
-          output = etlua2html(db_data, partial, params)
+          partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
+          if dataset ~= 'do_not_eval' then
+            output = etlua2html(db_data, partial, params)
+          else
+            output = partial.item.html
+          end
           output = dynamic_replace(db_name, output, global_data, history, params)
         end
       end

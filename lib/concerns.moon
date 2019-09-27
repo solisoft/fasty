@@ -209,11 +209,12 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ helper | hello_world }}
     if action == 'helper'
       helper = helpers[item]
-      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
+      dataset = '#'..dataset if dataset != ''
+      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. dataset .. " }}"
       output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ partial | slug | <dataset> | <args> }}
-    -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
+    -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
       if history[widget] == nil -- prevent stack level too deep
@@ -230,7 +231,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               )[1]
 
             -- prepare the bindvar variable with variable found in the request
-            bindvar = prepare_bindvars(splat, args['aql'])
+            -- but also on the parameters sent as args
+            bindvar = prepare_bindvars(deep_merge(splat, args), args['aql'])
 
             -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
             -- @bindvar must be present in the request
