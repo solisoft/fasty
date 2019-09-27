@@ -217,8 +217,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      -- if history[widget] == nil -- prevent stack level too deep
-      --  history[widget] = true
       partial = load_document_by_slug(db_name, item, 'partials', false)
       if partial
         db_data = { "page": 1 }
