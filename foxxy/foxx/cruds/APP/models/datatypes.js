@@ -42,13 +42,15 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 const model = function() {
   return {
     model: [
-      { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().required()", l: "Name" },
-      { r: true, c: "1-1", n: "slug", t: "string", j: "joi.string().required()", l: "Slug" },
+      { r: true, c: "1-3", n: "name", t: "string", j: "joi.string().required()", l: "Name" },
+      { r: false, c: "1-3", n: "slug", t: "string", j: "joi.string().required()", l: "Slug" },
+      { r: false, c: "1-3", n: "synchronizable", t: "boolean", j: "joi.number().integer()", l: "Synchronizable?" },
       { r: true, c: "1-1", n: "javascript", t: "code:json", j: "joi.string().required()", l: "JSON definition" },
     ],
     columns: [
       { name: "name" },
-      { name: "slug" }
+      { name: "slug" },
+      { name: "synchronizable" }
     ],
     roles: {
       read: ['developer', 'admin'],
