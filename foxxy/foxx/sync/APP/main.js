@@ -77,8 +77,8 @@ router.get('/:token', function (req, res) {
       FOR dt IN datatypes
         FILTER dt.synchronizable == true
         FOR ds IN datasets
-          FILTER dt.type == dt.slug
-          RETURN dt
+          FILTER ds.type == dt.slug
+          RETURN ds
     )
 
     RETURN { layouts, components, partials, aqls, datatypes, apis, scripts, datasets }
