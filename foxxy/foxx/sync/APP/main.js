@@ -46,7 +46,7 @@ router.get('/:token', function (req, res) {
         RETURN { id: p._id, name: p.slug, html: p.html, locked_by: p.locked_by, path: REVERSE(path) }
     )
     LET aqls = (FOR a IN aqls RETURN { id: a._id, name: a.slug, aql: a.aql, locked_by: a.locked_by })
-    LET datatypes = (
+    LET data_types = (
       FOR d IN datatypes
       RETURN { id: d._id, name: d.name, slug: d.slug, json: d.javascript, locked_by: d.locked_by }
     )
@@ -73,15 +73,15 @@ router.get('/:token', function (req, res) {
       FOR s IN scripts
       RETURN { id: s._id, name: s.name, code: s.code, package: s.package, locked_by: s.locked_by }
     )
-    LET datasets = (
+    LET data_sets = (
       FOR dt IN datatypes
         FILTER dt.synchronizable == true
         FOR ds IN datasets
           FILTER ds.type == dt.slug
-          RETURN ds
+          RETURN UNSET(ds, ['_rev', 'order'])
     )
 
-    RETURN { layouts, components, partials, aqls, datatypes, apis, scripts, datasets }
+    RETURN { layouts, components, partials, aqls, datatypes: data_types, apis, scripts, datasets: data_sets }
     `, { root_component, root_partial }).toArray()[0]
   }
   res.json(data)

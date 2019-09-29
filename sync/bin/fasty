@@ -25,7 +25,6 @@ var check_json = function(json, folder, fullname, api) {
     if(!fs.existsSync(pathname)) fs.mkdirSync(pathname)
     _.each(v, function (obj) {
       var endpathname = pathname
-      console.log(obj)
       obj.name = _.first(_.compact([obj.name, obj.title, obj.slug]))
       if (obj.name) {
         if(obj.path) {
@@ -90,7 +89,7 @@ var check_json = function(json, folder, fullname, api) {
         fs.writeFileSync(endpathname + '/package.json', header + " package\n" + obj.package)
       }
       if (k == "datasets") {
-        header = "#FASTY " + obj._key
+        header = "#FASTY " + obj._id
         _.each(_.keys(obj), function(n) {
           if(!_.includes(['_key', '_id', 'name', 'title', 'slug'], n)) {
             var type = ''

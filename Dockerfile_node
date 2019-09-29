@@ -10,6 +10,7 @@ RUN apk add vips-dev fftw-dev build-base --update-cache \
 
 RUN apk --no-cache add --virtual native-deps \
   nodejs npm g++ gcc libgcc libstdc++ linux-headers make python bash && \
+  npm config set unsafe-perm true && \
   npm install --quiet yarn -g && \
   npm install --quiet nodemon -g
 
