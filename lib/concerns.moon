@@ -36,10 +36,13 @@ prepare_headers = (html, data, params)->
 --------------------------------------------------------------------------------
 etlua2html = (json, partial, params) ->
   template = etlua.compile(partial.item.html)
-  template({
-    'dataset': json, 'to_json': to_json,
-    'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
-  })
+  success, data = pcall(
+    template, {
+      'dataset': json, 'to_json': to_json,
+      'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
+    }
+  )
+  tostring(data)
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object) ->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"

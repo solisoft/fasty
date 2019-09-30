@@ -67,13 +67,14 @@ end
 local etlua2html
 etlua2html = function(json, partial, params)
   local template = etlua.compile(partial.item.html)
-  return template({
+  local success, data = pcall(template, {
     ['dataset'] = json,
     ['to_json'] = to_json,
     ['lang'] = params.lang,
     ['params'] = params,
     ['to_timestamp'] = to_timestamp
   })
+  return tostring(data)
 end
 local load_document_by_slug
 load_document_by_slug = function(db_name, slug, object)
@@ -254,63 +255,63 @@ dynamic_replace = function(db_name, html, global_data, history, params)
     end
     if action == 'helper' then
       local helper = helpers[item]
-      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
+      if dataset ~= '' then
+        dataset = '#' .. dataset
+      end
+      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. dataset .. " }}"
       output = dynamic_replace(db_name, output, global_data, history, params)
     end
     if action == 'partial' then
-      if history[widget] == nil then
-        history[widget] = true
-        local partial = load_document_by_slug(db_name, item, 'partials', false)
-        if partial then
-          local db_data = {
-            ["page"] = 1
+      local partial = load_document_by_slug(db_name, item, 'partials', false)
+      if partial then
+        local db_data = {
+          ["page"] = 1
+        }
+        if dataset == 'arango' then
+          if args['req'] then
+            args['aql'] = aql(db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql', {
+              slug = args['req']
+            })[1]
+          end
+          local bindvar = prepare_bindvars(table_deep_merge(splat, args), args['aql'])
+          for str in string.gmatch(args['aql'], '__IF (%w-)__') do
+            if not (bindvar[str]) then
+              args['aql'] = args['aql']:gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
+            else
+              args['aql'] = args['aql']:gsub('__IF ' .. str .. '__', '')
+              args['aql'] = args['aql']:gsub('__END ' .. str .. '__', '')
+            end
+          end
+          for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
+            if bindvar[str] then
+              args['aql'] = args['aql']:gsub('__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', '')
+            else
+              args['aql'] = args['aql']:gsub('__IF_NOT ' .. str .. '__', '')
+              args['aql'] = args['aql']:gsub('__END_NOT ' .. str .. '__', '')
+            end
+          end
+          db_data = {
+            results = aql(db_name, args['aql'], bindvar)
           }
-          if dataset == 'arango' then
-            if args['req'] then
-              args['aql'] = aql(db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql', {
-                slug = args['req']
-              })[1]
-            end
-            local bindvar = prepare_bindvars(splat, args['aql'])
-            for str in string.gmatch(args['aql'], '__IF (%w-)__') do
-              if not (bindvar[str]) then
-                args['aql'] = args['aql']:gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
-              else
-                args['aql'] = args['aql']:gsub('__IF ' .. str .. '__', '')
-                args['aql'] = args['aql']:gsub('__END ' .. str .. '__', '')
-              end
-            end
-            for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
-              if bindvar[str] then
-                args['aql'] = args['aql']:gsub('__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', '')
-              else
-                args['aql'] = args['aql']:gsub('__IF_NOT ' .. str .. '__', '')
-                args['aql'] = args['aql']:gsub('__END_NOT ' .. str .. '__', '')
-              end
-            end
-            db_data = {
-              results = aql(db_name, args['aql'], bindvar)
-            }
-            db_data = table_deep_merge(db_data, {
-              _params = args
-            })
-          end
-          if dataset == 'rest' then
-            db_data = from_json(http_get(args['url'], args['headers']))
-          end
-          if args['use_params'] then
-            db_data = table_deep_merge(db_data, {
-              _params = args
-            })
-          end
-          partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
-          if dataset ~= 'do_not_eval' then
-            output = etlua2html(db_data, partial, params)
-          else
-            output = partial.item.html
-          end
-          output = dynamic_replace(db_name, output, global_data, history, params)
+          db_data = table_deep_merge(db_data, {
+            _params = args
+          })
         end
+        if dataset == 'rest' then
+          db_data = from_json(http_get(args['url'], args['headers']))
+        end
+        if args['use_params'] then
+          db_data = table_deep_merge(db_data, {
+            _params = args
+          })
+        end
+        partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
+        if dataset ~= 'do_not_eval' then
+          output = etlua2html(db_data, partial, params)
+        else
+          output = partial.item.html
+        end
+        output = dynamic_replace(db_name, output, global_data, history, params)
       end
     end
     if action == 'riot' then
