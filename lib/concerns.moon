@@ -295,7 +295,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
 
         if dataset == "mount"
-          output ..= "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') })</script>"
+          output ..= "<script>"
+          output ..= "document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') })"
+          output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') })"
+          output ..= "</script>"
 
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
