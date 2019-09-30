@@ -37,9 +37,8 @@ prepare_headers = (html, data, params)->
 etlua2html = (json, partial, params, global_data) ->
   template = global_data.partials[partial.item._key]
   if template == nil
-    template = etlua.compile(partial.item.html) 
+    template = etlua.compile(partial.item.html)
     global_data.partials[partial.item._key] = template
-    print("template " .. partial.item._key .. " compiled")
 
   success, data = pcall(
     template, {
