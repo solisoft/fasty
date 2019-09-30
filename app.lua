@@ -57,6 +57,7 @@ load_settings = function(self)
     no_db[sub_domain] = true
   else
     global_data = aql("db_" .. tostring(sub_domain), '\n      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n      LET g_redirections = (FOR doc IN redirections RETURN doc)\n      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n      LET g_components = (\n        FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])\n      )\n      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n      LET g_helpers = (\n        FOR h IN helpers\n          FOR p IN partials\n            FILTER h.partial_key == p._key\n            FOR a IN aqls\n              FILTER h.aql_key == a._key\n              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n      )\n      RETURN { components: g_components, settings: g_settings,\n        redirections: g_redirections, aqls: g_aqls,\n        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n    ')[1]
+    global_data['partials'] = { }
     settings[sub_domain] = global_data.settings[1]
   end
 end

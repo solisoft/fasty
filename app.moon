@@ -53,6 +53,7 @@ load_settings = () =>
         redirections: g_redirections, aqls: g_aqls,
         trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
     ')[1]
+    global_data['partials'] = {}
     settings[sub_domain] = global_data.settings[1]
 --------------------------------------------------------------------------------
 -- App

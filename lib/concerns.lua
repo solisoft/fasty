@@ -65,8 +65,13 @@ prepare_headers = function(html, data, params)
   return html:gsub('@headers', headers)
 end
 local etlua2html
-etlua2html = function(json, partial, params)
-  local template = etlua.compile(partial.item.html)
+etlua2html = function(json, partial, params, global_data)
+  local template = global_data.partials[partial.item._key]
+  if template == nil then
+    template = etlua.compile(partial.item.html)
+    global_data.partials[partial.item._key] = template
+    print("template " .. partial.item._key .. " compiled")
+  end
   local success, data = pcall(template, {
     ['dataset'] = json,
     ['to_json'] = to_json,
@@ -74,7 +79,7 @@ etlua2html = function(json, partial, params)
     ['params'] = params,
     ['to_timestamp'] = to_timestamp
   })
-  return tostring(data)
+  return data
 end
 local load_document_by_slug
 load_document_by_slug = function(db_name, slug, object)
@@ -153,10 +158,10 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
       end
       local json = data.item.html[params['lang']].json
       if (type(json) == 'table' and next(json) ~= nil) then
-        html = html:gsub('@yield', escape_pattern(etlua2html(json, page_partial, params)))
+        html = html:gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
       end
     else
-      html = etlua2html(data.item.html.json, page_partial, params)
+      html = etlua2html(data.item.html.json, page_partial, params, global_data)
     end
   end
   return html
@@ -233,9 +238,9 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         local object = aql(db_name, request, {
           key = 'datasets/' .. item
         })[1]
-        output = etlua2html(object[dataset].json, global_data.page_partial, params)
+        output = etlua2html(object[dataset].json, global_data.page_partial, params, global_data)
       else
-        output = etlua2html(params.og_data[item], global_data.page_partial, params)
+        output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
       end
     end
     if action == 'page' then
@@ -307,7 +312,7 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         end
         partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
         if dataset ~= 'do_not_eval' then
-          output = etlua2html(db_data, partial, params)
+          output = etlua2html(db_data, partial, params, global_data)
         else
           output = partial.item.html
         end
