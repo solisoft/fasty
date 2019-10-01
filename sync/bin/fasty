@@ -9,9 +9,15 @@ var _ = require('lodash')
 var chokidar = require('chokidar')
 const notifier = require('node-notifier')
 var yaml = require('js-yaml')
-
+const io = require('socket.io-client')
+var socket = null
 var fs = require('fs')
 var dirname = process.cwd()
+var fullname = ""
+var domain = null
+var sync = null
+var updated_by_users = []
+
 if(!fs.existsSync(dirname + '/.tokens.yml')) {
   console.log("Please configure a .tokens.yml file for tokens".red)
   process.exit()
@@ -104,28 +110,40 @@ var check_json = function(json, folder, fullname, api) {
 
   if(argv.w) {
     console.log("Watching folder.", dirname + '/fs/'+folder)
-    chokidar.watch(dirname + '/fs/'+folder, {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
+    chokidar.watch(dirname + '/fs/'+ folder, {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
       if(event == "add") {
         console.log(`Added : ${path}`.cyan)
       }
       if(event == "change") {
         console.log(`Modifying : ${path}`.magenta.italic)
+
         setTimeout(function() {
           fs.readFile(path, function(err, data) {
             if (data.length > 0) {
-
-              var url = domain + "/sync/" + token
-              var params = {
-                url: url,
-                body: JSON.stringify({
-                  data: data.toString(),
-                  name: fullname
-                })
+              var firstline = data.toString().split("\n")[0].trim()
+              if(_.includes(updated_by_users, firstline)) {
+                updated_by_users = _.difference(updated_by_users, [firstline])
+              } else {
+                var url = domain + "/sync/" + token
+                var params = {
+                  url: url,
+                  body: JSON.stringify({
+                    data: data.toString(),
+                    name: fullname
+                  })
+                }
+                request.patch(params, function optionalCallback(_err, _httpResponse, body) {
+                  console.log(body.green) 
+                  notifier.notify("Fasty :: " + body)
+                  if(socket && body.indexOf("Saved! ") == 1) {
+                    var fileData = fs.readFileSync(path).toString()
+                    var fileMeta = fileData.split("\n")[0].trim()
+                    
+                    socket.emit('updated', { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
+                  }
+                })  
               }
-              request.patch(params, function optionalCallback(_err, _httpResponse, body) {
-                console.log(body.green)
-                notifier.notify("Fasty :: " + body)
-              })
+              
             } else {
               console.log('something went wrong ... please try again'.red)
             }
@@ -139,10 +157,34 @@ var check_json = function(json, folder, fullname, api) {
 if(argv._.length != 1) {
   console.log("usage : fasty <shortuct> -w".yellow)
 } else {
-  var fullname = tokens['name']
-  var domain = tokens['domains'][argv._[0]].domain
+  fullname = tokens['name']
+  domain = tokens['domains'][argv._[0]].domain
   var token  = tokens['domains'][argv._[0]].token
+  sync   = tokens['domains'][argv._[0]].sync
+
   var folder = argv._[0]
+
+  if(sync) {
+    const io = require('socket.io-client');
+    socket = io(sync.server + ":" + sync.port);
+
+    socket.on('connect', () => {
+      console.log("Socket Connected to " + sync.server + " on port " + sync.port); // true
+      socket.emit('join', { secret: sync.secret, room: domain })
+    });
+
+    socket.on('updated', (data) => {
+      console.log('Update event received : ' + data.fileMeta)
+      if(data.from != fullname) {
+        console.log("File " + data.path + " updated by " + data.from)
+        updated_by_users.push(data.fileMeta)
+        fs.writeFileSync("." + data.path, data.fileData)
+      }
+      //notifier.notify("Fasty :: Beware !! File updated " + data.fileMeta + " by " + data.from)
+    })
+  }
+
+  
 
   if(token === undefined) {
     console.log("Token not found for this domain".red)
@@ -161,31 +203,4 @@ if(argv._.length != 1) {
       check_json(data, folder, fullname, domain)
     })
   }
-
-  /*
-  if(argv.c && argv.f) {
-    var url = domain + "/api/create/?token=" + token
-
-    request.post({
-      url: url,
-      formData: {
-        type: argv.c,
-        name: argv.f,
-        fullname: fullname
-      }
-    }, function optionalCallback(err, httpResponse, body) {
-      var url = 'http://' + domain + "/api/filenames/?token=" + token + '&type=' + argv.c + '&id=' + body
-      console.log(body)
-      notifier.notify("SoliCMS :: File Create !")
-      console.log("Fetching data ...".green)
-      request(url, function (error, response, body2) {
-        console.log(body2)
-        var data = JSON.parse(body2) // Print the HTML for the Google homepage.
-        check_json(data, domain)
-      })
-    })
-  }*/
-
 }
-
-
