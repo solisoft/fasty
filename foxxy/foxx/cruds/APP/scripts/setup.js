@@ -7,7 +7,7 @@ var create_collection = function(collection) {
     db._createDocumentCollection(collection);
     if(collection == 'layouts') {
       db._collection(collection).save({
-        "html": "<!DOCTYPE html>\r\n<html>\r\n  <head lang=\"{{ lang }}\">\r\n    <meta charset=\"utf-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n    @headers\r\n    <link rel=\"stylesheet\" href=\"@css\">\r\n    \r\n  </head>\r\n  <body>\r\n    \r\n    {{ partial | nav }}\r\n    \r\n    <section class=\"section\">\r\n      <div class=\"container\">\r\n        @yield\r\n      </div>\r\n    </section>\r\n    \r\n    {{ partial | footer }}\r\n    <script src='@js'></script> \r\n  </body>\r\n</html>",
+        "html": "<!DOCTYPE html>\r\n<html>\r\n  <head lang=\"{{ lang }}\">\r\n    <meta charset=\"utf-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n    @headers\r\n    <link rel=\"stylesheet\" href=\"@css_vendors\">\r\n    <link rel=\"stylesheet\" href=\"@css\">\r\n    \r\n  </head>\r\n  <body>\r\n    \r\n    {{ partial | nav }}\r\n    \r\n    <section class=\"section\">\r\n      @raw_yield\r\n      <div class=\"container\">\r\n        @yield\r\n      </div>\r\n    </section>\r\n    \r\n    {{ partial | footer }}\r\n    <script src='@js_vendors'></script> \r\n    <script src='@js'></script> \r\n  </body>\r\n</html>",
         "javascript": "",
         "name": "home",
         "scss": "p { margin-bottom: 20px; }\r\n\r\ndd { margin-bottom: 10px; }\r\ndt { font-weight: bold; }",

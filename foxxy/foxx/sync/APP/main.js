@@ -3,6 +3,7 @@
 const db = require('@arangodb').db
 const joi = require('joi')
 const _ = require('lodash')
+const request = require('@arangodb/request');
 const createRouter = require('@arangodb/foxx/router')
 const router = createRouter()
 module.context.use(router)
@@ -129,6 +130,9 @@ router.patch('/:token', function (req, res) {
         save_revision(null, object, data, 10)
         res.json(`Saved! ${collection} ${id} ${field}`)
       }
+      var h_settings = JSON.stringify(_settings.home).url_reset
+      if(h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
+      
     }
   } else {
     res.json({ error: true, reason: 'Bad Token' })

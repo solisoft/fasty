@@ -92,8 +92,8 @@ document_put = function(db_name, handle, params)
   return with_params(db_name, 'PUT', handle, params)
 end
 local document_post
-document_post = function(db_name, collection, params)
-  return with_params(db_name, 'POST', collection, params)
+document_post = function(db_name, handle, params)
+  return with_params(db_name, 'POST', handle, params)
 end
 local document_get
 document_get = function(db_name, handle)
@@ -123,7 +123,6 @@ foxx_install = function(db_name, mount, data)
     ['Content-Type'] = 'application/zip',
     Authorization = "bearer " .. tostring(jwt)
   })
-  print(to_json(body))
   return body
 end
 local foxx_upgrade

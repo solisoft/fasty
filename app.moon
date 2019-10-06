@@ -5,7 +5,6 @@ stringy = require 'stringy'
 console = require 'lapis.console'
 config  = require('lapis.config').get!
 
-import cached from require 'lapis.cache'
 import check_valid_lang from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
@@ -15,8 +14,10 @@ import install_service, install_script, deploy_site from require 'lib.service'
 import dynamic_replace, dynamic_page, page_info, splat_to_table
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
+
 jwt = {}
 global_data = {}
+all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
@@ -29,11 +30,12 @@ sub_domain_account = () =>
 -- load_settings
 load_settings = () =>
   sub_domain_account(@)
-  jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or list_databases! == nil
-  if list_databases!["db_#{sub_domain}"] == nil
+  jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
+  all_domains = list_databases! if all_domains == nil
+  if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true
   else
-    global_data = aql("db_#{sub_domain}", '
+    global_data[sub_domain] = aql("db_#{sub_domain}", '
       LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)
       LET g_redirections = (FOR doc IN redirections RETURN doc)
       LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))
@@ -53,8 +55,9 @@ load_settings = () =>
         redirections: g_redirections, aqls: g_aqls,
         trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
     ')[1]
-    global_data['partials'] = {}
-    settings[sub_domain] = global_data.settings[1]
+    global_data[sub_domain]['partials'] = {}
+
+    settings[sub_domain] = global_data[sub_domain].settings[1]
 --------------------------------------------------------------------------------
 -- App
 class extends lapis.Application
@@ -80,7 +83,7 @@ class extends lapis.Application
 
     html = ''
     if redirection == nil
-      html = dynamic_page(db_name, current_page, @params, global_data)
+      html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
     else
       html = redirection
 
@@ -94,7 +97,7 @@ class extends lapis.Application
       bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang])
       @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
 
-    html = dynamic_replace(db_name, html, global_data, {}, @params)
+    html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
     if is_auth(@, settings[sub_domain], infos)
       if html ~= 'null'
@@ -152,7 +155,6 @@ class extends lapis.Application
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     else
       content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": expire_at }
-
   ------------------------------------------------------------------------------
   -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -191,9 +193,9 @@ class extends lapis.Application
         { "key": "#{key}" }
       )[1] .. "\n"
     if @req.headers['x-forwarded-for'] != nil then
-      dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
+      dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
     else
-      dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params), headers: { "expires": expire_at }
+      dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params), headers: { "expires": expire_at }
 
   ------------------------------------------------------------------------------
   -- page_no_lang
@@ -227,7 +229,7 @@ class extends lapis.Application
         status: 401, 'Not authorized'
   }
   ------------------------------------------------------------------------------
-  -- install script
+  -- install script server side
   [script: '/script/:name']: respond_to {
     POST: =>
       load_settings(@)
@@ -250,6 +252,16 @@ class extends lapis.Application
       else
         status: 401, 'Not authorized'
   }
+  ------------------------------------------------------------------------------
+  -- reset variables for specific sub domain
+  [reset_all: '/admin/reset_all']: =>
+    sub_domain_account(@)
+    jwt[sub_domain] = nil
+    global_data[sub_domain] = nil
+    all_domains = nil
+    settings[sub_domain] = nil
+    'ok'
+
   ------------------------------------------------------------------------------
   -- console (kinda irb console)
   [console: '/console']: console.make!

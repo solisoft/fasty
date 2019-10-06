@@ -117,6 +117,9 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
     else html = etlua2html(data.item.html.json, page_partial, params, global_data)
 
+    html = html\gsub('@yield', '')
+    html = html\gsub('@raw_yield', '')
+
   html
 --------------------------------------------------------------------------------
 load_redirection = (db_name, params) ->

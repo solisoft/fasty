@@ -70,7 +70,6 @@ etlua2html = function(json, partial, params, global_data)
   if template == nil then
     template = etlua.compile(partial.item.html)
     global_data.partials[partial.item._key] = template
-    print("template " .. partial.item._key .. " compiled")
   end
   local success, data = pcall(template, {
     ['dataset'] = json,
@@ -163,6 +162,8 @@ dynamic_page = function(db_name, data, params, global_data, history, uselayout)
     else
       html = etlua2html(data.item.html.json, page_partial, params, global_data)
     end
+    html = html:gsub('@yield', '')
+    html = html:gsub('@raw_yield', '')
   end
   return html
 end
@@ -337,7 +338,10 @@ dynamic_replace = function(db_name, html, global_data, history, params)
         end
         output = output .. "<script src='/" .. tostring(params.lang) .. "/" .. tostring(table.concat(data.ids, "-")) .. "/component/" .. tostring(table.concat(data.revisions, "-")) .. ".tag' type='riot/tag'></script>"
         if dataset == "mount" then
-          output = output .. "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('" .. tostring(table.concat(data.names, ", ")) .. "') })</script>"
+          output = output .. "<script>"
+          output = output .. "document.addEventListener('DOMContentLoaded', function() { riot.mount('" .. tostring(table.concat(data.names, ", ")) .. "') });"
+          output = output .. "document.addEventListener('turbolinks:load', function() { riot.mount('" .. tostring(table.concat(data.names, ", ")) .. "') });"
+          output = output .. "</script>"
         end
       end
     end

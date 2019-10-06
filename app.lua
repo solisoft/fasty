@@ -3,8 +3,6 @@ local lapis = require('lapis')
 local stringy = require('stringy')
 local console = require('lapis.console')
 local config = require('lapis.config').get()
-local cached
-cached = require('lapis.cache').cached
 local check_valid_lang
 check_valid_lang = require('lib.utils').check_valid_lang
 local basic_auth, is_auth
@@ -39,6 +37,7 @@ do
 end
 local jwt = { }
 local global_data = { }
+local all_domains = nil
 local settings = { }
 local no_db = { }
 local sub_domain = ''
@@ -50,15 +49,18 @@ end
 local load_settings
 load_settings = function(self)
   sub_domain_account(self)
-  if jwt[sub_domain] == nil or list_databases() == nil then
+  if jwt[sub_domain] == nil or all_domains == nil then
     jwt[sub_domain] = auth_arangodb(sub_domain)
   end
-  if list_databases()["db_" .. tostring(sub_domain)] == nil then
+  if all_domains == nil then
+    all_domains = list_databases()
+  end
+  if all_domains["db_" .. tostring(sub_domain)] == nil then
     no_db[sub_domain] = true
   else
-    global_data = aql("db_" .. tostring(sub_domain), '\n      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n      LET g_redirections = (FOR doc IN redirections RETURN doc)\n      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n      LET g_components = (\n        FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])\n      )\n      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n      LET g_helpers = (\n        FOR h IN helpers\n          FOR p IN partials\n            FILTER h.partial_key == p._key\n            FOR a IN aqls\n              FILTER h.aql_key == a._key\n              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n      )\n      RETURN { components: g_components, settings: g_settings,\n        redirections: g_redirections, aqls: g_aqls,\n        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n    ')[1]
-    global_data['partials'] = { }
-    settings[sub_domain] = global_data.settings[1]
+    global_data[sub_domain] = aql("db_" .. tostring(sub_domain), '\n      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)\n      LET g_redirections = (FOR doc IN redirections RETURN doc)\n      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))\n      LET g_components = (\n        FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])\n      )\n      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))\n      LET g_helpers = (\n        FOR h IN helpers\n          FOR p IN partials\n            FILTER h.partial_key == p._key\n            FOR a IN aqls\n              FILTER h.aql_key == a._key\n              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])\n      )\n      RETURN { components: g_components, settings: g_settings,\n        redirections: g_redirections, aqls: g_aqls,\n        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }\n    ')[1]
+    global_data[sub_domain]['partials'] = { }
+    settings[sub_domain] = global_data[sub_domain].settings[1]
   end
 end
 do
@@ -209,9 +211,9 @@ do
         })[1] .. "\n")
       end
       if self.req.headers['x-forwarded-for'] ~= nil then
-        return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params)
+        return dynamic_replace("db_" .. tostring(sub_domain), html, global_data[sub_domain], { }, self.params)
       else
-        return dynamic_replace("db_" .. tostring(sub_domain), html, global_data, { }, self.params), {
+        return dynamic_replace("db_" .. tostring(sub_domain), html, global_data[sub_domain], { }, self.params), {
           headers = {
             ["expires"] = expire_at
           }
@@ -293,6 +295,16 @@ do
       end
     }),
     [{
+      reset_all = '/admin/reset_all'
+    }] = function(self)
+      sub_domain_account(self)
+      jwt[sub_domain] = nil
+      global_data[sub_domain] = nil
+      all_domains = nil
+      settings[sub_domain] = nil
+      return 'ok'
+    end,
+    [{
       console = '/console'
     }] = console.make()
   }
@@ -334,7 +346,7 @@ do
     local current_page = load_page_by_slug(db_name, self.params.slug, self.params.lang)
     local html = ''
     if redirection == nil then
-      html = dynamic_page(db_name, current_page, self.params, global_data)
+      html = dynamic_page(db_name, current_page, self.params, global_data[sub_domain])
     else
       html = redirection
     end
@@ -353,7 +365,7 @@ do
       local bindvars = prepare_bindvars(splat, infos.page.og_aql[self.params.lang])
       self.params.og_data = aql(db_name, infos.page.og_aql[self.params.lang], bindvars)[1]
     end
-    html = dynamic_replace(db_name, html, global_data, { }, self.params)
+    html = dynamic_replace(db_name, html, global_data[sub_domain], { }, self.params)
     basic_auth(self, settings[sub_domain], infos)
     if is_auth(self, settings[sub_domain], infos) then
       if html ~= 'null' then
