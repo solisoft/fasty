@@ -100,10 +100,14 @@ class extends lapis.Application
     html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
     if is_auth(@, settings[sub_domain], infos)
-      if html ~= 'null'
+      if html ~= 'null' then
         html
       else
-        status: 404, render: 'error_404'
+        missing_page = from_json(settings[sub_domain].home)['error_404']
+        if missing_page ~= nil then
+          redirect: missing_page, status: 404
+        else
+          status: 404, render: 'error_404'
     else
       status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
   ------------------------------------------------------------------------------

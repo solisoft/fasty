@@ -371,10 +371,18 @@ do
       if html ~= 'null' then
         return html
       else
-        return {
-          status = 404,
-          render = 'error_404'
-        }
+        local missing_page = from_json(settings[sub_domain].home)['error_404']
+        if missing_page ~= nil then
+          return {
+            redirect = missing_page,
+            status = 404
+          }
+        else
+          return {
+            status = 404,
+            render = 'error_404'
+          }
+        end
       end
     else
       return {
