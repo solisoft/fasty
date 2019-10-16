@@ -65,7 +65,11 @@ class extends lapis.Application
     if config._name == "production" then
       print(to_json(err) .. to_json(trace))
       @err = err
-      render: "error_500", status: 500
+      error_page = from_json(settings[sub_domain].home)['error_500']
+      if error_page ~= nil then
+        display_page(@, error_page), status: 500
+      else
+        render: "error_500", status: 500
     else
       super err, trace
 
@@ -74,15 +78,16 @@ class extends lapis.Application
   layout: false -- we don't need a layout, it will be loaded dynamically
   ----------------------------------------------------------------------------
   -- display_page()
-  display_page = () =>
+  display_page = (slug=nil, status=200) =>
+    slug = @params.slug if slug == nil
     @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
     @session.lang = @params.lang
     db_name = "db_#{sub_domain}"
     redirection = load_redirection(db_name, @params)
-    current_page = load_page_by_slug(db_name, @params.slug, @params.lang)
+    current_page = load_page_by_slug(db_name, slug, @params.lang)
 
     html = ''
-    if redirection == nil
+    if redirection == nil then
       html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
     else
       html = redirection
@@ -105,7 +110,7 @@ class extends lapis.Application
       else
         missing_page = from_json(settings[sub_domain].home)['error_404']
         if missing_page ~= nil then
-          redirect: missing_page, status: 404
+          display_page(@, missing_page), status: 404
         else
           status: 404, render: 'error_404'
     else

@@ -72,10 +72,17 @@ do
       if config._name == "production" then
         print(to_json(err) .. to_json(trace))
         self.err = err
-        return {
-          render = "error_500",
-          status = 500
-        }
+        local error_page = from_json(settings[sub_domain].home)['error_500']
+        if error_page ~= nil then
+          return display_page(self, error_page), {
+            status = 500
+          }
+        else
+          return {
+            render = "error_500",
+            status = 500
+          }
+        end
       else
         return _class_0.__parent.__base.handle_error(self, err, trace)
       end
@@ -338,12 +345,21 @@ do
   _base_0.__class = _class_0
   local self = _class_0
   self:enable("etlua")
-  display_page = function(self)
+  display_page = function(self, slug, status)
+    if slug == nil then
+      slug = nil
+    end
+    if status == nil then
+      status = 200
+    end
+    if slug == nil then
+      slug = self.params.slug
+    end
     self.params.lang = check_valid_lang(settings[sub_domain].langs, self.params.lang)
     self.session.lang = self.params.lang
     local db_name = "db_" .. tostring(sub_domain)
     local redirection = load_redirection(db_name, self.params)
-    local current_page = load_page_by_slug(db_name, self.params.slug, self.params.lang)
+    local current_page = load_page_by_slug(db_name, slug, self.params.lang)
     local html = ''
     if redirection == nil then
       html = dynamic_page(db_name, current_page, self.params, global_data[sub_domain])
@@ -373,8 +389,7 @@ do
       else
         local missing_page = from_json(settings[sub_domain].home)['error_404']
         if missing_page ~= nil then
-          return {
-            redirect = missing_page,
+          return display_page(self, missing_page), {
             status = 404
           }
         else
