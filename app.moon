@@ -106,11 +106,11 @@ class extends lapis.Application
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
     if is_auth(@, settings[sub_domain], infos)
       if html ~= 'null' then
-        html
+        html, status: status
       else
         missing_page = from_json(settings[sub_domain].home)['error_404']
         if missing_page ~= nil then
-          display_page(@, missing_page), status: 404
+          display_page(@, missing_page, 404)
         else
           status: 404, render: 'error_404'
     else

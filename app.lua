@@ -385,13 +385,13 @@ do
     basic_auth(self, settings[sub_domain], infos)
     if is_auth(self, settings[sub_domain], infos) then
       if html ~= 'null' then
-        return html
+        return html, {
+          status = status
+        }
       else
         local missing_page = from_json(settings[sub_domain].home)['error_404']
         if missing_page ~= nil then
-          return display_page(self, missing_page), {
-            status = 404
-          }
+          return display_page(self, missing_page, 404)
         else
           return {
             status = 404,

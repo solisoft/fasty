@@ -38,7 +38,7 @@ const load_fields = function () {
 
   return {
     fields: [
-      { r: true, c: "1-1", n: "home", t: "code:json", j: "joi.string().required()", l: "Home page" },
+      { r: true, c: "1-1", n: "home", t: "code:json", j: "joi.string().required()", l: "General Settings" },
       { r: true, c: "1-1", n: "langs", t: "string", j: "joi.string().required()", l: "Langs" },
       { r: true, c: "1-1", n: "jwt_secret", t: "string", j: "joi.string().required()", l: "JWT Secret" },
       { r: true, c: "1-2", n: "upload_path", t: "string", j: "joi.string().required()", l: "Upload Path" },
