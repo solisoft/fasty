@@ -18,3 +18,4 @@ scripts
 sync/*.tgz
 cypress/videos
 ./dump/
+*.lua
