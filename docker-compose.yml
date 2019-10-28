@@ -28,7 +28,7 @@ services:
       - 8001:3000
     volumes:
       - ./resize/:/workspace
-      - node_modules:/workspace/node_modules
+      - node_modules_resize:/workspace/node_modules
     depends_on:
       - arangodb
     links:
@@ -104,6 +104,7 @@ volumes:
   arangodb-app:
   arangodb-uploads:
   node_modules:
+  node_modules_resize:
 
 networks:
   frontend:
