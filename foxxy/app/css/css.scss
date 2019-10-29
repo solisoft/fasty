@@ -69,6 +69,14 @@ body {
   background: #000;
   color: white;
 }
+.sg-editcontent {
+  .uk-input, .uk-select, .uk-textarea {
+    color: #000;
+  }
+  .uk-input:focus, .uk-select:focus, .uk-textarea:focus {
+    color: #fff;
+  }
+}
 .map { height: 400px; }
 .select2-selection {
   height: 30px;
