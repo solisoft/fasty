@@ -14,7 +14,6 @@ import install_service, install_script, deploy_site from require 'lib.service'
 import dynamic_replace, dynamic_page, page_info, splat_to_table
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
-
 jwt = {}
 global_data = {}
 all_domains = nil
@@ -122,7 +121,6 @@ class extends lapis.Application
   -- root
   [root: '/(:lang)']: =>
     sub_domain_account(@)
-
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
       if @params.lang then @session.lang = @params.lang
@@ -210,7 +208,6 @@ class extends lapis.Application
   -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>
     sub_domain_account(@)
-
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@)
@@ -220,7 +217,6 @@ class extends lapis.Application
   -- page
   [page: '/:lang/:all/:slug(/*)']: =>
     sub_domain_account(@)
-
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@)
@@ -230,7 +226,6 @@ class extends lapis.Application
   [service: '/service/:name']: respond_to {
     POST: =>
       load_settings(@)
-
       if @params.token == settings[sub_domain].token
         install_service(sub_domain, @params.name)
         'service installed'
@@ -242,7 +237,6 @@ class extends lapis.Application
   [script: '/script/:name']: respond_to {
     POST: =>
       load_settings(@)
-
       if @params.token == settings[sub_domain].token
         install_script(sub_domain, @params.name)
         'script installed'
@@ -254,7 +248,6 @@ class extends lapis.Application
   [deploy: '/deploy']: respond_to {
     POST: =>
       load_settings(@)
-
       if @params.token == settings[sub_domain].token
         deploy_site(sub_domain, settings[sub_domain])
         'site deployed'

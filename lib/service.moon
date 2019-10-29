@@ -56,8 +56,7 @@ install_service = (sub_domain, name)->
   os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
 
   foxx_upgrade(
-    "db_#{sub_domain}", name,
-    read_zipfile("install_service/#{sub_domain}/#{name}.zip")
+    "db_#{sub_domain}", name, read_zipfile("install_service/#{sub_domain}/#{name}.zip")
   )
 --------------------------------------------------------------------------------
 -- deploy site
