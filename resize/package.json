@@ -16,7 +16,7 @@
     "express": "^4.16.1",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.13",
-    "morgan": "^1.7.0",
+    "morgan": "^1.9.1",
     "multer": "^1.1.0",
     "node-ovh-objectstorage": "^1.0.2",
     "node-ovh-storage": "^0.1.3",
