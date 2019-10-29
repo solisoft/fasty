@@ -626,7 +626,7 @@
           }
 
           if (['img'].indexOf(editObj.data('type')) >= 0) {
-            var img_div = $(this).find('img').parent()
+            var img_div = $(this).find('.img-div').length > 0 ? $(this).find('.img-div') : $(this).find('img').parent()
             $(self).find(".editor-simplecode").show()
             $(self).find(".editor-img-code").show()
             $('#ace-editor-'+object_name).show()
@@ -635,7 +635,7 @@
             var mode = 'html'
             ace_editor.session.setMode('ace/mode/' + mode);
             ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
-            ace_editor.getSession().setValue($(this).find('img')[0].outerHTML);
+            ace_editor.getSession().setValue(img_div[0].innerHTML);
           }
 
         }
@@ -812,9 +812,14 @@
         if(['img'].indexOf(editObj.data('type')) >= 0) {
           var width = $(self).find("input[data-name=img-width").val() ? $(self).find("input[data-name=img-width").val() : '100%'
           var alignment = $(self).find("select[data-name=img-alignment").val() ? $(self).find("select[data-name=img-alignment").val() : 'left'
-          var h_content = $.parseHTML(content)
-          h_content[0].style.width = width
-          editObj.html('<div style="text-align: ' + alignment + '" data-img-width="' + width + '">' + h_content[0].outerHTML + '</div>')
+          var temp = $('<div>').append($.parseHTML(content))
+          temp.each(function() {
+            var img = $(this).find('img')
+            for(var i = 0; i < img.length; i++) {
+              img[i].style.width = width
+            }
+          })
+          editObj.html('<div class="img-div" style="text-align: ' + alignment + '" data-img-width="' + width + '">' + temp[0].innerHTML + '</div>')
         }
         editObj.attr('data-attr', JSON.stringify(attributes))
 
