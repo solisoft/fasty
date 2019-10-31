@@ -236,7 +236,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             args['aql'] = aql(
               db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
               { slug: args['req'] }
-            )[1]
+            )[1]\gsub('{{ lang }}', params.lang)
 
           -- prepare the bindvar variable with variable found in the request
           -- but also on the parameters sent as args
