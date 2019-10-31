@@ -55,6 +55,7 @@ const model = function() {
       { r: true, c: "1-1", n: "aql_key", t: "list", j: "joi.string().required()", l: "AQL", d: aqls }
     ],
     columns: [{ name: 'shortcut' }],
+    sort: "SORT doc.shortcut"
     //columns: [
     //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
     //    values: { true: "online", false: "offline" },

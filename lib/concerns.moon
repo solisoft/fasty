@@ -331,7 +331,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'tr'
       output = "Missing translation <em style='color:red'>#{item}</em>"
       unless translations[item]
-        aql(db_name, 'INSERT { key: @key, value: {} } IN trads', { key: item })
+        aql(
+          db_name, 'INSERT { key: @key, value: { @lang: @key} } IN trads',
+          { key: item, lang: params.lang }
+        )
       if translations[item] and translations[item][params.lang]
         output = translations[item][params.lang]
 

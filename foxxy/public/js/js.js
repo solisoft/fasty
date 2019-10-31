@@ -1212,6 +1212,7 @@ require.register("js/editor.js", function(exports, require, module) {
         }
         $(self).find(".editor-code").hide()
         $(self).find(".editor-simplecode").hide()
+        $(self).find(".editor-img-code").hide()
         if (raw_object.data('editable')) {
           $(self).find('.trumbowyg').hide()
           $(self).find('#ace-editor-' + object_name).hide()
@@ -1244,12 +1245,16 @@ require.register("js/editor.js", function(exports, require, module) {
           }
 
           if (['img'].indexOf(editObj.data('type')) >= 0) {
+            var img_div = $(this).find('.img-div').length > 0 ? $(this).find('.img-div') : $(this).find('img').parent()
             $(self).find(".editor-simplecode").show()
+            $(self).find(".editor-img-code").show()
             $('#ace-editor-'+object_name).show()
+            $(self).find("input[data-name=img-width").val(img_div.attr('data-img-width'))
+            $(self).find("select[data-name=img-alignment").val(img_div[0].style['text-align'])
             var mode = 'html'
             ace_editor.session.setMode('ace/mode/' + mode);
             ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
-            ace_editor.getSession().setValue(editObj.html());
+            ace_editor.getSession().setValue(img_div[0].innerHTML);
           }
 
         }
@@ -1360,6 +1365,10 @@ require.register("js/editor.js", function(exports, require, module) {
             <div><label>Row Class</label><input type="text" data-name="row-class" class="uk-input"></div>\
             <div><label>Col Class</label><input type="text" data-name="col-class" class="uk-input"></div>\
             <div class="editor-code"><label>Language</label><input type="text" data-name="lang" class="uk-input"></div>\
+            <div class="uk-grid"><div class="uk-width-1-2 editor-img-code"><label>Image Width</label><input type="text" data-name="img-width" class="uk-input"></div>\
+            <div class="uk-width-1-2 editor-img-code"><label>Image Alignment</label>\
+            <select class="uk-select" data-name="img-alignment">\
+            <option>left</option><option>center</option><option>right</option></select></div></div>\
             <div class="editor-code editor-simplecode"><label>Code</label><div id="ace-editor-'+object_name+'" class="ace-editor"></div></div>\
           </div>\
         </div>\
@@ -1409,7 +1418,7 @@ require.register("js/editor.js", function(exports, require, module) {
           var mode = 'language-' + $(self).find("input[data-name=lang]").val()
           editObj.html('<pre><code class="' + mode + '">' + htmlEntities(content) + '</code></pre>')
         }
-        if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img'].indexOf(editObj.data('type')) >= 0) {
+        if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].indexOf(editObj.data('type')) >= 0) {
           editObj.html(content)
         }
         if (['embed'].indexOf(editObj.data('type')) >= 0) {
@@ -1418,6 +1427,18 @@ require.register("js/editor.js", function(exports, require, module) {
         }
         if (['text'].indexOf(editObj.data('type')) >= 0) {
           editObj.html($('#trumbowyg-'+object_name).trumbowyg('html'))
+        }
+        if(['img'].indexOf(editObj.data('type')) >= 0) {
+          var width = $(self).find("input[data-name=img-width").val() ? $(self).find("input[data-name=img-width").val() : '100%'
+          var alignment = $(self).find("select[data-name=img-alignment").val() ? $(self).find("select[data-name=img-alignment").val() : 'left'
+          var temp = $('<div>').append($.parseHTML(content))
+          temp.each(function() {
+            var img = $(this).find('img')
+            for(var i = 0; i < img.length; i++) {
+              img[i].style.width = width
+            }
+          })
+          editObj.html('<div class="img-div" style="text-align: ' + alignment + '" data-img-width="' + width + '">' + temp[0].innerHTML + '</div>')
         }
         editObj.attr('data-attr', JSON.stringify(attributes))
 
@@ -4118,16 +4139,18 @@ riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">
         if(self.can_access)
           common.buildForm(self.page, fields, '#form_page', back_url, function() {
             $(".crud").each(function(i, c) {
-            var id = $(c).attr("id")
-            riot.mount("#" + id, "page_crud_index", { model: id,
-              fields: self.sub_models[id].fields,
-              key: self.sub_models[id].key,
-              singular: self.sub_models[id].singular,
-              columns: self.sub_models[id].columns,
-              parent_id: opts.page_id,
-              parent_name: back_url })
+              var id = $(c).attr("id")
+              riot.mount("#" + id, "page_crud_index", {
+                model: id,
+                fields: self.sub_models[id].fields,
+                key: self.sub_models[id].key,
+                singular: self.sub_models[id].singular,
+                columns: self.sub_models[id].columns,
+                parent_id: opts.page_id,
+                parent_name: back_url
+              })
+            })
           })
-        })
       })
     })
 
