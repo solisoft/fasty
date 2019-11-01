@@ -335,6 +335,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           db_name, 'INSERT { key: @key, value: { @lang: @key} } IN trads',
           { key: item, lang: params.lang }
         )
+        output = item
+
       if translations[item] and translations[item][params.lang]
         output = translations[item][params.lang]
 
