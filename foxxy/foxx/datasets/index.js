@@ -477,7 +477,7 @@ router.post('/:service/:id', function (req, res) {
         }
         return field_name == '_key' ? doc._key : value
       })
-      if(data['slug'] == '') data['slug'] = _.kebabCase(slug)
+      if(data['slug'] == '' || data['slug'] == undefined) data['slug'] = _.kebabCase(slug)
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
