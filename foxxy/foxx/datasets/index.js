@@ -467,6 +467,7 @@ router.post('/:service/:id', function (req, res) {
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
     }
     if (object.timestamps === true) { data.updated_at = +new Date() }
+    console.log(object.slug)
     if (object.slug) {
       var slug = _.map(object.slug, function(field_name) {
         var value = ""
@@ -477,6 +478,8 @@ router.post('/:service/:id', function (req, res) {
         }
         return field_name == '_key' ? doc._key : value
       })
+      console.log(slug)
+      console.log(data['slug'])
       if(data['slug'] == '' || data['slug'] == undefined) data['slug'] = _.kebabCase(slug)
     }
     obj = collection.update(doc, data)
