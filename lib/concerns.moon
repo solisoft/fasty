@@ -30,15 +30,23 @@ prepare_headers = (html, data, params)->
     headers ..= "<meta property=\"og:image\" content=\"#{data.item.og_img[params.lang]}\" />"
   if(data.item.og_type and data.item.og_type[params.lang])
     headers ..= "<meta property=\"og:type\" content=\"#{data.item.og_type[params.lang]}\" />"
-
+  if(data.item.canonical and data.item.canonical[params.lang])
+    headers ..= "<link rel=\"canonical\" href=\"#{data.item.canonical[params.lang]}\" />"
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
-etlua2html = (json, partial, params) ->
-  template = etlua.compile(partial.item.html)
-  template({
-    'dataset': json, 'to_json': to_json,
-    'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
-  })
+etlua2html = (json, partial, params, global_data) ->
+  template = global_data.partials[partial.item._key]
+  if template == nil
+    template = etlua.compile(partial.item.html)
+    global_data.partials[partial.item._key] = template
+
+  success, data = pcall(
+    template, {
+      'dataset': json, 'to_json': to_json,
+      'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
+    }
+  )
+  data
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object) ->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
@@ -105,9 +113,12 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
       json = data.item.html[params['lang']].json
       if(type(json) == 'table' and next(json) ~= nil)
-        html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params)))
+        html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
 
-    else html = etlua2html(data.item.html.json, page_partial, params)
+    else html = etlua2html(data.item.html.json, page_partial, params, global_data)
+
+    html = html\gsub('@yield', '')
+    html = html\gsub('@raw_yield', '')
 
   html
 --------------------------------------------------------------------------------
@@ -177,12 +188,13 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         request = "FOR item IN datasets FILTER item._id == @key "
         request ..= 'RETURN item'
         object = aql(db_name, request, { key: 'datasets/' .. item })[1]
-        output = etlua2html(object[dataset].json, global_data.page_partial, params)
+        output = etlua2html(object[dataset].json, global_data.page_partial, params, global_data)
       else
-        output = etlua2html(params.og_data[item], global_data.page_partial, params)
+        output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
 
-    -- {{ page | slug }}
-    -- e.g. {{ page | home | <dataset> }}
+    -- {{ page | <slug or field> (| <datatype>) }}
+    -- e.g. {{ page | set_a_slug_here }}
+    -- e.g. {{ page | slug | posts }}
     if action == 'page'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
@@ -207,58 +219,64 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ helper | hello_world }}
     if action == 'helper'
       helper = helpers[item]
-      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. " }}"
+      dataset = '#'..dataset if dataset != ''
+      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. dataset .. " }}"
       output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ partial | slug | <dataset> | <args> }}
-    -- e.g. {{ partial | demo | arango | aql/FOR doc IN pages RETURN doc }}
+    -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      if history[widget] == nil -- prevent stack level too deep
-        history[widget] = true
-        partial = load_document_by_slug(db_name, item, 'partials', false)
-        if partial
-          db_data = { "page": 1 }
-          if dataset == 'arango'
-            -- check if it's a stored procedure
-            if args['req']
-              args['aql'] = aql(
-                db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
-                { slug: args['req'] }
-              )[1]
+      partial = load_document_by_slug(db_name, item, 'partials', false)
+      if partial
+        db_data = { "page": 1 }
+        if dataset == 'arango'
+          -- check if it's a stored procedure
+          if args['req']
+            args['aql'] = aql(
+              db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
+              { slug: args['req'] }
+            )[1]\gsub('{{ lang }}', params.lang)
 
-            -- prepare the bindvar variable with variable found in the request
-            bindvar = prepare_bindvars(splat, args['aql'])
+          -- prepare the bindvar variable with variable found in the request
+          -- but also on the parameters sent as args
+          bindvar = prepare_bindvars(table_deep_merge(splat, args), args['aql'])
 
-            -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
-            for str in string.gmatch(args['aql'], '__IF (%w-)__') do
-              unless bindvar[str] then
-                args['aql'] = args['aql']\gsub('__IF ' .. str ..
-                              '__.-__END ' .. str .. '__', '')
-              else
-                args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
-                args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')
+          -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
+          -- @bindvar must be present in the request
+          for str in string.gmatch(args['aql'], '__IF (%w-)__') do
+            unless bindvar[str] then
+              args['aql'] = args['aql']\gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
+            else
+              args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
+              args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')
 
-            -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
-            for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
-              if bindvar[str] then
-                args['aql'] = args['aql']\gsub(
-                  '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
-                )
-              else
-                args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
-                args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
+          -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
+          for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
+            if bindvar[str] then
+              args['aql'] = args['aql']\gsub(
+                '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
+              )
+            else
+              args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
+              args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
-            db_data = { results: aql(db_name, args['aql'], bindvar) }
-            db_data = table_deep_merge(db_data, { _params: args })
+          db_data = { results: aql(db_name, args['aql'], bindvar) }
+          db_data = table_deep_merge(db_data, { _params: args })
 
-          if dataset == 'rest'
-            db_data = from_json(http_get(args['url'], args['headers']))
-          if args['use_params']
-            db_data = table_deep_merge(db_data, { _params: args })
+        if dataset == 'rest'
+          db_data = from_json(http_get(args['url'], args['headers']))
+        if args['use_params']
+          db_data = table_deep_merge(db_data, { _params: args })
 
-          output = etlua2html(db_data, partial, params)
-          output = dynamic_replace(db_name, output, global_data, history, params)
+        partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
+
+        if dataset != 'do_not_eval'
+          output = etlua2html(db_data, partial, params, global_data)
+        else
+          output = partial.item.html
+
+        output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ riot | slug(#slug2...) | <mount> }}
     -- e.g. {{ riot | demo | mount }}
@@ -280,7 +298,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
 
         if dataset == "mount"
-          output ..= "<script>document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') })</script>"
+          output ..= "<script>"
+          output ..= "document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
+          output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
+          output ..= "</script>"
 
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
@@ -310,7 +331,12 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'tr'
       output = "Missing translation <em style='color:red'>#{item}</em>"
       unless translations[item]
-        aql(db_name, 'INSERT { key: @key, value: {} } IN trads', { key: item })
+        aql(
+          db_name, 'INSERT { key: @key, value: { @lang: @key} } IN trads',
+          { key: item, lang: params.lang }
+        )
+        output = item
+
       if translations[item] and translations[item][params.lang]
         output = translations[item][params.lang]
 
@@ -321,6 +347,15 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- {{ og_data | name }}
     if action == 'og_data'
       output = params.og_data[item] if params.og_data
+
+    -- {{ dataset | key | field }}
+    if action == 'dataset'
+      item = stringy.split(item, "=")
+      request = "FOR item IN datasets FILTER item.@field == @value RETURN item"
+      object = aql(db_name, request, { field: item[1], value: item[2] })[1]
+      if object
+        output = object[dataset]
+      else output = ' '
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
 

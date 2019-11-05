@@ -21,6 +21,11 @@ const sessions = sessionsMiddleware({
 module.context.use(sessions);
 module.context.use(router);
 
+var clearCache = function() {
+  var h_settings = JSON.stringify(_settings.home).url_reset
+  if(h_settings && h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
+}
+
 var typeCast = function(type, value) {
   var value = unescape(value)
   if(type == "integer") value = parseInt(value)
@@ -224,6 +229,7 @@ router.post('/:service', function (req, res) {
     obj = collection.save(data, { waitForSync: true })
     save_revision(req.session.uid, obj, data, 10)
   }
+  clearCache()
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
 .header('X-Session-Id')
@@ -279,6 +285,7 @@ router.post('/:service/:id', function (req, res) {
       save_revision(req.session.uid, object, data, 10)
     }
   }
+  clearCache()
   res.send({ success: errors.length == 0 && can_save, data: obj, errors: errors });
 })
 .header('foxx-locale')
@@ -295,6 +302,7 @@ router.patch('/:service/:id/:field/toggle', function (req, res) {
     collection.update(item, data)
     var returned_data = !item[req.pathParams.field]
     if(column && column.values) returned_data = column.values[!item[req.pathParams.field]]
+      clearCache()
     res.send({ success: true, data: returned_data })
   } else {
     res.send({ success: false })
@@ -321,6 +329,7 @@ router.delete('/:service/:id', function (req, res) {
   db.revisions.removeByExample(
     { object_id: req.pathParams.service + "/" + req.pathParams.id }
   )
+  clearCache()
   res.send({success: true });
 })
 .header('X-Session-Id')
@@ -358,7 +367,7 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   }
 
   collection.update(doc._key, { order: to })
-
+  clearCache()
   res.send({ success: true });
 })
   .header('foxx-locale')
@@ -416,6 +425,7 @@ router.post('/sub/:service/:subservice', function (req, res) {
     obj = collection.save(data, { waitForSync: true })
     save_revision(req.session.uid, obj, data, 10)
   }
+  clearCache()
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 }).header('foxx-locale')
 .header('X-Session-Id')
@@ -444,6 +454,7 @@ router.post('/sub/:service/:subservice/:id', function (req, res) {
     obj = collection.update(object, data)
     save_revision(req.session.uid, object, data, 10)
   }
+  clearCache()
   res.send({ success: errors.length == 0, data: obj, errors: errors });
 })
 .header('foxx-locale')
@@ -469,6 +480,7 @@ router.post('/:service/:id/publish', function (req, res) {
       key: req.pathParams.id,
       id: 'publications/' + req.pathParams.id
     })
+  clearCache()
   res.send({ success: true });
 })
 .header('X-Session-Id')

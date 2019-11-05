@@ -52,6 +52,7 @@ const model = function () {
       { r: true, c: "1-1", n: "og_title", t: "string", j: "joi.any()", l: "og:title", tr: true },
       { r: true, c: "1-1", n: "og_img", t: "string", j: "joi.any()", l: "og:img", tr: true },
       { r: true, c: "1-1", n: "og_type", t: "string", j: "joi.any()", l: "og:type", tr: true },
+      { r: true, c: "1-1", n: "canonical", t: "string", j: "joi.any()", l: "Canonical URL", tr: true },
       { r: true, c: "1-1", n: "og_aql", t: "code:aql", j: "joi.any()", l: "og:aql", tr: true },
       { r: true, c: "1-2", n: "ba_login", t: "string", j: "joi.any()", l: "Basic Auth : Username" },
       { r: false, c: "1-2", n: "ba_pass", t: "string", j: "joi.any()", l: "Basic Auth : Password" }

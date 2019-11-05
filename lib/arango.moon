@@ -6,7 +6,7 @@ config = require('lapis.config').get!
 jwt       = ''
 db_config = {}
 --------------------------------------------------------------------------------
-http_request = (url, method, body, headers) ->
+http_request = (url, method, body, headers)->
   http.simple { url: url, method: method, body: body, headers: headers }
 --------------------------------------------------------------------------------
 list_databases = () ->
@@ -17,7 +17,7 @@ list_databases = () ->
   )
   from_json(body)['result']
 --------------------------------------------------------------------------------
-auth_arangodb = (db_name) ->
+auth_arangodb = (db_name)->
   db_config = require('lapis.config').get("db_#{config._name}")
   body, status_code, headers = http_request(
     db_config.url .. '_open/auth', 'POST',
@@ -49,11 +49,10 @@ raw_aql = (db_name, stm)->
     result    = table_merge(result,  more['result'])
     has_more  = more['hasMore']
 
-  if result == nil then result = {}
-
+  result = {} if result == nil
   result
 --------------------------------------------------------------------------------
-aql = (db_name, str, bindvars = {}) ->
+aql = (db_name, str, bindvars = {})->
   raw_aql(db_name, { query: str, cache: true, bindVars: bindvars })
 --------------------------------------------------------------------------------
 with_params = (db_name, method, handle, params)->
@@ -72,7 +71,7 @@ without_params = (db_name, method, handle)->
 --------------------------------------------------------------------------------
 document_put = (db_name, handle, params)-> with_params(db_name, 'PUT', handle, params)
 --------------------------------------------------------------------------------
-document_post = (db_name, collection, params)-> with_params(db_name, 'POST', collection, params)
+document_post = (db_name, handle, params)-> with_params(db_name, 'POST', handle, params)
 --------------------------------------------------------------------------------
 document_get = (db_name, handle)-> without_params(db_name, 'GET', handle)
 --------------------------------------------------------------------------------
@@ -97,7 +96,6 @@ foxx_install = (db_name, mount, data)->
     "#{db_config.url}/_db/#{db_name}/_api/foxx?mount=/#{mount}", 'POST',
     data, { 'Content-Type': 'application/zip', Authorization: "bearer #{jwt}" }
   )
-  print(to_json(body))
   body
 --------------------------------------------------------------------------------
 foxx_upgrade = (db_name, mount, data)->

@@ -47,7 +47,8 @@ const model = function() {
     ],
     columns: [
       { name: "slug" }, { name: "aql" }
-    ]
+    ],
+    sort: "SORT doc.slug ASC"
     //columns: [
     //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
     //    values: { true: "online", false: "offline" },

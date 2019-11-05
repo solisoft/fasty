@@ -395,6 +395,19 @@
   </script>
 </dataset_new>
 
+<dataset_tags>
+  <span each={ row in data }>
+    { row.tag } <span class="uk-badge uk-margin-right">{ row.size }</span>
+  </span>
+  <script>
+    var self = this
+    common.get(url + "/datasets/" + opts.datatype + "/stats/" + this.opts.tag, function(d) {
+      self.data = d
+      self.update()
+    })
+  </script>
+</dataset_tags>
+
 <datasets>
   <dataset_folders show={loaded} if={act_as_tree} folder_key={folder_key} slug={opts.datatype} />
   <virtual if={can_access}>
@@ -412,6 +425,8 @@
         <input type="text" ref="term" id="term" class="uk-input" autocomplete="off">
       </div>
     </form>
+
+    <dataset_tags if={ show_stats } datatype={ opts.datatype } tag={ show_stats_tag }></dataset_tags>
     <table class="uk-table uk-table-striped">
       <thead>
         <tr>
@@ -463,6 +478,7 @@
   <script>
 
     var self        = this
+    this.show_stats = false
     this.page       = 0
     this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
@@ -483,7 +499,11 @@
         self.data = d.data[0].data
         var model = d.model
         self.act_as_tree = model.act_as_tree
-
+        if(model.stats_for_tag) {
+          self.show_stats = true
+          self.show_stats_tag = model.stats_for_tag
+          self.update()
+        }
         self.export = !!model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(model.columns) self.cols = model.columns

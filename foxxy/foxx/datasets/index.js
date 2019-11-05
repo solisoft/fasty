@@ -133,10 +133,13 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
     folder_params = { folder: req.queryParams.folder }
   }
 
+  var fields = ["_id", "_key"]
+  fields.push(_.map(model.columns, function(d) { return d.name }))
   var bindVars = _.merge({
     "datatype": req.pathParams.service,
     "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
-    "perpage": parseInt(req.pathParams.perpage)
+    "perpage": parseInt(req.pathParams.perpage),
+    "fields": _.flatten(fields)
   }, folder_params)
 
   var aql = `
@@ -147,10 +150,11 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
       ${folder} ${order} ${includes}
       LIMIT @offset, @perpage
-      RETURN MERGE(doc, { image: image ${include_merge} })
+      RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
   )
   RETURN { count: count, data: data }
   `
+
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }); }
 
   res.send({ model: model, data: db._query(aql, bindVars).toArray() });
@@ -209,7 +213,7 @@ router.get('/:service/search/:term', function (req, res) {
   var locale = req.headers['foxx-locale']
   if (locale.match(/[a-z]+/) == null) locale = 'en'
   let order = object.sort || 'SORT doc._key DESC'
-  if (model.sortable) order = 'SORT doc.order ASC'
+  if (object.sortable) order = 'SORT doc.order ASC'
 
   let includes = ''
   let include_merge = ''
@@ -219,14 +223,22 @@ router.get('/:service/search/:term', function (req, res) {
   }
 
   if (locale.match(/[a-z]+/) == null) locale = 'en'
-  var bindVars = { "type": req.pathParams.service, "term": req.pathParams.term }
+
+  var fields = ["_id", "_key"]
+  fields.push(_.map(object.columns, function(d) { return d.name }))
+
+  var bindVars = {
+    "type": req.pathParams.service,
+    "term": req.pathParams.term,
+    "fields": _.flatten(fields)
+  }
   var aql = `
   FOR doc IN FULLTEXT(datasets, 'search.${locale}', @term)
     FILTER doc.type == @type
     LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
     ${order} ${includes}
     LIMIT 100
-    RETURN MERGE(doc, { image: image ${include_merge} })
+    RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
   `
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }) }
 
@@ -340,8 +352,11 @@ router.post('/:service', function (req, res) {
         }
         return field_name == '_key' ? obj._key : value
       })
-      slug = _.kebabCase(slug)
-      collection.update(obj, { slug: slug })
+
+      if(data['slug'] == '' || data['slug'] == undefined ) {
+        slug = _.kebabCase(slug)
+        collection.update(obj, { slug: slug })
+      }
     }
     save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(obj._id, 'created', req.session.uid)
@@ -403,8 +418,10 @@ router.post('/:service/:service_key/:sub', function (req, res) {
         }
         return field_name == '_key' ? obj._key : value
       })
-      slug = _.kebabCase(slug)
-      collection.update(obj, { slug: slug })
+      if(data['slug'] == '') {
+        slug = _.kebabCase(slug)
+        collection.update(obj, { slug: slug })
+      }
     }
     save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(object._id, 'created', req.session.uid)
@@ -460,7 +477,9 @@ router.post('/:service/:id', function (req, res) {
         }
         return field_name == '_key' ? doc._key : value
       })
-      data['slug'] = _.kebabCase(slug)
+      if (data['slug'] == '' || data['slug'] == undefined) {
+        data['slug'] = _.kebabCase(slug)
+      }
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
@@ -661,7 +680,7 @@ router.get('/:service/stats/:tag', function (req, res) {
           COLLECT WITH COUNT INTO size
           RETURN size
       )[0]
-
+      SORT size DESC
       RETURN { tag, size }
   `, { tag: req.pathParams.tag, service: req.pathParams.service })
 

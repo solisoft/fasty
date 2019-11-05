@@ -68,15 +68,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pell/0.7.0/pell.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.13.0/trumbowyg.min.js"></script>
 
-
     <script>
       var Sortable = require('vendors/Sortable.min.js')
 
       var hostname = document.location.hostname
       var subdomain = hostname.split('.')[0]
 
+      var configs = require('js/config.js')
+
       var host = 'http://localhost:8530/_db'
-      if(hostname.indexOf('127.0.0.1') < 0) { host = 'https://foxxy.ovh/fasty' }
+      _.each(configs, function(v, k) { if(hostname.indexOf(k) >= 0) host = v })
 
       var url = host + '/db_' + subdomain + '/'
 

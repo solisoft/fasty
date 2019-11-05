@@ -608,6 +608,14 @@ var Common = {
 module.exports = Common;
 });
 
+require.register("js/config.js", function(exports, require, module) {
+var Config = {
+  ".fasty.ovh": "https://fasty.ovh/_db"
+};
+
+module.exports = Config;
+});
+
 require.register("js/editor.js", function(exports, require, module) {
 /* jshint asi: true */
 (function ($) {
@@ -1194,14 +1202,17 @@ require.register("js/editor.js", function(exports, require, module) {
         editObj = $(this)
         raw_object = $(this.outerHTML)
         if (raw_object.data("attr")) {
+          $(self).find("input[data-name=col-class]").val(raw_object.data("attr")['col-class'])
           $(self).find("input[data-name=row-class]").val(raw_object.data("attr")['row-class'])
           $(self).find("input[data-name=container-class]").val(raw_object.data("attr")['container-class'])
         } else {
+          $(self).find("input[data-name=col-class]").val('')
           $(self).find("input[data-name=row-class]").val('')
           $(self).find("input[data-name=container-class]").val('')
         }
         $(self).find(".editor-code").hide()
         $(self).find(".editor-simplecode").hide()
+        $(self).find(".editor-img-code").hide()
         if (raw_object.data('editable')) {
           $(self).find('.trumbowyg').hide()
           $(self).find('#ace-editor-' + object_name).hide()
@@ -1234,12 +1245,16 @@ require.register("js/editor.js", function(exports, require, module) {
           }
 
           if (['img'].indexOf(editObj.data('type')) >= 0) {
+            var img_div = $(this).find('.img-div').length > 0 ? $(this).find('.img-div') : $(this).find('img').parent()
             $(self).find(".editor-simplecode").show()
+            $(self).find(".editor-img-code").show()
             $('#ace-editor-'+object_name).show()
+            $(self).find("input[data-name=img-width").val(img_div.attr('data-img-width'))
+            $(self).find("select[data-name=img-alignment").val(img_div[0].style['text-align'])
             var mode = 'html'
             ace_editor.session.setMode('ace/mode/' + mode);
             ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
-            ace_editor.getSession().setValue(editObj.html());
+            ace_editor.getSession().setValue(img_div[0].innerHTML);
           }
 
         }
@@ -1348,7 +1363,12 @@ require.register("js/editor.js", function(exports, require, module) {
             <div id="trumbowyg-'+object_name+'"></div>\
             <div><label>Container Class</label><input type="text" data-name="container-class" class="uk-input"></div>\
             <div><label>Row Class</label><input type="text" data-name="row-class" class="uk-input"></div>\
+            <div><label>Col Class</label><input type="text" data-name="col-class" class="uk-input"></div>\
             <div class="editor-code"><label>Language</label><input type="text" data-name="lang" class="uk-input"></div>\
+            <div class="uk-grid"><div class="uk-width-1-2 editor-img-code"><label>Image Width</label><input type="text" data-name="img-width" class="uk-input"></div>\
+            <div class="uk-width-1-2 editor-img-code"><label>Image Alignment</label>\
+            <select class="uk-select" data-name="img-alignment">\
+            <option>left</option><option>center</option><option>right</option></select></div></div>\
             <div class="editor-code editor-simplecode"><label>Code</label><div id="ace-editor-'+object_name+'" class="ace-editor"></div></div>\
           </div>\
         </div>\
@@ -1389,6 +1409,7 @@ require.register("js/editor.js", function(exports, require, module) {
     var save_editor = function () {
       if (editObj) {
         var attributes = {
+          'col-class': $('input[data-name=col-class]').val(),
           'row-class': $('input[data-name=row-class]').val(),
           'container-class': $('input[data-name=container-class]').val()
         }
@@ -1397,7 +1418,7 @@ require.register("js/editor.js", function(exports, require, module) {
           var mode = 'language-' + $(self).find("input[data-name=lang]").val()
           editObj.html('<pre><code class="' + mode + '">' + htmlEntities(content) + '</code></pre>')
         }
-        if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img'].indexOf(editObj.data('type')) >= 0) {
+        if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].indexOf(editObj.data('type')) >= 0) {
           editObj.html(content)
         }
         if (['embed'].indexOf(editObj.data('type')) >= 0) {
@@ -1406,6 +1427,18 @@ require.register("js/editor.js", function(exports, require, module) {
         }
         if (['text'].indexOf(editObj.data('type')) >= 0) {
           editObj.html($('#trumbowyg-'+object_name).trumbowyg('html'))
+        }
+        if(['img'].indexOf(editObj.data('type')) >= 0) {
+          var width = $(self).find("input[data-name=img-width").val() ? $(self).find("input[data-name=img-width").val() : '100%'
+          var alignment = $(self).find("select[data-name=img-alignment").val() ? $(self).find("select[data-name=img-alignment").val() : 'left'
+          var temp = $('<div>').append($.parseHTML(content))
+          temp.each(function() {
+            var img = $(this).find('img')
+            for(var i = 0; i < img.length; i++) {
+              img[i].style.width = width
+            }
+          })
+          editObj.html('<div class="img-div" style="text-align: ' + alignment + '" data-img-width="' + width + '">' + temp[0].innerHTML + '</div>')
         }
         editObj.attr('data-attr', JSON.stringify(attributes))
 
@@ -2820,9 +2853,18 @@ riot.tag2('dataset_new', '<virtual if="{can_access}"> <h3>Creating {opts.datatyp
     })
 });
 
-riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination noselect"> <li if="{page + 1 > 1}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
+riot.tag2('dataset_tags', '<span each="{row in data}"> {row.tag} <span class="uk-badge uk-margin-right">{row.size}</span> </span>', '', '', function(opts) {
+    var self = this
+    common.get(url + "/datasets/" + opts.datatype + "/stats/" + this.opts.tag, function(d) {
+      self.data = d
+      self.update()
+    })
+});
+
+riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <dataset_tags if="{show_stats}" datatype="{opts.datatype}" tag="{show_stats_tag}"></dataset_tags> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination noselect"> <li if="{page + 1 > 1}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
 
     var self        = this
+    this.show_stats = false
     this.page       = 0
     this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
@@ -2843,7 +2885,11 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
         self.data = d.data[0].data
         var model = d.model
         self.act_as_tree = model.act_as_tree
-
+        if(model.stats_for_tag) {
+          self.show_stats = true
+          self.show_stats_tag = model.stats_for_tag
+          self.update()
+        }
         self.export = !!model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
         if(model.columns) self.cols = model.columns
@@ -4093,16 +4139,18 @@ riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">
         if(self.can_access)
           common.buildForm(self.page, fields, '#form_page', back_url, function() {
             $(".crud").each(function(i, c) {
-            var id = $(c).attr("id")
-            riot.mount("#" + id, "page_crud_index", { model: id,
-              fields: self.sub_models[id].fields,
-              key: self.sub_models[id].key,
-              singular: self.sub_models[id].singular,
-              columns: self.sub_models[id].columns,
-              parent_id: opts.page_id,
-              parent_name: back_url })
+              var id = $(c).attr("id")
+              riot.mount("#" + id, "page_crud_index", {
+                model: id,
+                fields: self.sub_models[id].fields,
+                key: self.sub_models[id].key,
+                singular: self.sub_models[id].singular,
+                columns: self.sub_models[id].columns,
+                parent_id: opts.page_id,
+                parent_name: back_url
+              })
+            })
           })
-        })
       })
     })
 

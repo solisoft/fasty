@@ -19,6 +19,23 @@ services:
     networks:
       frontend:
 
+  resize:
+    build:
+      context: .
+      dockerfile: Dockerfile_node
+    command: /bin/bash -c "yarn && yarn start"
+    ports:
+      - 8001:3000
+    volumes:
+      - ./resize/:/workspace
+      - node_modules_resize:/workspace/node_modules
+    depends_on:
+      - arangodb
+    links:
+      - arangodb:arangodb
+    networks:
+      frontend:
+
   cms:
     build: .
     command: /bin/bash -c "cd /var/www && lapis server"
@@ -30,11 +47,12 @@ services:
     depends_on:
       - arangodb
       - foxxy
+      - resize
     links:
       - arangodb:arangodb
     networks:
       frontend:
-        ipv4_address: 172.31.0.7
+        ipv4_address: 12.12.0.7
 
   cms_prod:
     build: .
@@ -49,8 +67,10 @@ services:
       - arangodb
     links:
       - arangodb:arangodb
+      - resize
     networks:
       frontend:
+        ipv4_address: 12.12.0.8
 
   arangodb:
     image: arangodb/arangodb:3.5.0
@@ -59,7 +79,7 @@ services:
       ARANGO_ROOT_PASSWORD: password
     networks:
       frontend:
-        ipv4_address: 172.31.0.6
+        ipv4_address: 12.12.0.6
     ports:
       - 8530:8529
     volumes:
@@ -67,14 +87,27 @@ services:
       - arangodb-app:/var/lib/arangodb3-app
       - arangodb-uploads:/home
 
+  nginx:
+    image: nginx:1.17.3
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8000:80
+    links:
+      - cms
+    networks:
+      frontend:
+        ipv4_address: 12.12.0.10
 volumes:
   arangodb-data:
   arangodb-app:
   arangodb-uploads:
   node_modules:
+  node_modules_resize:
 
 networks:
   frontend:
     ipam:
       config:
-        - subnet: 172.31.0.0/24
+        - subnet: 12.12.0.0/24
