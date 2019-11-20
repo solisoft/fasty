@@ -20,10 +20,8 @@ table_index = (tab, val) ->
   nil
 --------------------------------------------------------------------------------
 check_valid_lang = (langs, lang) ->
-  allowed_lang = {}
-  for k, v in pairs(stringy.split(langs, ',')) do allowed_lang[v] = true
-
-  if allowed_lang[lang] == nil then lang = stringy.split(langs, ',')[1]
+  allowed_langs = stringy.split(langs, ',')
+  lang = allowed_langs[1] if table_index(allowed_langs, lang) == nil
   lang
 --------------------------------------------------------------------------------
 map = (tbl, f)->
