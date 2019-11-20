@@ -2,12 +2,10 @@ import from_json, to_json from require 'lapis.util'
 stringy = require 'stringy'
 date = require 'date'
 --------------------------------------------------------------------------------
--- Merge 2 table
 table_merge = (t1, t2) ->
   for k,v in ipairs(t2) do table.insert(t1, v)
   t1
 --------------------------------------------------------------------------------
--- Merge 2 tables with k, v
 table_deep_merge = (t1, t2) ->
   for k,v in pairs(t2) do
     if type(v) == "table" then
@@ -17,12 +15,10 @@ table_deep_merge = (t1, t2) ->
     else t1[k] = v
   t1
 --------------------------------------------------------------------------------
--- Return Index off value in table or nil if not found
 table_index = (tab, val) ->
   for index, value in ipairs(tab) do return index if value == val
   nil
 --------------------------------------------------------------------------------
--- Check valid lang
 check_valid_lang = (langs, lang) ->
   allowed_lang = {}
   for k, v in pairs(stringy.split(langs, ',')) do allowed_lang[v] = true
