@@ -39,9 +39,13 @@ require("@arangodb/aql/cache").properties({ mode: "on" })
 // { r: true, c: "1-1", n: "content", t: "html", j: joi.any(), l: "Content Editor" },
 
 const model = function() {
+  var partials = db._query(`
+   FOR doc in partials FILTER RETURN [doc._key, doc.name]
+ `).toArray()
   return {
     model: [
-      { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().required()", l: "Name" },
+      { r: true, c: "1-2", n: "name", t: "string", j: "joi.string().required()", l: "Name" },
+      { r: false, c: "1-2", n: "page_builder", t: "list", j: "joi.string().required()", l: "Page Builder", d: partials },
       { r: true, c: "1-1", n: "html", t: "code:html", j: "joi.any()", l: "HTML" },
       { tab: "CSS" },
       { r: true, c: "1-1", n: "i_css", t: "code:text", j: "joi.any()", l: "Included CSS" },
