@@ -133,17 +133,17 @@ var check_json = function(json, folder, fullname, api) {
                   })
                 }
                 request.patch(params, function optionalCallback(_err, _httpResponse, body) {
-                  console.log(body.green) 
+                  console.log(body.green)
                   notifier.notify("Fasty :: " + body)
                   if(socket && body.indexOf("Saved! ") == 1) {
                     var fileData = fs.readFileSync(path).toString()
                     var fileMeta = fileData.split("\n")[0].trim()
-                    
+
                     socket.emit('updated', { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
                   }
-                })  
+                })
               }
-              
+
             } else {
               console.log('something went wrong ... please try again'.red)
             }
@@ -184,7 +184,7 @@ if(argv._.length != 1) {
     })
   }
 
-  
+
 
   if(token === undefined) {
     console.log("Token not found for this domain".red)
