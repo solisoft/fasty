@@ -1,6 +1,6 @@
 import encode_base64 from require "lapis.util.encoding"
-isempty = (s) ->
-  s == nil or s == ''
+--------------------------------------------------------------------------------
+isempty = (s) -> s == nil or s == ''
 --------------------------------------------------------------------------------
 settings_basic_auth = (item) ->
   'Basic ' .. encode_base64("#{item.ba_login}:#{item.ba_pass}")

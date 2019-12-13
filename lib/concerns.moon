@@ -101,7 +101,8 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true) ->
   html = to_json(data)
   if data
-    page_partial = load_document_by_slug(db_name, 'page', 'partials')
+    page_builder = data.layout.page_builder or 'page'
+    page_partial = load_document_by_slug(db_name, page_builder, 'partials')
     global_data.page_partial = page_partial
     if uselayout
       html = prepare_headers(data.layout.html, data, params)
