@@ -191,7 +191,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         object = aql(db_name, request, { key: 'datasets/' .. item })[1]
         output = etlua2html(object[dataset].json, global_data.page_partial, params, global_data)
       else
-        output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
+        if params.og_data
+          output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
 
     -- {{ page | <slug or field> (| <datatype>) }}
     -- e.g. {{ page | set_a_slug_here }}
