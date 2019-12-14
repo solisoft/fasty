@@ -216,5 +216,11 @@ create_edge_collection('folder_path')
 create_graph('folderGraph', 'folder_path', 'folders', 'folders')
 create_collection('scripts');
 
+db._collection('trads').ensureIndex({
+  type: 'skiplist',
+  fields: ['key'],
+  unique: true
+});
+
 /*@{{setup}}*/
 
