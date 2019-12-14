@@ -6,7 +6,7 @@ describe "soliCMS", ->
 
   it "should load /", ->
     status, body, headers = request "/"
-    assert.same 302, status
+    assert.same 200, status
 
   -- it "should load /en/my/home", ->
   --   status, body, headers = request "/en/my/home"

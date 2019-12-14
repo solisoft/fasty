@@ -552,7 +552,7 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
 .description('Update an object.');
 
 ////////////////////////////////////////////////////////////////////////////////
-// PATCH /datasets/:service/:id/:field/toggl
+// PATCH /datasets/:service/:id/:field/toggle
 router.patch('/:service/:id/:field/toggle', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
