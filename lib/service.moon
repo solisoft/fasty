@@ -3,14 +3,12 @@ import map, table_index from require 'lib.utils'
 import from_json, to_json, trim from require 'lapis.util'
 import aql, foxx_upgrade from require 'lib.arango'
 --------------------------------------------------------------------------------
--- write_content
 write_content = (filename, content)->
   file = io.open(filename, 'w+')
   io.output(file)
   io.write(content)
   io.close(file)
 --------------------------------------------------------------------------------
--- read_zipfile
 read_zipfile = (filename)->
   file = io.open(filename, 'r')
   io.input(file)
@@ -18,7 +16,6 @@ read_zipfile = (filename)->
   io.close(file)
   data
 --------------------------------------------------------------------------------
--- install_service
 install_service = (sub_domain, name)->
   path = "install_service/#{sub_domain}/#{name}"
   os.execute("mkdir -p #{path}/APP/routes")
@@ -50,7 +47,6 @@ install_service = (sub_domain, name)->
   for k, item in pairs api.tests
     write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
 
-  -- Install the service
   os.execute("cd install_service/#{sub_domain}/#{name}/APP && export PATH='$PATH:/usr/local/bin' && yarn")
   os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
   os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
@@ -59,7 +55,6 @@ install_service = (sub_domain, name)->
     "db_#{sub_domain}", name, read_zipfile("install_service/#{sub_domain}/#{name}.zip")
   )
 --------------------------------------------------------------------------------
--- deploy site
 deploy_site = (sub_domain, settings) ->
   config = require('lapis.config').get!
   db_config = require('lapis.config').get("db_#{config._name}")
@@ -75,7 +70,6 @@ deploy_site = (sub_domain, settings) ->
   os.execute("arangorestore --include-system-collections true --server.database #{settings.deploy_secret} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.url}  --input-directory #{path} --overwrite true")
   os.execute("rm -Rf #{path}")
 --------------------------------------------------------------------------------
--- install script
 install_script = (sub_domain, name) ->
   path = "scripts/#{sub_domain}/#{name}"
   os.execute("mkdir -p #{path}")
@@ -84,5 +78,6 @@ install_script = (sub_domain, name) ->
   write_content("#{path}/package.json", script.package)
   os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
   write_content("#{path}/index.js", script.code)
+--------------------------------------------------------------------------------
 -- expose methods
 { :install_service, :install_script, :deploy_site }

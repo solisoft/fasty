@@ -22,13 +22,13 @@ no_db = {}
 sub_domain = ''
 expire_at = 'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
--- sub_domain_account
-sub_domain_account = () =>
+-- define_subdomain
+define_subdomain = () =>
   sub_domain = stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 -- load_settings
 load_settings = () =>
-  sub_domain_account(@)
+  define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
@@ -64,11 +64,7 @@ class extends lapis.Application
     if config._name == "production" then
       print(to_json(err) .. to_json(trace))
       @err = err
-      error_page = from_json(settings[sub_domain].home)['error_500']
-      if error_page ~= nil then
-        display_page(@, error_page), status: 500
-      else
-        render: "error_500", status: 500
+      display_error_page 500
     else
       super err, trace
 
@@ -76,7 +72,13 @@ class extends lapis.Application
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   ----------------------------------------------------------------------------
-  -- display_page()
+  display_error_page = (status=500, headers= {}) =>
+    error_page = from_json(settings[sub_domain].home)["error_#{status}"]
+    if error_page ~= nil then
+      display_page(@, error_page), status: status
+    else
+      render: "error_#{status}", status: status, headers: headers
+  ----------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
     slug = @params.slug if slug == nil
     @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
@@ -107,11 +109,7 @@ class extends lapis.Application
       if html ~= 'null' then
         html, status: status
       else
-        missing_page = from_json(settings[sub_domain].home)['error_404']
-        if missing_page ~= nil then
-          display_page(@, missing_page, 404)
-        else
-          status: 404, render: 'error_404'
+        display_error_page 404
     else
       status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
   ------------------------------------------------------------------------------
@@ -120,22 +118,25 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
-    sub_domain_account(@)
+    define_subdomain(@)
+
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
       if @params.lang then @session.lang = @params.lang
       load_settings(@)
       @session.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
-
-      home = from_json(settings[sub_domain].home)
-      @params.lang = @session.lang
-      @params.all = home['all']
-      @params.slug = home['slug']
-
-      if type(home['root_redirection']) == "string"
-        redirect_to: home['root_redirection']
+      if @params.lang and @session.lang ~= @params.lang then
+        redirect_to: '/' .. @session.lang
       else
-        display_page(@)
+        home = from_json(settings[sub_domain].home)
+        @params.lang = @session.lang
+        @params.all = home['all']
+        @params.slug = home['slug']
+
+        if type(home['root_redirection']) == "string"
+          redirect_to: home['root_redirection']
+        else
+          display_page(@)
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
@@ -145,10 +146,11 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
       { "key": "#{@params.layout}" }
     )[1]
-    if @req.headers['x-forwarded-for'] != nil then
-      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: "application/javascript", content
     else
-      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": expire_at }
+      content_type: "application/javascript", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
   -- js_vendors
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
@@ -158,10 +160,12 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
       { "key": "#{@params.layout}" }
     )[1]
-    if @req.headers['x-forwarded-for'] != nil then
-      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: "application/javascript", content
     else
-      content_type: "application/javascript", dynamic_replace("db_#{sub_domain}", js, {}, {}, @params), headers: { "expires": expire_at }
+      content_type: "application/javascript", content, headers: { "expires": expire_at }
+
   ------------------------------------------------------------------------------
   -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -172,10 +176,11 @@ class extends lapis.Application
       { "key": "#{@params.layout}" }
     )[1]
     scss = sass.compile(css, 'compressed')
-    if @req.headers['x-forwarded-for'] != nil then
-      content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: "text/css", content
     else
-      content_type: "text/css", dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params), headers: { "expires": expire_at }
+      content_type: "text/css", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
   -- css_vendors
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
@@ -185,10 +190,11 @@ class extends lapis.Application
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
       { "key": "#{@params.layout}" }
     )[1]
-    if @req.headers['x-forwarded-for'] != nil then
-      content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: "text/css", content
     else
-      content_type: "text/css", dynamic_replace("db_#{sub_domain}", css, {}, {}, @params), headers: { "expires": expire_at }
+      content_type: "text/css", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
   -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
@@ -199,15 +205,17 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    if @req.headers['x-forwarded-for'] != nil then
-      dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content
     else
-      dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params), headers: { "expires": expire_at }
+      content, headers: { "expires": expire_at }
 
   ------------------------------------------------------------------------------
   -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>
-    sub_domain_account(@)
+    define_subdomain(@)
+
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@)
@@ -216,7 +224,8 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- page
   [page: '/:lang/:all/:slug(/*)']: =>
-    sub_domain_account(@)
+    define_subdomain(@)
+
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@)
@@ -257,7 +266,8 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   -- reset variables for specific sub domain
   [reset_all: '/admin/reset_all']: =>
-    sub_domain_account(@)
+    define_subdomain(@)
+
     jwt[sub_domain] = nil
     global_data[sub_domain] = nil
     all_domains = nil

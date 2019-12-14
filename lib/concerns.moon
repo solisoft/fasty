@@ -101,7 +101,8 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true) ->
   html = to_json(data)
   if data
-    page_partial = load_document_by_slug(db_name, 'page', 'partials')
+    page_builder = data.layout.page_builder or 'page'
+    page_partial = load_document_by_slug(db_name, page_builder, 'partials')
     global_data.page_partial = page_partial
     if uselayout
       html = prepare_headers(data.layout.html, data, params)
@@ -190,7 +191,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         object = aql(db_name, request, { key: 'datasets/' .. item })[1]
         output = etlua2html(object[dataset].json, global_data.page_partial, params, global_data)
       else
-        output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
+        if params.og_data
+          output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
 
     -- {{ page | <slug or field> (| <datatype>) }}
     -- e.g. {{ page | set_a_slug_here }}
