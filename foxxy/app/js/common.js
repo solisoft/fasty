@@ -241,7 +241,9 @@ var Common = {
       $(formId+" #" + v[0]).val(v[1])
     })
     html_editors.forEach(function (e, i) {
-      if(_.isString(e[1])) e[1] = JSON.parse(e[1])
+      if(_.isString(e[1])) {
+        try { e[1] = JSON.parse(e[1]) } catch(e) {}
+      }
       $('#html_editor_' + e[0]).contentEditor({ value: e[1].html || '' })
       $("#" + e[0]).val(JSON.stringify(e[1]))
     })
