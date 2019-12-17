@@ -91,7 +91,6 @@ var Common = {
             _html += '<label for="" class="uk-form-label">'+ title +'</label>'
 
           var value = obj[l.n]
-
           if(l.tr && obj[l.n]) value = obj[l.n][window.localStorage.getItem('foxx-locale')]
           if (value === undefined) value = ""
 
@@ -242,6 +241,7 @@ var Common = {
       $(formId+" #" + v[0]).val(v[1])
     })
     html_editors.forEach(function (e, i) {
+      if(_.isString(e[1])) e[1] = JSON.parse(e[1])
       $('#html_editor_' + e[0]).contentEditor({ value: e[1].html || '' })
       $("#" + e[0]).val(JSON.stringify(e[1]))
     })
