@@ -141,9 +141,10 @@ load_redirection = (db_name, params) ->
     prepare_headers(html, redirection, params)
   else nil
 --------------------------------------------------------------------------------
-prepare_bindvars = (splat, aql_request) ->
+prepare_bindvars = (splat, aql_request, locale = nil) ->
   bindvar = { }
   bindvar["page"] = 1 if aql_request\find('@page')
+  bindvar["lang"] = locale if locale and aql_request\find('@lang')
   for k, v in pairs(splat) do
     v = unescape(tostring(v))
     v = tonumber(v) if v\match('^%d+$')
