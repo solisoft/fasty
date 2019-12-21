@@ -135,17 +135,25 @@ var check_json = function(json, folder, fullname, api) {
                 }
                 request.patch(params, function optionalCallback(_err, _httpResponse, body) {
                   console.log(body.green)
-                  notifier.notify("Fasty :: " + body)
-                  if(socket && body.indexOf("Saved! ") == 1) {
-                    var fileData = fs.readFileSync(path).toString()
-                    var fileMeta = fileData.split("\n")[0].trim()
-                    var payload = {
-                      "text": "Fasty :: " + body
+                  if (body.indexOf("Saved! ") == 1) {
+                    notifier.notify("Fasty :: " + body)
+
+                    if (webhook) {
+                      var payload = { "text": fullname + " :: " + dirname + body }
+                      request.post({
+                        headers : { 'Content-type' : 'application/json' },
+                        url: webhook,
+                        form : { payload: JSON.stringify(payload)}
+                      }, function optionalCallback(_err, _httpResponse, body) { })
                     }
-                    request.post(webhook, payload, function optionalCallback(_err, _httpResponse, body) {
-                    })
-                    socket.emit('updated', { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
+
+                    if (socket) {
+                      var fileData = fs.readFileSync(path).toString()
+                      var fileMeta = fileData.split("\n")[0].trim()
+                      socket.emit('updated', { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
+                    }
                   }
+
                 })
               }
 

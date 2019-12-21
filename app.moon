@@ -64,7 +64,7 @@ class extends lapis.Application
     if config._name == "production" then
       print(to_json(err) .. to_json(trace))
       @err = err
-      display_error_page 500
+      display_error_page(@, 500)
     else
       super err, trace
 
@@ -72,12 +72,12 @@ class extends lapis.Application
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   ----------------------------------------------------------------------------
-  display_error_page = (status=500, headers= {}) =>
+  display_error_page = (status=500, headers={}) =>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
     if error_page ~= nil then
       display_page(@, error_page), status: status
     else
-      render: "error_#{status}", status: status, headers: headers
+      render: "error_#{status}" , status: status, headers: headers
   ----------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
     slug = @params.slug if slug == nil
@@ -109,7 +109,7 @@ class extends lapis.Application
       if html ~= 'null' then
         html, status: status
       else
-        display_error_page 404
+        display_error_page(@, 404)
     else
       status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
   ------------------------------------------------------------------------------
