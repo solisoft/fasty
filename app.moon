@@ -96,9 +96,10 @@ class extends lapis.Application
     infos = page_info(db_name, @params.slug, @params.lang)
     infos = { 'page': {}, 'folder': {} } if infos == nil
 
+    @params.splat = "slug/#{@params.splat}" if table.getn(stringy.split(@params.splat, "/")) % 2 == 1
+
     if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
-      @params.splat = "slug/#{@params.splat}" if table.getn(stringy.split(@params.splat, "/")) % 2 == 1
       splat = splat_to_table(@params.splat) if @params.splat
       bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
 
