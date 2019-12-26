@@ -207,7 +207,7 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    content = dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content
     else
