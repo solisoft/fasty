@@ -98,9 +98,10 @@ class extends lapis.Application
 
     if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
+      @params.splat = "slug/#{@params.splat}" if table.getn(stringy.split(@params.splat, "/")) % 2 == 1
       splat = splat_to_table(@params.splat) if @params.splat
-
       bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
+
       @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
 
     html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
