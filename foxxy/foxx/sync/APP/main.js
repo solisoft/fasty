@@ -130,9 +130,9 @@ router.patch('/:token', function (req, res) {
         save_revision(null, object, data, 10)
         res.json(`Saved! ${collection} ${id} ${field}`)
       }
-      var h_settings = JSON.stringify(_settings.home).url_reset
+      var h_settings = JSON.stringify(_settings.home)
       if(h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
-      
+
     }
   } else {
     res.json({ error: true, reason: 'Bad Token' })
