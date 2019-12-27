@@ -96,11 +96,13 @@ class extends lapis.Application
     infos = page_info(db_name, @params.slug, @params.lang)
     infos = { 'page': {}, 'folder': {} } if infos == nil
 
+    @params.splat = "slug/#{@params.splat}" if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
+
     if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
       splat = splat_to_table(@params.splat) if @params.splat
-
       bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
+
       @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
 
     html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
@@ -205,7 +207,7 @@ class extends lapis.Application
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
         { "key": "#{key}" }
       )[1] .. "\n"
-    content = dynamic_replace("db_#{sub_domain}", html, global_data, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content
     else
