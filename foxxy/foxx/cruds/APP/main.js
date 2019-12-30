@@ -22,6 +22,7 @@ module.context.use(sessions);
 module.context.use(router);
 
 var clearCache = function() {
+  db.settings.update(_settings, { last_update: +new Date() })
   var h_settings = JSON.stringify(_settings.home).url_reset
   if(h_settings && h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
 }
