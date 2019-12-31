@@ -36,7 +36,6 @@ load_settings = () =>
     no_db[sub_domain] = true
   else
     if global_data[sub_domain] == nil or settings[sub_domain] == nil
-      print("Loading settings")
       global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
       global_data[sub_domain]['partials'] = {}
 

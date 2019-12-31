@@ -33,8 +33,7 @@ var typeCast = function(type, value) {
 var clearCache = function() {
   _settings = db.settings.firstExample();
   db.settings.update(_settings, { last_update: +new Date() })
-  var h_settings = JSON.stringify(_settings.home)
-  if(h_settings && h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
+  request({ method: "GET", url: '/admin/reset_all' })
 }
 
 var fieldsToData = function(fields, body, headers) {
