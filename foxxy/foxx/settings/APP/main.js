@@ -13,7 +13,7 @@ require("@arangodb/aql/cache").properties({ mode: "on" });
 
 const router = createRouter();
 
-const _settings = db.settings.firstExample();
+let _settings = db.settings.firstExample();
 
 const sessions = sessionsMiddleware({
   storage: jwtStorage({ secret: _settings.jwt_secret, ttl: 60 * 60 * 24 * 365 }),
@@ -28,6 +28,13 @@ var typeCast = function(type, value) {
   if(type == "integer") value = parseInt(value)
   if(type == "float") value = parseFloat(value)
   return value
+}
+
+var clearCache = function() {
+  _settings = db.settings.firstExample();
+  db.settings.update(_settings, { last_update: +new Date() })
+  var h_settings = JSON.stringify(_settings.home)
+  if(h_settings && h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
 }
 
 var fieldsToData = function(fields, body, headers) {
@@ -90,7 +97,10 @@ router.post('/:id', function (req, res) {
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
   catch(e) {}
-  if(errors.length == 0)db.settings.update(obj, data)
+
+  if(errors.length == 0) db.settings.update(obj, data)
+
+  clearCache()
   res.send({ success: true, errors });
 })
 .header('foxx-locale')
