@@ -138,6 +138,8 @@ load_redirection = (db_name, params) ->
       '@yield',
       "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
     )
+    html = html\gsub('@raw_yield', '')
+
     prepare_headers(html, redirection, params)
   else nil
 --------------------------------------------------------------------------------
