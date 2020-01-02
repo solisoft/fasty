@@ -44,6 +44,7 @@ const model = function () {
   var helpers = db._query(`FOR doc in helpers RETURN [doc._id, doc.shortcut]`).toArray()
   return {
     model: [
+      { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().required()", l: "Name" },
       { r: true, c: "1-3", n: "route", t: "string", j: "joi.string().required()", l: "Route" },
       { r: false, c: "1-3", n: "class", t: "string", j: "joi.any()", l: "Classe" },
       { r: false, c: "1-3", n: "type", t: "list", j: "joi.any()", l: "Type", d: [['spa', 'SPA'], ['helper', 'Helper']] },
@@ -55,7 +56,7 @@ const model = function () {
       read: ['developer', 'admin'],
       write: ['developer', 'admin']
     },
-    columns: [{ name: "route" }],
+    columns: [{ name: "name" }, { name: "route" }],
     //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
     //    values: { true: "online", false: "offline" },
     //    truncate: 20, uppercase: true, lowercase: true
