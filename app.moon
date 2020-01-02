@@ -35,11 +35,10 @@ load_settings = () =>
   if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true
   else
-    if global_data[sub_domain] == nil or settings[sub_domain] == nil
-      global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
-      global_data[sub_domain]['partials'] = {}
+    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
+    global_data[sub_domain]['partials'] = {}
 
-      settings[sub_domain] = global_data[sub_domain].settings[1]
+    settings[sub_domain] = global_data[sub_domain].settings[1]
 --------------------------------------------------------------------------------
 -- App
 class extends lapis.Application
@@ -63,12 +62,12 @@ class extends lapis.Application
       render: "error_#{status}" , status: status, headers: headers
   ----------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
-    slug = @params.slug if slug == nil
-    @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
+    slug          = @params.slug if slug == nil
+    @params.lang  = check_valid_lang(settings[sub_domain].langs, @params.lang)
     @session.lang = @params.lang
-    db_name = "db_#{sub_domain}"
-    redirection = load_redirection(db_name, @params)
-    current_page = load_page_by_slug(db_name, slug, @params.lang)
+    db_name       = "db_#{sub_domain}"
+    redirection   = load_redirection(db_name, @params)
+    current_page  = load_page_by_slug(db_name, slug, @params.lang)
 
     html = ''
     if redirection == nil then
