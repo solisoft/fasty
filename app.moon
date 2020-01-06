@@ -5,6 +5,7 @@ stringy = require 'stringy'
 console = require 'lapis.console'
 config  = require('lapis.config').get!
 
+import aqls from require 'lib.aqls'
 import check_valid_lang from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
@@ -34,26 +35,7 @@ load_settings = () =>
   if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true
   else
-    global_data[sub_domain] = aql("db_#{sub_domain}", '
-      LET g_settings = (FOR doc IN settings LIMIT 1 RETURN doc)
-      LET g_redirections = (FOR doc IN redirections RETURN doc)
-      LET g_trads = (FOR doc IN trads RETURN ZIP([doc.key], [doc.value]))
-      LET g_components = (
-        FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])
-      )
-      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
-      LET g_helpers = (
-        FOR h IN helpers
-          FOR p IN partials
-            FILTER h.partial_key == p._key
-            FOR a IN aqls
-              FILTER h.aql_key == a._key
-              RETURN ZIP([h.shortcut], [{ partial: p.slug, aql: a.slug }])
-      )
-      RETURN { components: g_components, settings: g_settings,
-        redirections: g_redirections, aqls: g_aqls,
-        trads: MERGE(g_trads), helpers: MERGE(g_helpers) }
-    ')[1]
+    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
     global_data[sub_domain]['partials'] = {}
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
@@ -80,12 +62,12 @@ class extends lapis.Application
       render: "error_#{status}" , status: status, headers: headers
   ----------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
-    slug = @params.slug if slug == nil
-    @params.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
+    slug          = @params.slug if slug == nil
+    @params.lang  = check_valid_lang(settings[sub_domain].langs, @params.lang)
     @session.lang = @params.lang
-    db_name = "db_#{sub_domain}"
-    redirection = load_redirection(db_name, @params)
-    current_page = load_page_by_slug(db_name, slug, @params.lang)
+    db_name       = "db_#{sub_domain}"
+    redirection   = load_redirection(db_name, @params)
+    current_page  = load_page_by_slug(db_name, slug, @params.lang)
 
     html = ''
     if redirection == nil then
