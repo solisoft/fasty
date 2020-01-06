@@ -9,8 +9,7 @@
     "license": "MIT",
     "main": "main.js",
     "scripts": {
-        "setup": "scripts/setup.js",
-        "send-mail": "scripts/send-mail.js"
+        "setup": "scripts/setup.js"
     },
 
     "tests": "test/**/*.js"
