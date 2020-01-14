@@ -111,3 +111,5 @@ config "db_production", ->
   pass  "password"
 EOM
 
+mkdir install_service
+mkdir scripts

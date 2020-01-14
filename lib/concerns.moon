@@ -271,10 +271,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
         if dataset == 'rest'
           db_data = from_json(http_get(args['url'], args['headers']))
-        if args['use_params']
+        if dataset == 'use_params' or args['use_params']
           db_data = table_deep_merge(db_data, { _params: args })
-
-        partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
 
         if dataset != 'do_not_eval'
           output = etlua2html(db_data, partial, params, global_data)
