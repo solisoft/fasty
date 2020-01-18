@@ -31,6 +31,8 @@ router.get('/:type', function (req, res) {
     }
   })
 
+  let aql_count = aql + " RETURN 1"
+
   if(req.queryParams.limit) {
     aql += " LIMIT @limit"
     bindvars['limit'] = parseInt(req.queryParams.limit)
@@ -67,9 +69,9 @@ router.get('/:type', function (req, res) {
     aql += " RETURN data"
   }
 
-  console.log(aql)
   let data = db._query(aql, bindvars).toArray()
+  let count = db._query(aql_count, bindvars)
 
-  res.json({ data, aql, bindvars })
+  res.json({ count, data, aql, bindvars })
 })
   .description("Fetch Data")
