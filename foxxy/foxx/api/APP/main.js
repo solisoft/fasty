@@ -11,7 +11,20 @@ module.context.use(router)
 // -----------------------------------------------------------------------------
 // GET /get
 router.get('/:type', function (req, res) {
-  let aql = "FOR data IN datasets FILTER data.type == @type"
+
+  let aql = ""
+
+  if (req.queryParams.search) {
+    let key = req.queryParams.search.split('@')[0]
+    let term = req.queryParams.search.split('@')[1]
+    aql = `FOR data IN FULLTEXT(datasets, '${key}', '${term}')`
+  } else {
+    aql = "FOR data IN datasets"
+  }
+
+  aql += " FILTER data.type == @type"
+
+  aql += " LET assets = (FOR asset IN uploads FILTER asset.object_id == data._id RETURN asset)"
 
   let bindvars = { type: req.pathParams.type }
   let bindvars_count = { type: req.pathParams.type }
@@ -19,7 +32,7 @@ router.get('/:type', function (req, res) {
   let i = 0
   _.each(req.queryParams, function (v, k) {
     i++
-    if (!_.includes(['fields', 'limit', 'offset', 'order'], k)) {
+    if (!_.includes(['fields', 'limit', 'offset', 'order', 'search'], k)) {
       aql += " FILTER data." + k + " == @params" + i + " "
 
       if (_.includes(["true", "false"], v)) {
@@ -37,12 +50,12 @@ router.get('/:type', function (req, res) {
 
   if(req.queryParams.limit) {
     aql += " LIMIT @limit"
-    bindvars['limit'] = parseInt(req.queryParams.limit)
+    bindvars.limit = parseInt(req.queryParams.limit)
   }
 
   if(req.queryParams.offset) {
     aql += ", @offset"
-    bindvars['offset'] = parseInt(req.queryParams.offset)
+    bindvars.offset = parseInt(req.queryParams.offset)
   }
 
   if(req.queryParams.order) {
@@ -55,25 +68,28 @@ router.get('/:type', function (req, res) {
         orders.push(order.slice(1) + ' DESC')
       }
     })
-    bindvars['order'] = orders.join(", ")
+    bindvars.order = orders.join(", ")
   }
 
   if (req.queryParams.fields) {
-    aql += " RETURN KEEP(data, "
+    aql += " RETURN { data: KEEP(data, "
     let fields_array = []
     _.each(req.queryParams.fields.split(","), function (field) {
       fields_array.push(`'${field}'`)
     })
     aql += fields_array.join(", ")
 
-    aql += ")"
+    aql += "), assets }"
   } else {
-    aql += " RETURN data"
+    aql += " RETURN { data, assets }"
   }
+
+  console.log(aql)
 
   let data = db._query(aql, bindvars).toArray()
   let count = db._query(aql_count, bindvars_count)._countTotal
 
-  res.json({ count, data, aql, bindvars })
+
+  res.json({ count, data })
 })
   .description("Fetch Data")
