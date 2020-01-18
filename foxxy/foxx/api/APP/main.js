@@ -14,6 +14,7 @@ router.get('/:type', function (req, res) {
   let aql = "FOR data IN datasets FILTER data.type == @type"
 
   let bindvars = { type: req.pathParams.type }
+  let bindvars_count = { type: req.pathParams.type }
 
   let i = 0
   _.each(req.queryParams, function (v, k) {
@@ -28,6 +29,7 @@ router.get('/:type', function (req, res) {
       }
 
       bindvars["params" + i] = v
+      bindvars_count["params" + i] = v
     }
   })
 
@@ -70,7 +72,7 @@ router.get('/:type', function (req, res) {
   }
 
   let data = db._query(aql, bindvars).toArray()
-  let count = db._query(aql_count, bindvars)
+  let count = db._query(aql_count, bindvars_count)._countTotal
 
   res.json({ count, data, aql, bindvars })
 })
