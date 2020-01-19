@@ -100,6 +100,16 @@ class extends lapis.Application
   -- need_a_db
   [need_a_db: '/need_a_db']: => render: true
   ------------------------------------------------------------------------------
+  -- robots.txt
+  [robots: '/robots.txt']: =>
+    if no_db[sub_domain] then redirect_to: 'need_a_db'
+    else
+      load_settings(@)
+      @params.lang  = @session.lang
+      @params.all   = '-'
+      @params.slug  = 'robots'
+      display_page(@)
+  ------------------------------------------------------------------------------
   -- root
   [root: '/(:lang)']: =>
     define_subdomain(@)
@@ -257,7 +267,6 @@ class extends lapis.Application
     all_domains = nil
     settings[sub_domain] = nil
     'ok'
-
   ------------------------------------------------------------------------------
   -- console (kinda irb console)
   [console: '/console']: console.make!

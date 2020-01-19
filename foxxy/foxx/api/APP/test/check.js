@@ -7,32 +7,33 @@ const { baseUrl } = module.context;
 
 describe("this service", () => {
   it("should return an valid response with no arguments", () => {
-    const response = request.get(baseUrl);
+    console.log(baseUrl)
+    const response = request.get(baseUrl + '/posts');
     expect(response.status).to.equal(200);
   });
 
   it("should return an valid response with limit argument", () => {
-    const response = request.get(baseUrl + "?limit=2");
+    const response = request.get(baseUrl + '/posts' + "?limit=2");
     expect(response.status).to.equal(200);
   });
 
-  it("should return an valid response with offset argument", () => {
-    const response = request.get(baseUrl + "?offset=2");
+  it("should return an valid response with limi & offset argument", () => {
+    const response = request.get(baseUrl + '/posts' + "?limit=2&offset=2");
     expect(response.status).to.equal(200);
   });
 
   it("should return an valid response with order argument", () => {
-    const response = request.get(baseUrl + "?order=_id,-_key");
+    const response = request.get(baseUrl + '/posts' + "?order=_id,-_key");
     expect(response.status).to.equal(200);
   });
 
   it("should return an valid response with fields argument", () => {
-    const response = request.get(baseUrl + "?fields=_key");
+    const response = request.get(baseUrl + '/posts' + "?fields=_key");
     expect(response.status).to.equal(200);
   });
 
   it("should return an valid response with filtering", () => {
-    const response = request.get(baseUrl + "?_key=abcd");
+    const response = request.get(baseUrl + '/posts' + "?_key=abcd");
     expect(response.status).to.equal(200);
   });
 
