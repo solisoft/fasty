@@ -72,16 +72,16 @@ router.get('/:type', function (req, res) {
   }
 
   if (req.queryParams.fields) {
-    aql += " RETURN { data: KEEP(data, "
+    aql += " RETURN MERGE(KEEP(data, "
     let fields_array = []
     _.each(req.queryParams.fields.split(","), function (field) {
       fields_array.push(`'${field}'`)
     })
     aql += fields_array.join(", ")
 
-    aql += "), assets }"
+    aql += "), { assets })"
   } else {
-    aql += " RETURN { data, assets }"
+    aql += " RETURN MERGE(data, { assets })"
   }
 
   console.log(aql)
