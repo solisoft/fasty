@@ -481,14 +481,13 @@ var Common = {
           timeout : 1000,
           pos     : 'bottom-right'
         });
-
         if(objID == "" && _.isEmpty(opts)) {
           objID = d.data._key
           if(path.split('/')[0] != 'datasets')
             path = path.split("/").length == 2 ? path.split("/")[1] : path
           route("/"+ path +"/" + objID + "/edit")
         }
-        if(!_.isEmpty(opts)) {
+        if(!_.isEmpty(opts) && opts.element_id == undefined) {
           riot.mount("#"+opts.id, _.last(formID.split("_")) + "_crud_index", opts)
         }
       }
