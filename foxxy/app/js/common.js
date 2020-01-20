@@ -151,7 +151,7 @@ var Common = {
           if(l.t === "tags") {
             _html +='<select name="'+l.n+'" style="width:100%" class="select_tag" multiple="multiple">'
             var tags = l.d[0]
-
+            console.log(l.d)
             tags = _.filter(tags, function(t) { return t != "undefined" })
             _.uniq(tags).forEach(function(v) {
               if(l.tr) v = v[window.localStorage.getItem('foxx-locale')]
