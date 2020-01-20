@@ -47,6 +47,8 @@ var models = function () {
 var list = function (aql, locale) {
   bindVars = {}
   if (aql.indexOf('@lang') > 0) { bindvars.lang = locale; }
+  console.log(aql)
+  console.log(bindvars)
   return db._query(aql, bindVars).toArray()
 }
 
