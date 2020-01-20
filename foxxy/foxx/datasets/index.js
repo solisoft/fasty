@@ -44,8 +44,10 @@ var models = function () {
   `).toArray()[0]
 }
 
-var list = function (aql) {
-  return db._query(aql).toArray()
+var list = function (aql, locale) {
+  bindVars = {}
+  if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }); }
+  return db._query(aql, bindVars).toArray()
 }
 
 var save_revision = function (uid, object, data, max) {
@@ -285,10 +287,13 @@ router.get('/:service/sub/:sub_service/:id', function (req, res) {
 router.get('/:service/fields', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.model
-  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d) } })
+  _.each(fields, function (field, i) {
+    if (field.d) { fields[i].d = list(field.d, req.headers['foxx-locale']) }
+  })
   res.send({ fields: fields });
 })
 .header('X-Session-Id')
+.header('foxx-locale')
 .description('Get all fields to build form');
 
 ////////////////////////////////////////////////////////////////////////////////
