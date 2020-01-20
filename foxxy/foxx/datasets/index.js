@@ -45,11 +45,11 @@ var models = function () {
 }
 
 var list = function (aql, locale) {
-  bindVars = {}
+  let bindvars = {}
   if (aql.indexOf('@lang') > 0) { bindvars.lang = locale; }
   console.log(aql)
   console.log(bindvars)
-  return db._query(aql, bindVars).toArray()
+  return db._query(aql, bindvars).toArray()
 }
 
 var save_revision = function (uid, object, data, max) {
