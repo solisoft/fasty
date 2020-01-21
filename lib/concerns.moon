@@ -101,7 +101,7 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true) ->
   html = to_json(data)
   if data
-    page_builder = data.layout.page_builder or 'page'
+    page_builder = (data.layout and data.layout.page_builder) or 'page'
     page_partial = load_document_by_slug(db_name, page_builder, 'partials')
     global_data.page_partial = page_partial
     if uselayout
@@ -138,12 +138,15 @@ load_redirection = (db_name, params) ->
       '@yield',
       "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
     )
+    html = html\gsub('@raw_yield', '')
+
     prepare_headers(html, redirection, params)
   else nil
 --------------------------------------------------------------------------------
-prepare_bindvars = (splat, aql_request) ->
+prepare_bindvars = (splat, aql_request, locale = nil) ->
   bindvar = { }
   bindvar["page"] = 1 if aql_request\find('@page')
+  bindvar["lang"] = locale if locale and aql_request\find('@lang')
   for k, v in pairs(splat) do
     v = unescape(tostring(v))
     v = tonumber(v) if v\match('^%d+$')
@@ -191,7 +194,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         object = aql(db_name, request, { key: 'datasets/' .. item })[1]
         output = etlua2html(object[dataset].json, global_data.page_partial, params, global_data)
       else
-        output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
+        if params.og_data
+          output = etlua2html(params.og_data[item], global_data.page_partial, params, global_data)
 
     -- {{ page | <slug or field> (| <datatype>) }}
     -- e.g. {{ page | set_a_slug_here }}
@@ -267,10 +271,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
         if dataset == 'rest'
           db_data = from_json(http_get(args['url'], args['headers']))
-        if args['use_params']
+        if dataset == 'use_params' or args['use_params']
           db_data = table_deep_merge(db_data, { _params: args })
-
-        partial.item.html = dynamic_replace(db_name, partial.item.html, global_data, history, params)
 
         if dataset != 'do_not_eval'
           output = etlua2html(db_data, partial, params, global_data)

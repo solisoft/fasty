@@ -91,7 +91,6 @@ var Common = {
             _html += '<label for="" class="uk-form-label">'+ title +'</label>'
 
           var value = obj[l.n]
-
           if(l.tr && obj[l.n]) value = obj[l.n][window.localStorage.getItem('foxx-locale')]
           if (value === undefined) value = ""
 
@@ -151,9 +150,7 @@ var Common = {
           }
           if(l.t === "tags") {
             _html +='<select name="'+l.n+'" style="width:100%" class="select_tag" multiple="multiple">'
-            var tags = l.d[0]
-            if(l.tr) tags = _.flatten(_.compact(_.map(l.d[0], function(t) { return t[window.localStorage.getItem('foxx-locale')]})))
-            tags = _.filter(tags, function(t) { return t != "undefined" })
+            var tags = _.filter(l.d[0], function(t) { return t != "undefined" })
             _.uniq(tags).forEach(function(v) {
               if(v != 'undefined' || v != '') {
                 selected = ""
@@ -242,6 +239,9 @@ var Common = {
       $(formId+" #" + v[0]).val(v[1])
     })
     html_editors.forEach(function (e, i) {
+      if(_.isString(e[1])) {
+        try { e[1] = JSON.parse(e[1]) } catch(e) {}
+      }
       $('#html_editor_' + e[0]).contentEditor({ value: e[1].html || '' })
       $("#" + e[0]).val(JSON.stringify(e[1]))
     })
@@ -324,14 +324,13 @@ var Common = {
           timeout : 1000,
           pos     : 'bottom-right'
         });
-
         if(objID == "" && _.isEmpty(opts)) {
           objID = d.data._key
           if(path.split('/')[0] != 'datasets')
             path = path.split("/").length == 2 ? path.split("/")[1] : path
           route("/"+ path +"/" + objID + "/edit")
         }
-        if(!_.isEmpty(opts)) {
+        if(!_.isEmpty(opts) && opts.element_id == undefined) {
           riot.mount("#"+opts.id, _.last(formID.split("_")) + "_crud_index", opts)
         }
       }

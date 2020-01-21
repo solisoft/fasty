@@ -14,6 +14,7 @@ var socket = null
 var fs = require('fs')
 var dirname = process.cwd()
 var fullname = ""
+var webhook = null
 var domain = null
 var sync = null
 var updated_by_users = []
@@ -134,13 +135,25 @@ var check_json = function(json, folder, fullname, api) {
                 }
                 request.patch(params, function optionalCallback(_err, _httpResponse, body) {
                   console.log(body.green)
-                  notifier.notify("Fasty :: " + body)
-                  if(socket && body.indexOf("Saved! ") == 1) {
-                    var fileData = fs.readFileSync(path).toString()
-                    var fileMeta = fileData.split("\n")[0].trim()
+                  if (body.indexOf("Saved! ") == 1) {
+                    notifier.notify("Fasty :: " + body)
 
-                    socket.emit('updated', { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
+                    if (webhook) {
+                      var payload = { "text": fullname + " :: " + dirname + body }
+                      request.post({
+                        headers : { 'Content-type' : 'application/json' },
+                        url: webhook,
+                        form : { payload: JSON.stringify(payload)}
+                      }, function optionalCallback(_err, _httpResponse, body) { })
+                    }
+
+                    if (socket) {
+                      var fileData = fs.readFileSync(path).toString()
+                      var fileMeta = fileData.split("\n")[0].trim()
+                      socket.emit('updated', { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
+                    }
                   }
+
                 })
               }
 
@@ -159,6 +172,7 @@ if(argv._.length != 1) {
 } else {
   fullname = tokens['name']
   domain = tokens['domains'][argv._[0]].domain
+  webhook = tokens['domains'][argv._[0]].webhook
   var token  = tokens['domains'][argv._[0]].token
   sync   = tokens['domains'][argv._[0]].sync
 

@@ -6,7 +6,7 @@ config = require('lapis.config').get!
 jwt       = ''
 db_config = {}
 --------------------------------------------------------------------------------
-http_request = (url, method, body, headers)->
+http_request = (url, method, body, headers) ->
   http.simple { url: url, method: method, body: body, headers: headers }
 --------------------------------------------------------------------------------
 list_databases = () ->

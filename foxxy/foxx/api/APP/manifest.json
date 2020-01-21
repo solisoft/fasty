@@ -1,0 +1,13 @@
+{
+    "name": "api",
+    "version": "0.0.1",
+    "description": "sync",
+    "engines": {
+        "arangodb": "^3.0.0"
+    },
+    "author": "OB",
+    "license": "MIT",
+    "main": "main.js",
+    "scripts": { },
+    "tests": "test/**/*.js"
+}
