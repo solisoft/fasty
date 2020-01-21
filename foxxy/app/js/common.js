@@ -17,15 +17,10 @@ var Common = {
     }
   },
   startEditor: function(name, mode, id) {
-    console.log("Editor", name)
     var editor = ace.edit(name)
+    editor.setTheme("ace/theme/twilight");
     editor.getSession().setMode(mode)
-    editor.setOptions({
-      maxLines: Infinity,
-      //enableEmmet: mode == "ace/mode/html",
-      theme: 'ace/theme/twilight',
-      tabSize: 2, useSoftTabs: true
-    })
+    editor.setOptions({ tabSize: 2, useSoftTabs: true })
     editor.getSession().setUseWrapMode(true)
     editor.getSession().setValue(unescape($("#"+id).val()))
     editor.getSession().on('change', function(){ $("#"+id).val(editor.getSession().getValue()); })
