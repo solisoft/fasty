@@ -44,8 +44,11 @@ var models = function () {
   `).toArray()[0]
 }
 
-var list = function (aql) {
-  return db._query(aql).toArray()
+var list = function (aql, locale) {
+  let bindvars = {}
+  if (aql.indexOf('@lang') > 0) { bindvars.lang = locale; }
+
+  return db._query(aql, bindvars).toArray()
 }
 
 var save_revision = function (uid, object, data, max) {
@@ -254,7 +257,7 @@ router.get('/:service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.model
-  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d) } })
+  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
   res.send({
     fields: fields,
     model: JSON.parse(models()[req.pathParams.service].javascript),
@@ -262,6 +265,7 @@ router.get('/:service/:id', function (req, res) {
   });
 })
 .header('X-Session-Id')
+.header('foxx-locale')
 .description('Returns object within ID');
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -270,7 +274,7 @@ router.get('/:service/sub/:sub_service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.sub_models[req.pathParams.sub_service]
-  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d) } })
+  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
   res.send({
     fields: fields,
     model: JSON.parse(models()[req.pathParams.service].javascript),
@@ -285,10 +289,13 @@ router.get('/:service/sub/:sub_service/:id', function (req, res) {
 router.get('/:service/fields', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.model
-  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d) } })
+  _.each(fields, function (field, i) {
+    if (field.d) { fields[i].d = list(field.d, req.headers['foxx-locale']) }
+  })
   res.send({ fields: fields });
 })
 .header('X-Session-Id')
+.header('foxx-locale')
 .description('Get all fields to build form');
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -552,7 +559,7 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
 .description('Update an object.');
 
 ////////////////////////////////////////////////////////////////////////////////
-// PATCH /datasets/:service/:id/:field/toggl
+// PATCH /datasets/:service/:id/:field/toggle
 router.patch('/:service/:id/:field/toggle', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)

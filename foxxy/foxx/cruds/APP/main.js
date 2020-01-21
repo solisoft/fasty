@@ -9,9 +9,10 @@ const createRouter = require('@arangodb/foxx/router');
 const sessionsMiddleware = require('@arangodb/foxx/sessions');
 const jwtStorage = require('@arangodb/foxx/sessions/storages/jwt');
 require("@arangodb/aql/cache").properties({ mode: "on" });
+const request = require('@arangodb/request');
 
 const router = createRouter();
-const _settings = db.settings.firstExample();
+let _settings = db.settings.firstExample();
 
 const sessions = sessionsMiddleware({
   storage: jwtStorage({ secret: _settings.jwt_secret, ttl: 60 * 60 * 24 * 365 }),
@@ -22,15 +23,18 @@ module.context.use(sessions);
 module.context.use(router);
 
 var clearCache = function() {
-  var h_settings = JSON.stringify(_settings.home).url_reset
-  if(h_settings && h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
+  _settings = db.settings.firstExample();
+  db.settings.update(_settings, { last_update: +new Date() })
+  _settings = db.settings.firstExample();
+  db.settings.update(_settings, { last_update: +new Date() });
+  request({ method: "GET", url: '/admin/reset_all' });
 }
 
 var typeCast = function(type, value) {
   var value = unescape(value)
-  if(type == "integer") value = parseInt(value)
-  if(type == "float")   value = parseFloat(value)
-  if (type == "html") value = JSON.parse(value)
+  if (type == "integer")  value = parseInt(value)
+  if (type == "float")    value = parseFloat(value)
+  if (type == "html")     value = JSON.parse(value)
   return value
 }
 

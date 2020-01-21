@@ -1,0 +1,15 @@
+{
+    "name": "Dashboard",
+    "version": "0.0.7",
+    "description": "Auth",
+    "engines": {
+        "arangodb": "^3.0.0"
+    },
+    "author": "OB",
+    "license": "MIT",
+    "main": "main.js",
+    "scripts": {
+    },
+
+    "tests": "test/**/*.js"
+}

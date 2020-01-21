@@ -6,7 +6,7 @@ config = require('lapis.config').get!
 jwt       = ''
 db_config = {}
 --------------------------------------------------------------------------------
-http_request = (url, method, body, headers)->
+http_request = (url, method, body, headers) ->
   http.simple { url: url, method: method, body: body, headers: headers }
 --------------------------------------------------------------------------------
 list_databases = () ->
@@ -61,7 +61,7 @@ with_params = (db_name, method, handle, params)->
     to_json(params), { Authorization: "bearer #{jwt}" }
   )
   from_json(body)
-
+--------------------------------------------------------------------------------
 without_params = (db_name, method, handle)->
   body, status_code, headers = http_request(
     db_config.url .. "_db/#{db_name}/_api/document/" .. handle, method,

@@ -365,6 +365,7 @@
       \{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \},
       \{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \},
       \{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \}
+      \{ "r": true, "c": "1-1", "n": "html_content", "t": "wysiwyg", "j": "joi.any()", "l": "Wysiwyg editor" \}
     ],
     "columns": [
       \{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,
@@ -373,6 +374,7 @@
       \}
     ],
     "act_as_tree": true,
+    "sortable": true,
     "revisions": 10,
     "publishable": true,
     "slug": ["title"],
@@ -388,11 +390,5 @@
   <style>
     dataset_helper pre { padding: 0; border: none; border-radius: 4px; }
   </style>
-  <script>
-    this.on('updated', function() {
-      document.querySelectorAll('pre code').forEach(function(block) {
-        hljs.highlightBlock(block);
-      });
-    })
-  </script>
+
 </dataset_helper>

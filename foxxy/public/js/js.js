@@ -246,7 +246,6 @@ var Common = {
             _html += '<label for="" class="uk-form-label">'+ title +'</label>'
 
           var value = obj[l.n]
-
           if(l.tr && obj[l.n]) value = obj[l.n][window.localStorage.getItem('foxx-locale')]
           if (value === undefined) value = ""
 
@@ -306,9 +305,7 @@ var Common = {
           }
           if(l.t === "tags") {
             _html +='<select name="'+l.n+'" style="width:100%" class="select_tag" multiple="multiple">'
-            var tags = l.d[0]
-            if(l.tr) tags = _.flatten(_.compact(_.map(l.d[0], function(t) { return t[window.localStorage.getItem('foxx-locale')]})))
-            tags = _.filter(tags, function(t) { return t != "undefined" })
+            var tags = _.filter(l.d[0], function(t) { return t != "undefined" })
             _.uniq(tags).forEach(function(v) {
               if(v != 'undefined' || v != '') {
                 selected = ""
@@ -397,6 +394,9 @@ var Common = {
       $(formId+" #" + v[0]).val(v[1])
     })
     html_editors.forEach(function (e, i) {
+      if(_.isString(e[1])) {
+        try { e[1] = JSON.parse(e[1]) } catch(e) {}
+      }
       $('#html_editor_' + e[0]).contentEditor({ value: e[1].html || '' })
       $("#" + e[0]).val(JSON.stringify(e[1]))
     })
@@ -479,14 +479,13 @@ var Common = {
           timeout : 1000,
           pos     : 'bottom-right'
         });
-
         if(objID == "" && _.isEmpty(opts)) {
           objID = d.data._key
           if(path.split('/')[0] != 'datasets')
             path = path.split("/").length == 2 ? path.split("/")[1] : path
           route("/"+ path +"/" + objID + "/edit")
         }
-        if(!_.isEmpty(opts)) {
+        if(!_.isEmpty(opts) && opts.element_id == undefined) {
           riot.mount("#"+opts.id, _.last(formID.split("_")) + "_crud_index", opts)
         }
       }
@@ -611,6 +610,8 @@ module.exports = Common;
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
   ".fasty.ovh": "https://fasty.ovh/_db/",
+  "office.fasty.ovh": "http://office.fasty.ovh:8530/_db/",
+  "afrikrea.fasty.ovh": "/_db",
   /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
   ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
 };
@@ -3240,12 +3241,7 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
 
 
 
-riot.tag2('dataset_helper', '<hr> <h4>Data definition sample</h4> <pre><code class="json">\\{\n    "model": [\n      \\{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \\},\n      \\{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \\},\n      \\{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \\},\n      \\{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().format(\'YYYY-MM-DD\').raw().required()", "l": "Published_at" \\},\n      \\{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \\},\n      \\{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",\n        "d": "d": "FOR doc IN datasets FILTER doc.type == \'authors\' RETURN [doc._key, CONCAT(doc.ln, \' \', doc.fn)]"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \\},\n      \\{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",\n        "d": "LET tags = (FOR doc IN datasets FILTER doc.type==\'books\' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \\},\n      \\{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \\},\n      \\{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \\},\n      \\{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \\},\n      \\{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \\},\n      \\{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \\}\n    ],\n    "columns": [\n      \\{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,\n        "values": \\{ "true": "online", "false": "offline" \\},\n        "truncate": 20, "uppercase": true, "lowercase": true\n      \\}\n    ],\n    "act_as_tree": true,\n    "revisions": 10,\n    "publishable": true,\n    "slug": ["title"],\n    "sort": "SORT doc.order ASC",\n    "search": ["title", "barcode", "desc"],\n    "includes": \\{\n      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",\n      "merges": ", customer: c "\n    \\},\n    "timestamps": true\n  \\}\n  </code></pre>', 'dataset_helper pre { padding: 0; border: none; border-radius: 4px; }', '', function(opts) {
-    this.on('updated', function() {
-      document.querySelectorAll('pre code').forEach(function(block) {
-        hljs.highlightBlock(block);
-      });
-    })
+riot.tag2('dataset_helper', '<hr> <h4>Data definition sample</h4> <pre><code class="json">\\{\n    "model": [\n      \\{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \\},\n      \\{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \\},\n      \\{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \\},\n      \\{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().format(\'YYYY-MM-DD\').raw().required()", "l": "Published_at" \\},\n      \\{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \\},\n      \\{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",\n        "d": "d": "FOR doc IN datasets FILTER doc.type == \'authors\' RETURN [doc._key, CONCAT(doc.ln, \' \', doc.fn)]"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \\},\n      \\{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",\n        "d": "LET tags = (FOR doc IN datasets FILTER doc.type==\'books\' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \\},\n      \\{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \\},\n      \\{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \\},\n      \\{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \\},\n      \\{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \\},\n      \\{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \\}\n      \\{ "r": true, "c": "1-1", "n": "html_content", "t": "wysiwyg", "j": "joi.any()", "l": "Wysiwyg editor" \\}\n    ],\n    "columns": [\n      \\{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,\n        "values": \\{ "true": "online", "false": "offline" \\},\n        "truncate": 20, "uppercase": true, "lowercase": true\n      \\}\n    ],\n    "act_as_tree": true,\n    "sortable": true,\n    "revisions": 10,\n    "publishable": true,\n    "slug": ["title"],\n    "sort": "SORT doc.order ASC",\n    "search": ["title", "barcode", "desc"],\n    "includes": \\{\n      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",\n      "merges": ", customer: c "\n    \\},\n    "timestamps": true\n  \\}\n  </code></pre>', 'dataset_helper pre { padding: 0; border: none; border-radius: 4px; }', '', function(opts) {
 });
 });
 
