@@ -49,8 +49,9 @@ const model = function() {
       { r: true, c: "1-1", n: "i_css", t: "code:text", j: "joi.any()", l: "Included CSS" },
       { r: true, c: "1-1", n: "scss", t: "code:scss", j: "joi.any()", l: "CSS/Sass" },
       { tab: "JS" },
-      { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.any()", l: "JS" },
-      { r: true, c: "1-1", n: "i_js", t: "code:text", j: "joi.any()", l: "Included JS", endtab: true }
+      { r: true, c: "1-1", n: "i_js", t: "code:text", j: "joi.any()", l: "Included JS" },
+      { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.any()", l: "JS", endtab: true }
+
     ],
     columns: [
       { name: "name" },
