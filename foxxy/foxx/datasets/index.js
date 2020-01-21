@@ -236,7 +236,7 @@ router.get('/:service/search/:term', function (req, res) {
     "fields": _.flatten(fields)
   }
   var aql = `
-  FOR doc IN FULLTEXT(datasets, 'search.${locale}', @term)
+  FOR doc IN FULLTEXT(datasets, 'search', @term)
     FILTER doc.type == @type
     LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
     ${order} ${includes}

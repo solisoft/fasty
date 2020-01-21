@@ -7,6 +7,7 @@ const config = require('./config.js')();
 const _ = require('lodash');
 
 const createRouter = require('@arangodb/foxx/router');
+const request = require('@arangodb/request');
 const sessionsMiddleware = require('@arangodb/foxx/sessions');
 const jwtStorage = require('@arangodb/foxx/sessions/storages/jwt');
 require("@arangodb/aql/cache").properties({ mode: "on" });
