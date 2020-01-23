@@ -662,6 +662,19 @@ router.put('/:service/orders/:from/:to', function (req, res) {
 
   collection.update(doc._key, { order: to })
 
+  let docs = db._query(
+    `FOR doc IN datasets
+      ${filter_by_folder}
+      FILTER doc.type == @type SORT doc.order RETURN doc`, _.merge({
+        type: req.pathParams.service
+      }, folder_params)).toArray()
+
+  let i = 0;
+  _.each(docs, function(doc) {
+    collection.update(doc._key, { order: i });
+    i++;
+  })
+
   res.send({ success: true });
 })
   .header('foxx-locale')
