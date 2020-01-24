@@ -21,3 +21,4 @@ cypress/videos
 *.lua
 staging-*
 dump/
+load*.sh
