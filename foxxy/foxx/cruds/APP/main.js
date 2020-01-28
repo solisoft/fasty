@@ -370,7 +370,21 @@ router.put('/:service/orders/:from/:to', function (req, res) {
     )
   }
 
-  collection.update(doc._key, { order: to })
+  collection.update(doc._key, { order: to }, { waitForSync: true })
+
+  let docs = db._query(
+    `FOR doc IN @@collection
+      ${filter_by_folder}
+      SORT doc.order RETURN doc`, _.merge({
+        "@collection": req.pathParams.service
+      }, folder_params)).toArray()
+
+  let i = 0
+  _.each(docs, function(document) {
+    collection.update(document._key, { order: i });
+    i++;
+  })
+
   clearCache()
   res.send({ success: true });
 })

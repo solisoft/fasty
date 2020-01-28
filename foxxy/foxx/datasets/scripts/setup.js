@@ -7,3 +7,8 @@ function create_collection(collection) {
 
 create_collection('activities');
 create_collection('datasets');
+
+db._collection('datasets').ensureIndex({
+  type: 'fulltext',
+  fields: ['search']
+});

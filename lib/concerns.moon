@@ -134,13 +134,14 @@ load_redirection = (db_name, params) ->
   redirection = aql(db_name, request, { slug: params.slug })[1]
 
   if redirection != nil then
-    html = redirection.layout.html\gsub(
-      '@yield',
-      "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
-    )
-    html = html\gsub('@raw_yield', '')
+    if redirection.type == "spa"
+      html = redirection.layout.html\gsub(
+        '@yield',
+        "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
+      )
+      html = html\gsub('@raw_yield', '')
 
-    prepare_headers(html, redirection, params)
+      prepare_headers(html, redirection, params)
   else nil
 --------------------------------------------------------------------------------
 prepare_bindvars = (splat, aql_request, locale = nil) ->
