@@ -236,7 +236,7 @@ router.get('/:service/search/:term', function (req, res) {
     "fields": _.flatten(fields)
   }
   var aql = `
-  FOR doc IN FULLTEXT(datasets, 'search.${locale}', @term)
+  FOR doc IN FULLTEXT(datasets, 'search', @term)
     FILTER doc.type == @type
     LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
     ${order} ${includes}
@@ -661,6 +661,19 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   }
 
   collection.update(doc._key, { order: to })
+
+  let docs = db._query(
+    `FOR doc IN datasets
+      ${filter_by_folder}
+      FILTER doc.type == @type SORT doc.order RETURN doc`, _.merge({
+        type: req.pathParams.service
+      }, folder_params)).toArray()
+
+  let i = 0;
+  _.each(docs, function(doc) {
+    collection.update(doc._key, { order: i });
+    i++;
+  })
 
   res.send({ success: true });
 })

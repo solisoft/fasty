@@ -47,10 +47,10 @@ const model = function () {
       { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().required()", l: "Name" },
       { r: true, c: "1-3", n: "route", t: "string", j: "joi.string().required()", l: "Route" },
       { r: false, c: "1-3", n: "class", t: "string", j: "joi.any()", l: "Classe" },
-      { r: false, c: "1-3", n: "type", t: "list", j: "joi.any()", l: "Type", d: [['spa', 'SPA'], ['helper', 'Helper']] },
-      { r: true, c: "1-3", n: "spa_id", t: "list", j: "joi.any()", l: "Single Page Application", d: spas },
-      { r: false, c: "1-3", n: "helper_id", t: "list", j: "joi.any()", l: "Helper", d: helpers },
-      { r: false, c: "1-3", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: layouts }
+      { r: false, c: "1-3", n: "type", t: "list", j: "joi.any()", l: "Type", d: [['spa', 'SPA']] },
+      { r: true, c: "1-2", n: "spa_id", t: "list", j: "joi.any()", l: "Single Page Application", d: spas },
+      //{ r: false, c: "1-3", n: "helper_id", t: "list", j: "joi.any()", l: "Helper", d: helpers },
+      { r: false, c: "1-2", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: layouts }
     ],
     roles: {
       read: ['developer', 'admin'],
@@ -63,12 +63,12 @@ const model = function () {
     //  }, ...
     //],
     //sort: "SORT doc.order ASC",
-    //search: ["title", "barcode", "desc"],
+    search: ["name"],
     //includes: {
     //  conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
     //  merges: ", customer: c "
     //},
-    //timestamps: true,
+    timestamps: true,
     //
     // 1-n relations
     // Don't forget to create your collection in setup.js

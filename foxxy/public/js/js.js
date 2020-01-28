@@ -172,15 +172,10 @@ var Common = {
     }
   },
   startEditor: function(name, mode, id) {
-    console.log("Editor", name)
     var editor = ace.edit(name)
+    editor.setTheme("ace/theme/twilight");
     editor.getSession().setMode(mode)
-    editor.setOptions({
-      maxLines: Infinity,
-      //enableEmmet: mode == "ace/mode/html",
-      theme: 'ace/theme/twilight',
-      tabSize: 2, useSoftTabs: true
-    })
+    editor.setOptions({ tabSize: 2, useSoftTabs: true })
     editor.getSession().setUseWrapMode(true)
     editor.getSession().setValue(unescape($("#"+id).val()))
     editor.getSession().on('change', function(){ $("#"+id).val(editor.getSession().getValue()); })
@@ -609,11 +604,7 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  "office.fasty.ovh": "http://office.fasty.ovh:8530/_db/",
-  "afrikrea.fasty.ovh": "/_db",
-  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
-  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
+  ".fasty.ovh": "https://fasty.ovh/_db"
 };
 
 module.exports = Config;
