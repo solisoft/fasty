@@ -14,7 +14,7 @@ For running only dev mode : `docker-compose up web --build`
 
 For watching / compiling *.moon files : `dc exec cms moonc -w  **/*.moon`
 
-It will launch the lapis instance + an ArangoDB one
+It will launch the Lapis instance + an ArangoDB one
 
 * To access ArangoDB UI : `http://localhost:8530`
 * To access Foxxy app : `http://demo.127.0.0.1.xip.io:8080/static/admin`
