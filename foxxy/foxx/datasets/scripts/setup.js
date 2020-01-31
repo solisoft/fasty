@@ -12,3 +12,8 @@ db._collection('datasets').ensureIndex({
   type: 'fulltext',
   fields: ['search']
 });
+
+db._collection('datasets').ensureIndex({
+  type: 'skiplist',
+  fields: ['type']
+});
