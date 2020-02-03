@@ -2,7 +2,7 @@
 
 https://fasty.ovh
 
-A CMS built on top of openresty/lapis & arangodb
+A CMS built on top of OpenResty/Lapis & ArangoDB
 
 # Installation
 
@@ -14,7 +14,7 @@ For running only dev mode : `docker-compose up web --build`
 
 For watching / compiling *.moon files : `dc exec cms moonc -w  **/*.moon`
 
-It will launch the lapis instance + an arangoDB one
+It will launch the Lapis instance + an ArangoDB one
 
 * To access ArangoDB UI : `http://localhost:8530`
 * To access Foxxy app : `http://demo.127.0.0.1.xip.io:8080/static/admin`
@@ -41,7 +41,7 @@ Create a database called `db_demo` and install services on it :
 
 * [ArangoDB](https://arangodb.com)
 * [Lapis](https://leafo.net/lapis/)
-* [Openresty](https://openresty.org/)
+* [OpenResty](https://openresty.org/)
 * [Foxxy](https://foxxy.ovh/)
 
 # Benchmarks

@@ -32,6 +32,7 @@ prepare_headers = (html, data, params)->
     headers ..= "<meta property=\"og:type\" content=\"#{data.item.og_type[params.lang]}\" />"
   if(data.item.canonical and data.item.canonical[params.lang])
     headers ..= "<link rel=\"canonical\" href=\"#{data.item.canonical[params.lang]}\" />"
+    headers ..= "<meta property=\"og:url\" content=\"#{data.item.canonical[params.lang]}\" />"
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
 etlua2html = (json, partial, params, global_data) ->

@@ -60,14 +60,14 @@ deploy_site = (sub_domain, settings) ->
   db_config = require('lapis.config').get("db_#{config._name}")
   path = "dump/#{sub_domain}/"
   os.execute("mkdir -p #{path}")
-  home = from_json(settings[1].home)
+  home = from_json(settings.home)
 
-  command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection uploads --collection folder_path --collection folders --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.url} --output-directory #{path} --overwrite true"
+  command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection uploads --collection folder_path --collection folders --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint} --output-directory #{path} --overwrite true"
   command ..= " --collection datasets" if home['deploy_datasets']
 
   os.execute(command)
 
-  os.execute("arangorestore --include-system-collections true --server.database #{settings.deploy_secret} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.url}  --input-directory #{path} --overwrite true")
+  os.execute("arangorestore --include-system-collections true --server.database #{settings.deploy_secret} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint}  --input-directory #{path} --overwrite true")
   os.execute("rm -Rf #{path}")
 --------------------------------------------------------------------------------
 install_script = (sub_domain, name) ->
