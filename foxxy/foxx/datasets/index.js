@@ -274,7 +274,7 @@ router.get('/:service/sub/:sub_service/:id', function (req, res) {
   const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.sub_models[req.pathParams.sub_service]
-  _.each(fields, function (field, i) { if (field.d) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
+  _.each(fields, function (field, i) { if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
   res.send({
     fields: fields,
     model: JSON.parse(models()[req.pathParams.service].javascript),
@@ -290,7 +290,7 @@ router.get('/:service/fields', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   let fields = object.model
   _.each(fields, function (field, i) {
-    if (field.d) { fields[i].d = list(field.d, req.headers['foxx-locale']) }
+    if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) }
   })
   res.send({ fields: fields });
 })
