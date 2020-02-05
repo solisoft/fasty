@@ -135,7 +135,7 @@ load_redirection = (db_name, params) ->
   redirection = aql(db_name, request, { slug: params.slug })[1]
 
   if redirection ~= nil then
-    if redirection.type == "spa"
+    if redirection.item.type == "spa"
       html = redirection.layout.html\gsub(
         '@yield',
         "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
