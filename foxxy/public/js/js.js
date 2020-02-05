@@ -183,6 +183,19 @@ var Common = {
     return editor;
   },
 
+  checkConditions: function checkConditions(fields, formId) {
+    _.each(fields, function (field) {
+
+      if (field.if) {
+        if ($('#' + field.if[0]).val() != field.if[1]) {
+          $('#field_' + field.n).hide()
+        } else {
+          $('#field_' + field.n).show()
+        }
+      }
+    })
+  },
+
   buildForm: function buildForm(obj, fields, formId, back_str, callback) {
 
     var html = ""
@@ -198,6 +211,7 @@ var Common = {
     var tab_last_id = ''
     var y = 0
     var _html = ''
+
     fields.forEach(function(l, i) {
       if (l.tab) {
         if (y > 0) html += "</div>"
@@ -226,8 +240,11 @@ var Common = {
 
           var hidden = ''
           if(l.t === 'hidden') hidden = 'uk-hidden'
-          _html += '<div class="'+ l.c + ' ' + hidden +'">'
+
+          _html += '<div class="' + l.c + ' ' + hidden + '" id="field_' + l.n + '">'
+
           var title = l.l
+
           if (_.isString(validation)) {
             if (validation.indexOf('required') > 0) {
               title = "<strong>" + title + "*</strong>"
@@ -237,7 +254,8 @@ var Common = {
               title = "<strong>" + title + "*</strong>"
             }
           }
-          if(!((l.t === "file" || l.t === "image") && obj._id === undefined))
+
+          if (!((l.t === "file" || l.t === "image") && obj._id === undefined))
             _html += '<label for="" class="uk-form-label">'+ title +'</label>'
 
           var value = obj[l.n]
@@ -379,15 +397,18 @@ var Common = {
 
     html += '<hr><div class="uk-grid uk-grid-small uk-text-right"><div class="uk-width-1-1">'
 
-    if (back_str != undefined) {
-      html += '<a href="#'+ back_str +'" class="uk-button">Back</a> '
-    }
+    if (back_str != undefined) { html += '<a href="#' + back_str + '" class="uk-button">Back</a> ' }
+
     html += '<input type="submit" class="uk-button uk-button-primary" value="Save" /></div></div><hr>'
+
     $(formId).html(html)
 
-    values.forEach(function(v, i) {
-      $(formId+" #" + v[0]).val(v[1])
-    })
+    $(formId).find('select').on('change', function () { _this.checkConditions(fields, formId) })
+
+    _this.checkConditions(fields, formId)
+
+    values.forEach(function (v, i) { $(formId + " #" + v[0]).val(v[1]) })
+
     html_editors.forEach(function (e, i) {
       if(_.isString(e[1])) {
         try { e[1] = JSON.parse(e[1]) } catch(e) {}
@@ -395,12 +416,9 @@ var Common = {
       $('#html_editor_' + e[0]).contentEditor({ value: e[1].html || '' })
       $("#" + e[0]).val(JSON.stringify(e[1]))
     })
-    editors.forEach(function(e, i) {
-      _this.startEditor(e[0], e[1], e[2])
-    })
-    wysiwygs.forEach(function(e, i) {
-      $("#"+e).trumbowyg();
-    })
+    editors.forEach(function(e, i) { _this.startEditor(e[0], e[1], e[2]) })
+    wysiwygs.forEach(function (e, i) { $("#" + e).trumbowyg(); })
+
     $("button").attr("type", "button") // TODO : remove once Pell accept PR
     positions.forEach(function(p, i) {
       var mymap = L.map('map_' + p[0], { dragging: true, tap: false}).setView(p[1], 6)
@@ -422,6 +440,7 @@ var Common = {
         $('#'+p[0]+'_infos span').html([coords.lat, coords.lng].join(', '))
       })
     })
+
     var _this = this
     uploads.forEach(function(u) {
       _this.prepare_upload(u[0], u[1], u[2], u[3], u[4], u[5], u[6])
@@ -429,9 +448,8 @@ var Common = {
 
     riot.mount("images"); riot.mount("files")
     riot.update()
-    if(callback !== undefined) {
-      callback()
-    }
+
+    if (callback !== undefined) { callback() }
   },
 
   checkLogin: function checkLogin() {
@@ -604,11 +622,7 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  "office.fasty.ovh": "http://office.fasty.ovh:8530/_db/",
-  "afrikrea.fasty.ovh": "/_db",
-  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
-  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
+  ".fasty.ovh": "https://fasty.ovh/_db"
 };
 
 module.exports = Config;
