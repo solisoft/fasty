@@ -134,7 +134,7 @@ load_redirection = (db_name, params) ->
   "
   redirection = aql(db_name, request, { slug: params.slug })[1]
 
-  if redirection != nil then
+  if redirection ~= nil then
     if redirection.type == "spa"
       html = redirection.layout.html\gsub(
         '@yield',
