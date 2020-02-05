@@ -70,11 +70,12 @@ class extends lapis.Application
     current_page  = load_page_by_slug(db_name, slug, @params.lang)
 
     html = ''
+    print("Redirection")
+    print(redirection)
+
     if redirection == nil then
       html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
     else
-      print("Redirection")
-      print(redirection)
       html = redirection
 
     infos = page_info(db_name, @params.slug, @params.lang)
