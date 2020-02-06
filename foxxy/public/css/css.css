@@ -101,7 +101,8 @@ body {
   color: #444; }
 
 .select2-dropdown {
-  border: 1px solid #ddd; }
+  border: 1px solid #ddd;
+  z-index: 100000; }
 
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
   margin-top: 9px; }

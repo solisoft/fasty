@@ -70,6 +70,7 @@ class extends lapis.Application
     current_page  = load_page_by_slug(db_name, slug, @params.lang)
 
     html = ''
+
     if redirection == nil then
       html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
     else
@@ -84,7 +85,6 @@ class extends lapis.Application
       splat = {}
       splat = splat_to_table(@params.splat) if @params.splat
       bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
-
       @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
 
     html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)

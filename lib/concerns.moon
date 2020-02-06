@@ -125,17 +125,17 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
   html
 --------------------------------------------------------------------------------
 load_redirection = (db_name, params) ->
-  request = "
+  request = '
   FOR r IN redirections
     FILTER r.route == @slug
     LET spa = (FOR s IN spas FILTER s._id == r.spa_id RETURN s)[0]
     LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]
     RETURN { item: r, spa_name: spa.name, layout }
-  "
+  '
   redirection = aql(db_name, request, { slug: params.slug })[1]
 
-  if redirection != nil then
-    if redirection.type == "spa"
+  if redirection ~= nil then
+    if redirection.item.type == "spa"
       html = redirection.layout.html\gsub(
         '@yield',
         "<div class='#{redirection.item.class}'>{{ spa | #{redirection.spa_name} }}</div>"
@@ -147,8 +147,8 @@ load_redirection = (db_name, params) ->
 --------------------------------------------------------------------------------
 prepare_bindvars = (splat, aql_request, locale = nil) ->
   bindvar = { }
-  bindvar["page"] = 1 if aql_request\find('@page')
-  bindvar["lang"] = locale if locale and aql_request\find('@lang')
+  bindvar['page'] = 1 if aql_request\find('@page')
+  bindvar['lang'] = locale if locale and aql_request\find('@lang')
   for k, v in pairs(splat) do
     v = unescape(tostring(v))
     v = tonumber(v) if v\match('^%d+$')
@@ -169,7 +169,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     output, action, item, dataset = '', '', '', ''
     args, keywords = {}, {}
 
-    widget_no_deco, _ = widget\gsub("{{ ", "")\gsub(" }}", "")
+    widget_no_deco, _ = widget\gsub('{{ ', '')\gsub(' }}', '')
     table.insert(keywords, trim(k)) for i, k in pairs(stringy.split(widget_no_deco, '|'))
 
     action  = keywords[1] if keywords[1]
@@ -191,7 +191,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- Using og_data reduce http calls
     if action == 'html'
       if dataset ~= ''
-        request = "FOR item IN datasets FILTER item._id == @key "
+        request = 'FOR item IN datasets FILTER item._id == @key '
         request ..= 'RETURN item'
         object = aql(db_name, request, { key: 'datasets/' .. item })[1]
         output = etlua2html(object[dataset].json, global_data.page_partial, params, global_data)
@@ -226,8 +226,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ helper | hello_world }}
     if action == 'helper'
       helper = helpers[item]
-      dataset = '#'..dataset if dataset != ''
-      output = "{{ partial | " .. helper.partial .. " | arango | req#" .. helper.aql .. dataset .. " }}"
+      dataset = "##{dataset}" if dataset != ''
+      output = "{{ partial | #{helper.partial} | arango | req##{helper.aql}#{dataset} }}"
       output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ partial | slug | <dataset> | <args> }}
@@ -293,7 +293,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         for i, k in pairs(stringy.split(item, '#'))
           component = aql(
             db_name,
-            "FOR doc in components FILTER doc.slug == @slug RETURN doc",
+            'FOR doc in components FILTER doc.slug == @slug RETURN doc',
             { "slug": k }
           )[1]
           table.insert(data.ids, component._key)
@@ -302,11 +302,11 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
         output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
 
-        if dataset == "mount"
-          output ..= "<script>"
+        if dataset == 'mount'
+          output ..= '<script>'
           output ..= "document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
           output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
-          output ..= "</script>"
+          output ..= '</script>'
 
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
@@ -315,8 +315,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         history[widget] = true
         spa = aql(
           db_name,
-          "FOR doc in spas FILTER doc.slug == @slug RETURN doc",
-          { "slug": item }
+          'FOR doc in spas FILTER doc.slug == @slug RETURN doc',
+          { 'slug': item }
         )[1]
         output = spa.html
         output ..= "<script>#{spa.js}</script>"
@@ -326,7 +326,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ aql | activate_account }}
     if action == 'aql'
       aql_request = aql(
-        db_name, "FOR a in aqls FILTER a.slug == @slug RETURN a", { "slug": item }
+        db_name, 'FOR a in aqls FILTER a.slug == @slug RETURN a', { "slug": item }
       )[1]
       if aql_request
         aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql))
@@ -356,7 +356,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- {{ dataset | key | field }}
     if action == 'dataset'
       item = stringy.split(item, "=")
-      request = "FOR item IN datasets FILTER item.@field == @value RETURN item"
+      request = 'FOR item IN datasets FILTER item.@field == @value RETURN item'
       object = aql(db_name, request, { field: item[1], value: item[2] })[1]
       if object
         output = object[dataset]
