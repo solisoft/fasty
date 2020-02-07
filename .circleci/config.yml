@@ -1,9 +1,51 @@
-#
 version: 2.1
 orbs:
-  cypress: cypress-io/cypress@1.0.0
+  cypress: cypress-io/cypress@1
+
+executors:
+  fasty:
+    docker:
+      - image: solisoft/fasty
+
+jobs:
+  cypress-test:
+    executor:
+      name: fasty
+    steps:
+      - run:
+          name: 'Install cypress dependencies' 
+          command: apt-get update -y && apt-get -y install libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+      - checkout
+      - run: cp foxxy/app/js/config.js.sample foxxy/app/js/config.js
+
+      - restore_cache:
+          key: dependencies-{{ arch }}-{{ .Branch }}-{{ checksum "package.json" }}
+
+      - run: npm ci
+      - run: npx cypress verify
+
+      - save_cache:
+          key: dependencies-{{ arch }}-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - ~/.npm
+            - ~/.cache
+
+      - run:
+          name: 'Start cms'
+          command: /bin/bash -c "lapis server"
+          background: true
+
+      - run:
+          name: 'Run Cypress tests'
+          command: npx cypress run
+          no_output_timeout: '1m'
+          
+      - store_artifacts:
+          path: cypress\screenshots
+      - store_artifacts:
+          path: cypress\videos
+        
 workflows:
   build:
     jobs:
-      - cypress/run:
-          executor: cypress/base-8
+      - cypress-test    
