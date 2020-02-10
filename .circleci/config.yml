@@ -28,7 +28,7 @@ jobs:
       - run: cp foxxy/app/js/config.js.sample foxxy/app/js/config.js
       - run:
           name: 'Edit nginx.conf'
-          command: echo "\nuser root root;" >> nginx.conf
+          command: echo -e "\nuser root root;" >> nginx.conf
 
       - run:
           name: 'Wait for arangodb to be ready'
