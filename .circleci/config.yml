@@ -6,6 +6,9 @@ executors:
   fasty:
     docker:
       - image: solisoft/fasty
+      - image: arangodb/arangodb:3.6.1
+        environment:
+          ARANGO_ROOT_PASSWORD: password
 
 jobs:
   cypress-test:
@@ -17,6 +20,22 @@ jobs:
           command: apt-get update -y && apt-get -y install libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       - checkout
       - run: cp foxxy/app/js/config.js.sample foxxy/app/js/config.js
+
+      - run:
+          name: 'Wait for arangodb to be ready'
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 8529 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for arangodb && exit 1
+
+      - run:
+          name: 'create database db_demo'
+          command: |
+            echo 'db._createDatabase("db_demo");' | arangosh
 
       - restore_cache:
           key: dependencies-{{ arch }}-{{ .Branch }}-{{ checksum "package.json" }}
