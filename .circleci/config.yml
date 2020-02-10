@@ -48,6 +48,10 @@ jobs:
           paths:
             - ~/.npm
             - ~/.cache
+      
+      - run: 
+          name: 'Moon'
+          command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
 
       - run:
           name: 'Start cms'
