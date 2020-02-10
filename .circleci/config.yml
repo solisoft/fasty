@@ -35,7 +35,7 @@ jobs:
       - run:
           name: 'create database db_demo'
           command: |
-            echo 'db._createDatabase("db_demo");' | arangosh
+            echo 'db._createDatabase("db_demo");' | arangosh --server.password password
 
       - restore_cache:
           key: dependencies-{{ arch }}-{{ .Branch }}-{{ checksum "package.json" }}
