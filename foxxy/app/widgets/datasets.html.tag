@@ -285,7 +285,7 @@
     duplicate(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.get(url + "/datasets/"+ opts.datatype +"/" + self.dataset._key + "/duplicate", function(data) {
-          route('/datasets/' + data._key + '/edit')
+          route('/datasets/'+ opts.datatype + '/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
             status  : 'success',
