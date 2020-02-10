@@ -45,8 +45,10 @@ jobs:
           name: 'Prepare database'
           command: |
             echo 'db._createDatabase("db_demo");' | arangosh --server.password password
+            cd foxxy/
             foxxy upgrade settings --server fasty --database db_demo
             foxxy upgrade --server fasty --database db_demo
+            cd ..
 
       - restore_cache:
           key: dependencies-{{ arch }}-{{ .Branch }}-{{ checksum "package.json" }}
