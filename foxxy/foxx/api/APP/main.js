@@ -24,7 +24,7 @@ router.get('/:type', function (req, res) {
 
   aql += " FILTER data.type == @type"
 
-  aql += " LET assets = (FOR asset IN uploads FILTER asset.object_id == data._id RETURN asset)"
+  aql += " LET assets = (FOR asset IN uploads FILTER asset.object_id == data._id SORT asset.pos, asset._key RETURN asset)"
 
   let bindvars = { type: req.pathParams.type }
   let bindvars_count = { type: req.pathParams.type }
