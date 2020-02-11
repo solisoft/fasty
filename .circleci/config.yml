@@ -12,11 +12,6 @@ executors:
         command: [--server.endpoint=http+tcp://0.0.0.0:8530]
   with-chrome:
     docker:
-      - image: solisoft/fasty
-      - image: arangodb/arangodb:3.6.1
-        environment:
-          ARANGO_ROOT_PASSWORD: password
-        command: [--server.endpoint=http+tcp://0.0.0.0:8530]
       - image: 'cypress/browsers:chrome69'
 jobs:
   build:
