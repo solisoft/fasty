@@ -1,6 +1,6 @@
 import { utils } from "mocha";
 
-var host = 'http://localhost:8080'
+var host = 'http://demo.127.0.0.1.xip.io:8080'
 describe('Core tests', function () {
 
   beforeEach(function () {

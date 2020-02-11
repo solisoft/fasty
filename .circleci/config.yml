@@ -73,7 +73,7 @@ jobs:
 
       - run:
           name: 'Run Cypress tests'
-          command: npx cypress run
+          command: npx cypress run --record --key $CYPRESS_RECORD_KEY
           no_output_timeout: '1m'
           
       - store_artifacts:
