@@ -10,6 +10,11 @@ executors:
         environment:
           ARANGO_ROOT_PASSWORD: password
         command: [--server.endpoint=http+tcp://0.0.0.0:8530]
+  with-chrome:
+    docker:
+      - image: solisoft/fasty
+      - image: arangodb/arangodb:3.6.1
+      - image: 'cypress/browsers:chrome69'
 jobs:
   build:
     executor:
@@ -60,5 +65,6 @@ workflows:
     jobs:
       - build
       - cypress/run:
-          executor: cypress/browsers-chrome69
+          start: lapis server
+          executor: with-chrome
           browser: chrome
