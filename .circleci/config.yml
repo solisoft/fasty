@@ -65,8 +65,8 @@ jobs:
           command: 'npx cypress run --browser chrome'
 
       - cypress/run:
-        executor: cypress/browsers-chrome69
-        browser: chrome
+          executor: cypress/browsers-chrome69
+          browser: chrome
 workflows:
   version: 2
   build:
