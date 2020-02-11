@@ -28,48 +28,7 @@ workflows:
   version: 2
   build:
     jobs:
-      - cypress/install:
-
-        executor: fasty
-        pre-steps:
-          - run:
-              name: 'Install dependencies'
-              command: apt-get update -y && apt-get -y install libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb netcat
-          - run:
-              name: 'Install foxxy'
-              command: npm install -g foxxy && npm install -g foxx-cli
-          - run:
-              name: 'Add ~/.foxxrc'
-              command: echo -e "[server.foxxy]\nurl=http://localhost:8530\nusername=root\npassword=\n\n[server.fasty]\nurl=http://localhost:8530\nusername=root\npassword=password" >> ~/.foxxrc
-          - checkout
-          - run: cp foxxy/app/js/config.js.sample foxxy/app/js/config.js
-          - run:
-              name: 'Edit nginx.conf'
-              command: echo -e "\nuser root root;" >> nginx.conf
-          - run:
-              name: 'Wait for arangodb to be ready'
-              command: |
-                for i in `seq 1 10`;
-                do
-                  nc -z localhost 8530 && echo Success && exit 0
-                  echo -n .
-                  sleep 1
-                done
-                echo Failed waiting for arangodb && exit 1
-
-          - run:
-              name: 'Prepare database'
-              command: |
-                echo 'db._createDatabase("db_demo");' | arangosh --server.endpoint=http+tcp://0.0.0.0:8530 --server.password password
-                cd foxxy/
-                foxxy upgrade settings --server fasty --database db_demo
-                foxxy upgrade --server fasty --database db_demo
-                cd ..
-
-          - run:
-              name: 'Moon'
-              command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
-
+      - build
       - cypress/run:
           requires:
             - build
