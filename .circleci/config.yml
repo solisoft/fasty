@@ -60,7 +60,5 @@ workflows:
     jobs:
       - build
       - cypress/run:
-          start: lapis server
           executor: cypress/browsers-chrome69
           browser: chrome
-          wait-on: 'http://localhost:8080'
