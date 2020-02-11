@@ -1,5 +1,6 @@
 var Config = {
   ".fasty.ovh": "https://fasty.ovh/_db/",
+  "demo.127.0.0.1.xip.io:8080": "http://localhost:8529/_db/",
   /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
   ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
 };
