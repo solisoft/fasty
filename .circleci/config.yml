@@ -9,7 +9,7 @@ executors:
       - image: arangodb/arangodb:3.6.1
         environment:
           ARANGO_ROOT_PASSWORD: password
-        command: [--help]
+        command: [--server.endpoint http+tcp://127.0.0.1:8530]
 
 jobs:
   cypress-test:
