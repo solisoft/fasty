@@ -12,7 +12,7 @@ executors:
         command: [--server.endpoint=http+tcp://0.0.0.0:8530]
 
 jobs:
-  - cypress-test:
+  cypress-test:
     executor:
       name: fasty
     steps:
@@ -73,7 +73,7 @@ jobs:
           background: true
 
 
-  - cypress/run:
+  cypress/run:
     executor: cypress/browsers-chrome69
     browser: chrome
 workflows:
