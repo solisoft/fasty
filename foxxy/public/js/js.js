@@ -528,12 +528,12 @@ var Common = {
         callback(data)
       },
       statusCode: {
-        401: function() { document.location.href = "login.html" },
+        401: function() { document.location.href = "/static/admin/login.html" },
         500: errorCallback(),
         503: function() {
           localStorage.removeItem('X-Session-Id')
           localStorage.removeItem('foxx-locale')
-          document.location.href = "login.html"
+          document.location.href = "/static/admin/login.html"
         }
       }
     });
@@ -2769,7 +2769,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
     this.duplicate = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.get(url + "/datasets/"+ opts.datatype +"/" + self.dataset._key + "/duplicate", function(data) {
-          route('/datasets/' + data._key + '/edit')
+          route('/datasets/'+ opts.datatype + '/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
             status  : 'success',
