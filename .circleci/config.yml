@@ -66,7 +66,7 @@ workflows:
       - build
       - cypress/run:
           requires:
-            build
+            - build
           start: lapis server
           executor: with-chrome
           browser: chrome
