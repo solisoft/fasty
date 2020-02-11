@@ -3,14 +3,15 @@ orbs:
   cypress: cypress-io/cypress@1.14.0
 
 executors:
-  fasty:
+  - fasty:
     docker:
       - image: solisoft/fasty
       - image: arangodb/arangodb:3.6.1
         environment:
           ARANGO_ROOT_PASSWORD: password
           command: [--server.endpoint=http+tcp://0.0.0.0:8530]
-  with-chrome:
+
+  - with-chrome:
     docker:
       - image: 'cypress/browsers:chrome69'
       - image: arangodb/arangodb:3.6.1
