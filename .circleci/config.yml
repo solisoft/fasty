@@ -9,26 +9,35 @@ executors:
       - image: arangodb/arangodb:3.6.1
         environment:
           ARANGO_ROOT_PASSWORD: password
-        command: [--server.endpoint=http+tcp://0.0.0.0:8530]
-  with-chrome:
-    docker:
-      - image: 'cypress/browsers:chrome69'
+        command: [--server.endpoint=http+tcp://0.0.0.0:8530 --server.password password]
+
 jobs:
-  build:
+  cypress-test:
     executor:
       name: fasty
     steps:
+      - run:
+          name: 'Install cypress dependencies'
+          command: apt-get update -y && apt-get -y install libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb netcat
+      - run:
+          name: 'Install Chrome'
+          command: |
+              curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
+              echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+              apt-get -y update
+              apt-get -y install google-chrome-stable
       - run:
           name: 'Install foxxy'
           command: npm install -g foxxy && npm install -g foxx-cli
       - run:
           name: 'Add ~/.foxxrc'
-          command: echo -e "[server.foxxy]\nurl=http://localhost:8530\nusername=root\npassword=\n\n[server.fasty]\nurl=http://localhost:8530\nusername=root\npassword=password" >> ~/.foxxrc
+          command: echo -e "[server.foxxy]\nurl=http://localhost:8529\nusername=root\npassword=\n\n[server.fasty]\nurl=http://localhost:8530\nusername=root\npassword=password" >> ~/.foxxrc
       - checkout
       - run: cp foxxy/app/js/config.js.sample foxxy/app/js/config.js
       - run:
           name: 'Edit nginx.conf'
           command: echo -e "\nuser root root;" >> nginx.conf
+
       - run:
           name: 'Prepare database'
           command: |
@@ -38,18 +47,38 @@ jobs:
             foxxy upgrade --server fasty --database db_demo
             cd ..
 
+      - restore_cache:
+          key: dependencies-{{ arch }}-{{ .Branch }}-{{ checksum "package.json" }}
+
+      - run: npm ci
+      - run: npx cypress verify
+
+      - save_cache:
+          key: dependencies-{{ arch }}-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - ~/.npm
+            - ~/.cache
+
       - run:
           name: 'Moon'
           command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
 
+      - run:
+          name: 'Start cms'
+          command: /bin/bash -c "lapis server"
+          background: true
+
+      - run:
+          name: 'Run Cypress tests'
+          command: npx cypress run --browser chrome
+          no_output_timeout: '1m'
+
+      - store_artifacts:
+          path: cypress\screenshots
+      - store_artifacts:
+          path: cypress\videos
+
 workflows:
-  version: 2
   build:
     jobs:
-      - build
-      - cypress/run:
-          requires:
-            - build
-          start: lapis server
-          executor: with-chrome
-          browser: chrome
+      - cypress-test
