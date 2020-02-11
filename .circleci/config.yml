@@ -58,13 +58,13 @@ jobs:
           command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
 
       - run:
-        name: 'Start cms'
-        command: /bin/bash -c "lapis server"
-        background: true
+          name: 'Start cms'
+          command: /bin/bash -c "lapis server"
+          background: true
 
       - run:
-        name: 'Cypress'
-        command: 'npx cypress run --browser chrome'
+          name: 'Cypress'
+          command: 'npx cypress run --browser chrome'
 
 workflows:
   version: 2
