@@ -10,10 +10,6 @@ executors:
         environment:
           ARANGO_ROOT_PASSWORD: password
           command: [--server.endpoint=http+tcp://0.0.0.0:8530]
-  with-chrome:
-    docker:
-      - image: 'cypress/browsers:chrome69'
-      - image: arangodb/arangodb:3.6.1
 jobs:
   build:
     executor:
