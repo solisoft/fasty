@@ -8,8 +8,8 @@ executors:
       - image: solisoft/fasty
       - image: arangodb/arangodb:3.6.1
         environment:
-          ARANGO_ROOT_PASSWORD: password
-          command: [--server.endpoint=http+tcp://0.0.0.0:8530]
+        ARANGO_ROOT_PASSWORD: password
+        command: [--server.endpoint=http+tcp://0.0.0.0:8530]
 jobs:
   build:
     executor:
