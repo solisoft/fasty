@@ -15,6 +15,7 @@ jobs:
   cypress-test:
     executor:
       name: fasty
+    browser: chrome
     steps:
       - run:
           name: 'Install cypress dependencies'
