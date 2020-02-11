@@ -17,6 +17,9 @@ jobs:
       name: fasty
     steps:
       - run:
+          name: 'Install dependencies'
+          command: apt-get update -y && apt-get -y install libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb netcat
+      - run:
           name: 'Install foxxy'
           command: npm install -g foxxy && npm install -g foxx-cli
       - run:
