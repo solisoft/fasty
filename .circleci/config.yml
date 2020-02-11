@@ -10,6 +10,8 @@ executors:
         environment:
           ARANGO_ROOT_PASSWORD: password
         command: [--server.endpoint=http+tcp://0.0.0.0:8530]
+      - image: 'cypress/browsers:chrome69'
+
 
 jobs:
   build:
@@ -55,18 +57,18 @@ jobs:
           name: 'Moon'
           command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
 
+      - run:
+        name: 'Start cms'
+        command: /bin/bash -c "lapis server"
+        background: true
+
+      - run:
+        name: 'Cypress'
+        command: 'npx cypress run --browser chrome'
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - cypress/run:
-          requires:
-            - build
-          executor: cypress/browsers-chrome69
-          browser: chrome
-          steps:
-            - run:
-              name: 'Start cms'
-              command: /bin/bash -c "lapis server"
-              background: true
+
