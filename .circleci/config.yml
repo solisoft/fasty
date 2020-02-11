@@ -3,18 +3,17 @@ orbs:
   cypress: cypress-io/cypress@1.14.0
 
 executors:
-  - fasty:
-      docker:
-        - image: solisoft/fasty
-        - image: arangodb/arangodb:3.6.1
-          environment:
-            ARANGO_ROOT_PASSWORD: password
-            command: [--server.endpoint=http+tcp://0.0.0.0:8530]
-
-  - with-chrome:
-      docker:
-        - image: 'cypress/browsers:chrome69'
-        - image: arangodb/arangodb:3.6.1
+  fasty:
+    docker:
+      - image: solisoft/fasty
+      - image: arangodb/arangodb:3.6.1
+        environment:
+          ARANGO_ROOT_PASSWORD: password
+          command: [--server.endpoint=http+tcp://0.0.0.0:8530]
+  with-chrome:
+    docker:
+      - image: 'cypress/browsers:chrome69'
+      - image: arangodb/arangodb:3.6.1
 jobs:
   build:
     executor:
@@ -66,6 +65,6 @@ workflows:
       - build
       - cypress/run:
           start: lapis server
-          executor: with-chrome
+          executor: cypress/browsers-chrome69
           browser: chrome
           wait-on: 'http://localhost:8080'
