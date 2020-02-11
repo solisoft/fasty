@@ -74,9 +74,9 @@ jobs:
           no_output_timeout: '1m'
 
       - store_artifacts:
-          path: cypress\screenshots
+          path: cypress/screenshots
       - store_artifacts:
-          path: cypress\videos
+          path: cypress/videos
 
 workflows:
   build:
