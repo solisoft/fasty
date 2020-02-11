@@ -55,13 +55,6 @@ jobs:
           name: 'Moon'
           command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
 
-      - run:
-          name: 'Start cms'
-          command: /bin/bash -c "lapis server"
-          background: true
-
-
-
 workflows:
   version: 2
   build_and_test:
@@ -72,3 +65,8 @@ workflows:
             - build
           executor: cypress/browsers-chrome69
           browser: chrome
+          steps:
+            - run:
+              name: 'Start cms'
+              command: /bin/bash -c "lapis server"
+              background: true
