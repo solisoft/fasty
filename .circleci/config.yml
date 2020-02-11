@@ -24,9 +24,6 @@ jobs:
       name: fasty
     steps:
       - run:
-          name: 'Install dependencies'
-          command: apt-get update -y && apt-get -y install libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb netcat
-      - run:
           name: 'Install foxxy'
           command: npm install -g foxxy && npm install -g foxx-cli
       - run:
@@ -37,18 +34,6 @@ jobs:
       - run:
           name: 'Edit nginx.conf'
           command: echo -e "\nuser root root;" >> nginx.conf
-
-      - run:
-          name: 'Wait for arangodb to be ready'
-          command: |
-            for i in `seq 1 10`;
-            do
-              nc -z localhost 8530 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for arangodb && exit 1
-
       - run:
           name: 'Prepare database'
           command: |
@@ -67,12 +52,6 @@ workflows:
   build:
     jobs:
       - build
-      - cypress/install:
-          pre-steps:
-            - run:
-                name: 'Install dependencies'
-                command: apt-get update -y && apt-get -y install libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb netcat
-
       - cypress/run:
           requires:
             - build
