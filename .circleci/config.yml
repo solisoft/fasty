@@ -12,7 +12,7 @@ executors:
         command: [--server.endpoint=http+tcp://0.0.0.0:8530]
 
 jobs:
-  cypress-test:
+  - cypress-test:
     executor:
       name: fasty
     steps:
@@ -72,16 +72,10 @@ jobs:
           command: /bin/bash -c "lapis server"
           background: true
 
-      - run:
-          name: 'Run Cypress tests'
-          command: npx cypress run
-          no_output_timeout: '1m'
 
-      - store_artifacts:
-          path: cypress\screenshots
-      - store_artifacts:
-          path: cypress\videos
-
+  - cypress/run:
+    executor: cypress/browsers-chrome69
+    browser: chrome
 workflows:
   build:
     jobs:
