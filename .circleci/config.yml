@@ -34,10 +34,10 @@ jobs:
       - run:
           name: 'Prepare database'
           command: |
-            echo 'db._createDatabase("db_demo");' | arangosh --server.endpoint=http+tcp://0.0.0.0:8530 --server.password password
+            echo 'db._createDatabase("db_test");' | arangosh --server.endpoint=http+tcp://0.0.0.0:8530 --server.password password
             cd foxxy/
-            foxxy upgrade settings --server fasty --database db_demo
-            foxxy upgrade --server fasty --database db_demo
+            foxxy upgrade settings --server fasty --database db_test
+            foxxy upgrade --server fasty --database db_test
             cd ..
 
       - restore_cache:

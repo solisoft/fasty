@@ -1,5 +1,5 @@
 
-var host = 'http://demo.127.0.0.1.xip.io:8080/static/admin/'//'http://test.127.0.0.1.xip.io:8080'
+var host = 'http://test.127.0.0.1.xip.io:8080/static/admin/'
 describe('Core tests', function () {
 
   before(function() {
@@ -92,7 +92,7 @@ describe('Core tests', function () {
     })
     cy.get('div.uk-modal').should('contain', 'Are you sure?')
     cy.get('button').contains('Ok').click()
-  
+
     cy.get('body').contains('testhelperedited').should('not.exist')
   })
 })

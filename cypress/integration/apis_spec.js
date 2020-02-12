@@ -1,9 +1,8 @@
 
-var host = 'http://demo.127.0.0.1.xip.io:8080/static/admin/'//'http://test.127.0.0.1.xip.io:8080'
+var host = 'http://test.127.0.0.1.xip.io:8080/static/admin/'
 describe('Core tests', function () {
 
   beforeEach(function () {
-    // cy.visit(host + '/static/admin/index.html')
     cy.visit(host + 'login.html')
     cy.get('#username').type('demo@foxxy.ovh');
     cy.get('#password').type('977cebdd');
@@ -62,7 +61,7 @@ describe('Core tests', function () {
     })
     cy.get('div.uk-modal').should('contain', 'Are you sure?')
     cy.get('button').contains('Ok').click()
-  
+
     cy.get('body').contains('testapiedited').should('not.exist')
   })
 })
