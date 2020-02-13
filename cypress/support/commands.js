@@ -10,7 +10,17 @@
 //
 //
 // -- This is a parent command --
-// Cypress.Commands.add("login", (email, password) => { ... })
+var host = 'http://test.127.0.0.1.xip.io:8080/static/admin/'
+
+Cypress.Commands.add("login", () => {
+  cy.visit(host + 'login.html')
+  cy.get('#username').type('demo@foxxy.ovh');
+  cy.get('#password').type('977cebdd');
+  cy.get('button').click();
+  cy.visit(host + 'index.html');
+  cy.url().should('eq', host + 'index.html#welcome');
+  console.log(window.localStorage)
+})
 //
 //
 // -- This is a child command --

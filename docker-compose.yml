@@ -84,7 +84,7 @@ services:
       - 8530:8529
     volumes:
       - arangodb-data:/var/lib/arangodb3
-      - arangodb-app:/var/lib/arangodb3-app
+      - arangodb-app:/var/lib/arangodb3-apps
       - arangodb-uploads:/home
 
   nginx:
