@@ -69,7 +69,7 @@ class extends lapis.Application
     redirection       = load_redirection(db_name, @params)
     current_page      = load_page_by_slug(db_name, slug, @params.lang)
     page_content_type = "text/html"
-    slug_splitted     = stringy.split(@params.lang, ".")
+    slug_splitted     = stringy.split(@params.slug, ".")
     page_content_type = "application/javascript" if slug_splitted[table.getn(slug_splitted)] == "js"
     page_content_type = "text/css" if slug_splitted[table.getn(slug_splitted)] == "css"
 
