@@ -4,4 +4,4 @@ cd foxxy
 foxxy upgrade settings --server fasty --database db_test
 foxxy upgrade --server fasty --database db_test
 cd ..
-cypress run
+./node_modules/cypress/bin/cypress run -b chrome --headless

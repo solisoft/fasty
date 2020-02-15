@@ -19,7 +19,6 @@ Cypress.Commands.add("login", () => {
   cy.get('button').click();
   cy.visit(host + 'index.html');
   cy.url().should('eq', host + 'index.html#welcome');
-  console.log(window.localStorage)
 })
 //
 //

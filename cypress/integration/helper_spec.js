@@ -4,12 +4,7 @@ describe('Core tests', function () {
 
   before(function() {
     // login
-    cy.visit(host + 'login.html')
-    cy.get('#username').type('demo@foxxy.ovh');
-    cy.get('#password').type('977cebdd');
-    cy.get('button').click();
-    cy.visit(host + 'index.html')
-    cy.url().should('eq', host + 'index.html#welcome')
+    cy.login()
 
     // create partial to be use by helper
     cy.get('a[href="#partials"]').click()

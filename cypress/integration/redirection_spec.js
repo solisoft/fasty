@@ -4,13 +4,7 @@ describe('Core tests', function () {
 
   before(function() {
     // login
-    cy.visit(host + 'login.html')
-    cy.get('#username').type('demo@foxxy.ovh');
-    cy.get('#password').type('977cebdd');
-    cy.get('button').click();
-    cy.visit(host + 'index.html')
-    cy.url().should('eq', host + 'index.html#welcome')
-
+    cy.login()
     // create layout to be use by redirection
     cy.get('a[href="#layouts"]').click()
     cy.get('div[data-is="layouts"]').contains('New layout').click()
@@ -28,12 +22,7 @@ describe('Core tests', function () {
   })
 
   beforeEach(function () {
-    cy.visit(host + 'login.html')
-    cy.get('#username').type('demo@foxxy.ovh');
-    cy.get('#password').type('977cebdd');
-    cy.get('button').click();
-    cy.visit(host + 'index.html')
-    cy.url().should('eq', host + 'index.html#welcome')
+    cy.login()
   })
 
   it('Loads redirections page', function () {

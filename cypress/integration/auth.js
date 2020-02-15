@@ -4,11 +4,7 @@ var host = 'http://test.127.0.0.1.xip.io:8080'
 describe('Core tests', function () {
 
   beforeEach(function () {
-    cy.visit(host + '/static/admin/index.html')
-    cy.get('#username').type('demo@foxxy.ovh');
-    cy.get('#password').type('977cebdd');
-    cy.get('button').click();
-    cy.url().should('eq', host + '/static/admin/index.html#welcome')
+    cy.login()
   })
 
   it('Test partials & widgets', function () {
