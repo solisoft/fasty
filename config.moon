@@ -17,7 +17,7 @@ config "test", ->
   measure_performance true
 
 config "db_development", ->
-  url "http://0.0.0.0:8530/"
+  url "http://12.12.0.6:8529/"
   name "cms"
   login "root"
   pass  "password"

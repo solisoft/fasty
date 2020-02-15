@@ -62,12 +62,16 @@ class extends lapis.Application
       render: "error_#{status}" , status: status, headers: headers
   ----------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
-    slug          = @params.slug if slug == nil
-    @params.lang  = check_valid_lang(settings[sub_domain].langs, @params.lang)
-    @session.lang = @params.lang
-    db_name       = "db_#{sub_domain}"
-    redirection   = load_redirection(db_name, @params)
-    current_page  = load_page_by_slug(db_name, slug, @params.lang)
+    slug              = @params.slug if slug == nil
+    @params.lang      = check_valid_lang(settings[sub_domain].langs, @params.lang)
+    @session.lang     = @params.lang
+    db_name           = "db_#{sub_domain}"
+    redirection       = load_redirection(db_name, @params)
+    current_page      = load_page_by_slug(db_name, slug, @params.lang)
+    page_content_type = "text/html"
+    slug_splitted     = stringy.split(@params.lang, ".")
+    page_content_type = "application/javascript" if slug_splitted[table.getn(slug_splitted)] == "js"
+    page_content_type = "text/css" if slug_splitted[table.getn(slug_splitted)] == "css"
 
     html = ''
 
@@ -91,7 +95,7 @@ class extends lapis.Application
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
     if is_auth(@, settings[sub_domain], infos)
       if html ~= 'null' then
-        html, status: status
+        content_type: page_content_type, html, status: status
       else
         display_error_page(@, 404)
     else
@@ -142,7 +146,7 @@ class extends lapis.Application
     )[1]
     content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content_type: "application/javascript", content
+      page_content_type:"application/javascript", content
     else
       content_type: "application/javascript", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
