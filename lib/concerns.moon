@@ -13,12 +13,6 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params)->
-  jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]\gsub("/", "-")
-  csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]\gsub("/", "-")
-  html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{jshmac}.js")
-  html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
-  html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{csshmac}.css")
-  html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
   headers = "<title>#{data.item.name}</title>"
   if(data.item.og_title and data.item.og_title[params.lang])
     headers = "<title>#{data.item.og_title[params.lang]}</title>"
@@ -48,6 +42,21 @@ etlua2html = (json, partial, params, global_data) ->
     }
   )
   data
+--------------------------------------------------------------------------------
+last_element = (str, pattern) ->
+  splitted = stringy.split(str, pattern)
+  splitted[table.getn(splitted)]
+--------------------------------------------------------------------------------
+define_content_type = (slug) ->
+  ext = last_element(slug, ".")
+  mimes_types = {
+    "csv": "text/csv", "json": "application/json",
+    "xml": "application/xml", "js": "	application/javascript",
+    "css": "text/css", "svg": "image/svg+xml", "ics": "text/calendar"
+  }
+  page_content_type = mimes_types[ext]
+  page_content_type = "text/html" if page_content_type == nil
+  page_content_type
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object) ->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
@@ -117,6 +126,12 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
 
+      jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]\gsub("/", "-")
+      csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]\gsub("/", "-")
+      html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{jshmac}.js")
+      html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
+      html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{csshmac}.css")
+      html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
     else html = etlua2html(data.item.html.json, page_partial, params, global_data)
 
     html = html\gsub('@yield', '')
@@ -301,7 +316,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           table.insert(data.names, k)
 
         output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
-
+        if dataset == 'url'
+          output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag"
         if dataset == 'mount'
           output ..= '<script>'
           output ..= "document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
@@ -319,7 +335,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           { 'slug': item }
         )[1]
         output = spa.html
-        output ..= "<script>#{spa.js}</script>"
+        output ..="<script>#{spa.js}</script>"
         output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ aql | slug }} -- Run an AQL request
@@ -353,13 +369,18 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'og_data'
       output = params.og_data[item] if params.og_data
 
-    -- {{ dataset | key | field }}
+    -- {{ dataset | key | field | <args> }}
+    -- {{ dataset | slug=demo | js }}
+    -- {{ dataset | slug=demo | js | only_url#js }}
     if action == 'dataset'
-      item = stringy.split(item, "=")
+      item = stringy.split(item,'=')
       request = 'FOR item IN datasets FILTER item.@field == @value RETURN item'
       object = aql(db_name, request, { field: item[1], value: item[2] })[1]
       if object
         output = object[dataset]
+        if args['only_url']
+          output = "/#{params.lang}/ds/#{object._key}/#{dataset}/#{object._rev}.#{args['only_url']}"
+
       else output = ' '
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
@@ -367,5 +388,5 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   html
 --------------------------------------------------------------------------------
 -- expose methods
-{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern,
-  :dynamic_replace, :load_redirection, :page_info, :prepare_bindvars }
+{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern, :last_element
+  :dynamic_replace, :load_redirection, :page_info, :prepare_bindvars, :define_content_type }

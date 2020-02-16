@@ -12,7 +12,7 @@ import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
 import capture_errors, yield_error, respond_to from require 'lapis.application'
 import install_service, install_script, deploy_site from require 'lib.service'
-import dynamic_replace, dynamic_page, page_info, splat_to_table
+import dynamic_replace, dynamic_page, page_info, splat_to_table, define_content_type
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
 jwt = {}
@@ -68,10 +68,8 @@ class extends lapis.Application
     db_name           = "db_#{sub_domain}"
     redirection       = load_redirection(db_name, @params)
     current_page      = load_page_by_slug(db_name, slug, @params.lang)
-    page_content_type = "text/html"
-    slug_splitted     = stringy.split(@params.slug, ".")
-    page_content_type = "application/javascript" if slug_splitted[table.getn(slug_splitted)] == "js"
-    page_content_type = "text/css" if slug_splitted[table.getn(slug_splitted)] == "css"
+
+    page_content_type = define_content_type(@params.slug)
 
     html = ''
 
@@ -135,6 +133,18 @@ class extends lapis.Application
           redirect_to: home['root_redirection']
         else
           display_page(@)
+  ------------------------------------------------------------------------------
+  -- ds
+  [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
+    load_settings(@)
+    data = aql(
+      "db_#{sub_domain}",
+      "FOR doc IN datasets FILTER doc._key == @key RETURN doc.@field",
+      { "key": "#{@params.key}", 'field': @params.field }
+    )[1]
+    content = dynamic_replace("db_#{sub_domain}", data, {}, {}, @params)
+
+    page_content_type: define_content_type(".#{@params.ext}"), content
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
