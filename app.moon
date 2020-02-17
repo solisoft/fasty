@@ -134,7 +134,7 @@ class extends lapis.Application
         else
           display_page(@)
   ------------------------------------------------------------------------------
-  -- ds
+  -- datasets
   [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
     load_settings(@)
     data = aql(
@@ -144,7 +144,7 @@ class extends lapis.Application
     )[1]
     content = dynamic_replace("db_#{sub_domain}", data, {}, {}, @params)
 
-    page_content_type: define_content_type(".#{@params.ext}"), content
+    page_content_type: define_content_type("_.#{@params.ext}"), content
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
