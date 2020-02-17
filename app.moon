@@ -144,7 +144,7 @@ class extends lapis.Application
     )[1]
     content = dynamic_replace("db_#{sub_domain}", data, {}, {}, @params)
 
-    content_type: define_content_type(".#{@params.ext}"), content
+    content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
