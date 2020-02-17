@@ -135,7 +135,7 @@ class extends lapis.Application
           display_page(@)
   ------------------------------------------------------------------------------
   -- datasets
-  [ds: '/:key-:field-:rev.:ext']: =>
+  [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
     load_settings(@)
     data = aql(
       "db_#{sub_domain}",
