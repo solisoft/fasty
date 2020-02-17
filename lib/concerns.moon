@@ -51,7 +51,7 @@ define_content_type = (slug) ->
   ext = last_element(slug, ".")
   mimes_types = {
     "csv": "text/csv", "json": "application/json",
-    "xml": "application/xml", "js": "	application/javascript",
+    "xml": "application/xml", "js": "application/javascript",
     "css": "text/css", "svg": "image/svg+xml", "ics": "text/calendar"
   }
   page_content_type = mimes_types[ext]

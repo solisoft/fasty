@@ -144,7 +144,7 @@ class extends lapis.Application
     )[1]
     content = dynamic_replace("db_#{sub_domain}", data, {}, {}, @params)
 
-    page_content_type: define_content_type("_.#{@params.ext}"), content
+    content_type: define_content_type(".#{@params.ext}"), content
   ------------------------------------------------------------------------------
   -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
@@ -156,7 +156,7 @@ class extends lapis.Application
     )[1]
     content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      page_content_type:"application/javascript", content
+      content_type: "application/javascript", content
     else
       content_type: "application/javascript", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
