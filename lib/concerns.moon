@@ -379,7 +379,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       if object
         output = object[dataset]
         if args['only_url']
-          output = "/#{params.lang}/ds/#{object._key}/#{dataset}/#{object._rev}.#{args['only_url']}"
+          output = "/#{object._key}-#{dataset}-#{object._rev}.#{args['only_url']}"
 
       else output = ' '
 
