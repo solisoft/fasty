@@ -383,6 +383,20 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
       else output = ' '
 
+    -- {{ layout | slug | field }}
+    -- return from Layout's field
+    -- slug is layout's slug
+    -- fields are : js, css, js_vendor, css_vendor
+    if action == 'layout'
+      request = 'FOR layout IN layouts FILTER layout.slug == @slug RETURN layout'
+      object = aql(db_name, request, { slug: item })[1]
+      if object
+        output = "/#{params.lang}/#{layout._key}/vendors/#{layout._rev}.js" if dataset == 'js_vendor'
+        output = "/#{params.lang}/#{layout._key}/js/#{layout._rev}.js" if dataset == 'js'
+        output = "/#{params.lang}/#{layout._key}/vendors/#{layout._rev}.css" if dataset == 'css_vendor'
+        output = "/#{params.lang}/#{layout._key}/css/#{layout._rev}.css" if dataset == 'css'
+      else output = ' '
+
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
 
   html
