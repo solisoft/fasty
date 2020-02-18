@@ -388,7 +388,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- slug is layout's slug
     -- fields are : js, css, js_vendor, css_vendor
     if action == 'layout'
-      request = 'FOR layout IN layouts FILTER layout.slug == @slug RETURN layout'
+      request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
       object = aql(db_name, request, { slug: item })[1]
       if object
         output = "/#{params.lang}/#{layout._key}/vendors/#{layout._rev}.js" if dataset == 'js_vendor'
