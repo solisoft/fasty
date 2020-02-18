@@ -391,10 +391,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
       object = aql(db_name, request, { slug: item })[1]
       if object
-        output = "/#{params.lang}/#{layout._key}/vendors/#{layout._rev}.js" if dataset == 'js_vendor'
-        output = "/#{params.lang}/#{layout._key}/js/#{layout._rev}.js" if dataset == 'js'
-        output = "/#{params.lang}/#{layout._key}/vendors/#{layout._rev}.css" if dataset == 'css_vendor'
-        output = "/#{params.lang}/#{layout._key}/css/#{layout._rev}.css" if dataset == 'css'
+        output = "/#{params.lang}/#{object._key}/vendors/#{object._rev}.js" if dataset == 'js_vendor'
+        output = "/#{params.lang}/#{object._key}/js/#{object._rev}.js" if dataset == 'js'
+        output = "/#{params.lang}/#{object._key}/vendors/#{object._rev}.css" if dataset == 'css_vendor'
+        output = "/#{params.lang}/#{object._key}/css/#{object._rev}.css" if dataset == 'css'
       else output = ' '
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
