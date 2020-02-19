@@ -13,8 +13,8 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 prepare_assets = (html, layout, params) ->
-  jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]\gsub("/", "-")
-  csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]\gsub("/", "-")
+  jshmac = stringy.split(encode_with_secret(layout.i_js, ''), ".")[2]\gsub("/", "-")
+  csshmac = stringy.split(encode_with_secret(layout.i_css, ''), ".")[2]\gsub("/", "-")
   html = html\gsub('@js_vendors', "/#{params.lang}/#{layout._key}/vendors/#{jshmac}.js")
   html = html\gsub('@js', "/#{params.lang}/#{layout._key}/js/#{layout._rev}.js")
   html = html\gsub('@css_vendors', "/#{params.lang}/#{layout._key}/vendors/#{csshmac}.css")
