@@ -391,9 +391,11 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
       object = aql(db_name, request, { slug: item })[1]
       if object
-        output = "/#{params.lang}/#{object._key}/vendors/#{object._rev}.js" if dataset == 'js_vendor'
+        jshmac = stringy.split(encode_with_secret(object.i_js, ''), ".")[2]\gsub("/", "-")
+        csshmac = stringy.split(encode_with_secret(object.i_css, ''), ".")[2]\gsub("/", "-")
+        output = "/#{params.lang}/#{object._key}/vendors/#{jshmac}.js" if dataset == 'js_vendor'
         output = "/#{params.lang}/#{object._key}/js/#{object._rev}.js" if dataset == 'js'
-        output = "/#{params.lang}/#{object._key}/vendors/#{object._rev}.css" if dataset == 'css_vendor'
+        output = "/#{params.lang}/#{object._key}/vendors/#{csshmac}.css" if dataset == 'css_vendor'
         output = "/#{params.lang}/#{object._key}/css/#{object._rev}.css" if dataset == 'css'
       else output = ' '
 
