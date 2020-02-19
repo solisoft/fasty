@@ -27,6 +27,14 @@ prepare_headers = (html, data, params)->
   if(data.item.canonical and data.item.canonical[params.lang])
     headers ..= "<link rel=\"canonical\" href=\"#{data.item.canonical[params.lang]}\" />"
     headers ..= "<meta property=\"og:url\" content=\"#{data.item.canonical[params.lang]}\" />"
+
+  jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]\gsub("/", "-")
+  csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]\gsub("/", "-")
+  html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{jshmac}.js")
+  html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
+  html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{csshmac}.css")
+  html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
+
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
 etlua2html = (json, partial, params, global_data) ->
