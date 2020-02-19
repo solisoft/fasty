@@ -59,16 +59,17 @@ router.get('/:type', function (req, res) {
   }
 
   if(req.queryParams.order) {
-    aql += " SORT @order"
-    let orders = []
+    aql += " SORT "
     _.each(req.queryParams.order.split(","), function (order) {
-      if (order[0] != "-") {
-        orders.push(order + ' ASC')
-      } else {
-        orders.push(order.slice(1) + ' DESC')
+      let regex = RegExp('[a-zA-Z_-]+')
+      if(regex.test(order)) {
+        if (order[0] != "-") {
+          aql += 'data.' + order + ' ASC'
+        } else {
+          aql += 'data.' + order.slice(1) + ' DESC'
+        }
       }
     })
-    bindvars.order = orders.join(", ")
   }
 
   if (req.queryParams.fields) {
@@ -84,11 +85,8 @@ router.get('/:type', function (req, res) {
     aql += " RETURN MERGE(data, { assets })"
   }
 
-  console.log(aql)
-
   let data = db._query(aql, bindvars).toArray()
   let count = db._query(aql_count, bindvars_count)._countTotal
-
 
   res.json({ count, data })
 })

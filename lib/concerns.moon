@@ -12,7 +12,16 @@ escape_pattern = (text) ->
   str, _ = tostring(text)\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
 --------------------------------------------------------------------------------
-prepare_headers = (html, data, params)->
+prepare_assets = (html, layout, params) ->
+  jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]\gsub("/", "-")
+  csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]\gsub("/", "-")
+  html = html\gsub('@js_vendors', "/#{params.lang}/#{layout._key}/vendors/#{jshmac}.js")
+  html = html\gsub('@js', "/#{params.lang}/#{layout._key}/js/#{layout._rev}.js")
+  html = html\gsub('@css_vendors', "/#{params.lang}/#{layout._key}/vendors/#{csshmac}.css")
+  html = html\gsub('@css', "/#{params.lang}/#{layout._key}/css/#{layout._rev}.css")
+  html
+--------------------------------------------------------------------------------
+prepare_headers = (html, data, params) ->
   headers = "<title>#{data.item.name}</title>"
   if(data.item.og_title and data.item.og_title[params.lang])
     headers = "<title>#{data.item.og_title[params.lang]}</title>"
@@ -27,14 +36,7 @@ prepare_headers = (html, data, params)->
   if(data.item.canonical and data.item.canonical[params.lang])
     headers ..= "<link rel=\"canonical\" href=\"#{data.item.canonical[params.lang]}\" />"
     headers ..= "<meta property=\"og:url\" content=\"#{data.item.canonical[params.lang]}\" />"
-
-  jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]\gsub("/", "-")
-  csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]\gsub("/", "-")
-  html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{jshmac}.js")
-  html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
-  html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{csshmac}.css")
-  html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
-
+  html = prepare_assets(html, data.layout, params)
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
 etlua2html = (json, partial, params, global_data) ->
@@ -134,12 +136,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
 
-      jshmac = stringy.split(encode_with_secret(data.layout.i_js, ''), ".")[2]\gsub("/", "-")
-      csshmac = stringy.split(encode_with_secret(data.layout.i_css, ''), ".")[2]\gsub("/", "-")
-      html = html\gsub('@js_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{jshmac}.js")
-      html = html\gsub('@js', "/#{params.lang}/#{data.layout._key}/js/#{data.layout._rev}.js")
-      html = html\gsub('@css_vendors', "/#{params.lang}/#{data.layout._key}/vendors/#{csshmac}.css")
-      html = html\gsub('@css', "/#{params.lang}/#{data.layout._key}/css/#{data.layout._rev}.css")
+      html = prepare_assets(html, data.layout, params)
     else html = etlua2html(data.item.html.json, page_partial, params, global_data)
 
     html = html\gsub('@yield', '')
@@ -306,7 +303,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
         output = dynamic_replace(db_name, output, global_data, history, params)
 
-    -- {{ riot | slug(#slug2...) | <mount> }}
+    -- {{ riot | slug(#slug2...) | <mount> | <url> }}
     -- e.g. {{ riot | demo | mount }}
     -- e.g. {{ riot | demo#demo2 }}
     if action == 'riot'
