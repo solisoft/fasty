@@ -60,8 +60,8 @@ last_element = (str, pattern) ->
 define_content_type = (slug) ->
   ext = last_element(slug, ".")
   mimes_types = {
-    "csv": "text/csv", "json": "application/json",
-    "xml": "application/xml", "js": "application/javascript",
+    "json": "application/json", "kml": "application/vnd.google-earth.kml+xml",
+    "xml": "application/xml", "js": "application/javascript", "csv": "text/csv",
     "css": "text/css", "svg": "image/svg+xml", "ics": "text/calendar"
   }
   page_content_type = mimes_types[ext]
