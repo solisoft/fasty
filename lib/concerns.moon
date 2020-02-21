@@ -13,8 +13,8 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 prepare_assets = (html, layout, params) ->
-  jshmac = stringy.split(encode_with_secret(layout.i_js, ''), ".")[2]\gsub("/", "-")
-  csshmac = stringy.split(encode_with_secret(layout.i_css, ''), ".")[2]\gsub("/", "-")
+  jshmac = stringy.split(encode_with_secret(layout.i_js, ''), '.')[2]\gsub('/', '-')
+  csshmac = stringy.split(encode_with_secret(layout.i_css, ''), '.')[2]\gsub('/', '-')
   html = html\gsub('@js_vendors', "/#{params.lang}/#{layout._key}/vendors/#{jshmac}.js")
   html = html\gsub('@js', "/#{params.lang}/#{layout._key}/js/#{layout._rev}.js")
   html = html\gsub('@css_vendors', "/#{params.lang}/#{layout._key}/vendors/#{csshmac}.css")
@@ -60,9 +60,9 @@ last_element = (str, pattern) ->
 define_content_type = (slug) ->
   ext = last_element(slug, ".")
   mimes_types = {
-    "json": "application/json", "kml": "application/vnd.google-earth.kml+xml",
-    "xml": "application/xml", "js": "application/javascript", "csv": "text/csv",
-    "css": "text/css", "svg": "image/svg+xml", "ics": "text/calendar"
+    'json': 'application/json', 'kml': 'application/vnd.google-earth.kml+xml',
+    'xml': 'application/xml', 'js': 'application/javascript', 'csv': 'text/csv',
+    'css': 'text/css', 'svg': 'image/svg+xml', 'ics': 'text/calendar'
   }
   page_content_type = mimes_types[ext]
   page_content_type = "text/html" if page_content_type == nil
@@ -303,7 +303,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
         output = dynamic_replace(db_name, output, global_data, history, params)
 
-    -- {{ riot | slug(#slug2...) | <mount> | <url> }}
+    -- {{ riot | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot | demo | mount }}
     -- e.g. {{ riot | demo#demo2 }}
     if action == 'riot'
@@ -396,8 +396,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
       object = aql(db_name, request, { slug: item })[1]
       if object
-        jshmac = stringy.split(encode_with_secret(object.i_js, ''), ".")[2]\gsub("/", "-")
-        csshmac = stringy.split(encode_with_secret(object.i_css, ''), ".")[2]\gsub("/", "-")
+        jshmac = stringy.split(encode_with_secret(object.i_js, ''), '.')[2]\gsub('/', '-')
+        csshmac = stringy.split(encode_with_secret(object.i_css, ''), '.')[2]\gsub('/', '-')
         output = "/#{params.lang}/#{object._key}/vendors/#{jshmac}.js" if dataset == 'js_vendor'
         output = "/#{params.lang}/#{object._key}/js/#{object._rev}.js" if dataset == 'js'
         output = "/#{params.lang}/#{object._key}/vendors/#{csshmac}.css" if dataset == 'css_vendor'
