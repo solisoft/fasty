@@ -52,6 +52,10 @@ $(function () {
   route('/trads', function() { riot.mount('div#app', 'trads') })
   route('/settings', function() { riot.mount('div#app', 'settings') })
   route('/datatypes', function() { riot.mount('div#app', 'datatypes') })
+  route('/datatypes/*', function (folder_key) {
+    riot.mount('div#app', 'datatypes', { folder_key: folder_key })
+  })
+
   route('/users', function() { riot.mount('div#app', 'users') })
   route('/aqls', function() { riot.mount('div#app', 'aqls') })
   route('/helpers', function() { riot.mount('div#app', 'helpers') })
@@ -87,7 +91,7 @@ $(function () {
       }
       if(collection == "partials") {
         if (action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
-        if(action == "new") { riot.mount('div#app', 'partial_new', { folder_key: id }) }
+        if (action == "new") { riot.mount('div#app', 'partial_new', { folder_key: id }) }
       }
       if(collection == "components") {
         if (action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
@@ -103,7 +107,8 @@ $(function () {
         if(action == "edit") { riot.mount('div#app', 'trad_edit', { trad_id: id }) }
       }
       if(collection == "datatypes") {
-        if(action == "edit") { riot.mount('div#app', 'datatype_edit', { datatype_id: id }) }
+        if (action == "edit") { riot.mount('div#app', 'datatype_edit', { datatype_id: id }) }
+        if (action == "new") { riot.mount('div#app', 'datatype_new', { folder_key: id }) }
       }
       if(collection == "users") {
         if(action == "edit") { riot.mount('div#app', 'user_edit', { user_id: id }) }

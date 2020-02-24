@@ -623,6 +623,8 @@ module.exports = Common;
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
   ".fasty.ovh": "https://fasty.ovh/_db/",
+  "office.fasty.ovh": "http://office.fasty.ovh:8530/_db/",
+  "afrikrea.fasty.ovh": "/_db",
   /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
   ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
 };
@@ -1520,6 +1522,10 @@ $(function () {
   route('/trads', function() { riot.mount('div#app', 'trads') })
   route('/settings', function() { riot.mount('div#app', 'settings') })
   route('/datatypes', function() { riot.mount('div#app', 'datatypes') })
+  route('/datatypes/*', function (folder_key) {
+    riot.mount('div#app', 'datatypes', { folder_key: folder_key })
+  })
+
   route('/users', function() { riot.mount('div#app', 'users') })
   route('/aqls', function() { riot.mount('div#app', 'aqls') })
   route('/helpers', function() { riot.mount('div#app', 'helpers') })
@@ -1555,7 +1561,7 @@ $(function () {
       }
       if(collection == "partials") {
         if (action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
-        if(action == "new") { riot.mount('div#app', 'partial_new', { folder_key: id }) }
+        if (action == "new") { riot.mount('div#app', 'partial_new', { folder_key: id }) }
       }
       if(collection == "components") {
         if (action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
@@ -1571,7 +1577,8 @@ $(function () {
         if(action == "edit") { riot.mount('div#app', 'trad_edit', { trad_id: id }) }
       }
       if(collection == "datatypes") {
-        if(action == "edit") { riot.mount('div#app', 'datatype_edit', { datatype_id: id }) }
+        if (action == "edit") { riot.mount('div#app', 'datatype_edit', { datatype_id: id }) }
+        if (action == "new") { riot.mount('div#app', 'datatype_new', { folder_key: id }) }
       }
       if(collection == "users") {
         if(action == "edit") { riot.mount('div#app', 'user_edit', { user_id: id }) }
@@ -3031,12 +3038,154 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
 });
 
 require.register("widgets/datatypes.html.tag", function(exports, require, module) {
+riot.tag2('datatype_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in path}"><a href="#datatypes/{f._key}">{f.name}</a></li> <li> <a if="{path.length > 1}" onclick="{renameFolder}"><i class="far fa-edit"></i></a> <a onclick="{addFolder}"><i class="fas fa-plus"></i></a> <a if="{path.length > 1 && folders.length == 0}" onclick="{deleteFolder}"><i class="fas fa-trash"></i></a> </li> </ul> <ul class="uk-list"> <li each="{f in folders}"><a href="#datatypes/{f._key}"><i class="far fa-folder"></i> {f.name}</a></li> </ul> </div>', '', '', function(opts) {
+    this.folders = []
+    this.folder = {}
+    this.path = [ this.folder ]
+    this.folder_key = this.opts.folder_key || '';
+    var self = this
 
-riot.tag2('datatype_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-alert-warning" if="{locked_by}"> <i class="fas fa-lock"></i> This file is locked by {locked_by} </div> <ul uk-tab> <li><a href="#">datatypes</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing datatype</h3> <form onsubmit="{save_form}" class="uk-form" id="form_datatype"> </form> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> <dataset_helper></dataset_helper> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+    var loadFolder = function(folder_key) {
+      common.get(url + '/cruds/folders/datatypes/' + folder_key, function(d) {
+        self.folders = d.folders
+        self.path = d.path
+        self.folder = _.last(self.path)
+        self.parent.setFolder(self.folder)
+        self.update()
+      })
+    }
+
+    this.addFolder = function(e) {
+      var name = prompt("Folder's name");
+      common.post(url + "/cruds/folders/datatypes", JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
+        loadFolder(self.folder._key)
+      })
+    }.bind(this)
+
+    this.renameFolder = function(e) {
+      var name = prompt("Update Folder's name");
+      common.patch(url + "/cruds/folders/datatypes", JSON.stringify({ name: name, id: self.folder._key }), function(d) {
+        self.path = d.path
+        self.update()
+      })
+    }.bind(this)
+
+    this.deleteFolder = function(e) {
+      UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content')
+        .then(function() {
+          var parent = _.last(_.initial(self.path));
+          common.delete(url + "/cruds/folders/datatypes/" + self.folder._key, function(d) {
+            common.get(url + "/cruds/folders/datatypes/" + parent._key, function(d) {
+              self.folders = d.folders
+              self.path = d.path
+              loadFolder(parent._key)
+              self.update()
+            })
+          })
+      }, function () {
+        console.log('Rejected.')
+      });
+    }.bind(this)
+
+    loadFolder(this.folder_key)
+});
+
+riot.tag2('datatype_crud_index', '<a href="#" class="uk-button uk-button-small uk-button-default" onclick="{new_item}"> <i class="fas fa-plus"></i> New {opts.singular} </a> <table class="uk-table uk-table-striped" if="{data.length > 0}"> <thead> <tr> <th each="{col in cols}"> {col.name == undefined ? col : col.label === undefined ? col.name : col.label} </th> <th width="70"></th> </tr> </thead> <tbody> <tr each="{row in data}"> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.tr == true}">{_.get(row,col.name)[locale]}</virtual> <virtual if="{col.tr != true}">{_.get(row,col.name)}</virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{datatype > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(datatype + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul>', '', '', function(opts) {
+    var self = this
+    this.data = []
+    this.new_item = function(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "datatype_crud_new", opts)
+    }.bind(this)
+
+    this.loaddatatype = function(datatypeIndex) {
+      common.get(url + "/cruds/sub/"+opts.parent_id+"/"+opts.id+"/"+opts.key+"/datatype/"+datatypeIndex+"/"+per_page, function(d) {
+        self.data = d.data[0].data
+        self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
+        if(opts.columns) self.cols = opts.columns
+        self.count = d.data[0].count
+        self.update()
+      })
+    }
+    this.loaddatatype(1)
+
+    this.edit = function(e) {
+      e.preventDefault()
+      opts.element_id = e.item.row._key
+      riot.mount("#"+opts.id, "datatype_crud_edit", opts)
+    }.bind(this)
+
+    this.nextpage = function(e) {
+      e.preventDefault()
+      self.datatype += 1
+      self.loaddatatype(self.datatype + 1)
+    }.bind(this)
+
+    this.previouspage = function(e) {
+      e.preventDefault()
+      self.datatype -= 1
+      self.loaddatatype(self.datatype + 1)
+    }.bind(this)
+
+    this.destroy_object = function(e) {
+      e.preventDefault()
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.delete(url + "/cruds/" + opts.id + "/" + e.item.row._key, function() {
+          self.loaddatatype(1)
+        })
+      }, function() {})
+    }.bind(this)
+});
+
+riot.tag2('datatype_crud_edit', '<a href="#" class="uk-button uk-button-link" onclick="{goback}">Back to {opts.id}</a> <form onsubmit="{save_form}" class="uk-form" id="{opts.id}_crud_datatype"> </form>', '', '', function(opts) {
+    this.goback = function(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "datatype_crud_index", opts)
+    }.bind(this)
+
+    this.save_form = function(e) {
+      e.preventDefault()
+      common.saveForm(opts.id+'_crud_datatype', "cruds/sub/"+opts.parent_name+"/"+ opts.id+"/"+opts.element_id, "", opts)
+    }.bind(this)
+
+    var self = this;
+    common.get(url + "/cruds/" + opts.id + "/" + opts.element_id, function(d) {
+      self.datatype = d.data
+
+      common.buildForm(self.datatype, opts.fields, '#'+opts.id+'_crud_datatype')
+    })
+    this.on('updated', function() {
+      $(".select_list").select2()
+      $(".select_mlist").select2()
+      $(".select_tag").select2({ tags: true })
+    })
+});
+
+riot.tag2('datatype_crud_new', '<a href="#" class="uk-button uk-button-link" onclick="{goback}">Back to {opts.id}</a> <form onsubmit="{save_form}" class="uk-form" id="{opts.id}_crud_datatype"> </form>', '', '', function(opts) {
+    var self = this
+    this.crud = {}
+    this.crud[opts.key] = opts.parent_id
+
+    this.goback = function(e) {
+      e.preventDefault()
+      riot.mount("#"+opts.id, "datatype_crud_index", opts)
+    }.bind(this)
+
+    this.on('mount', function() {
+      common.buildForm(self.crud, opts.fields, '#'+opts.id+'_crud_datatype')
+    })
+
+    this.save_form = function(e) {
+      e.preventDefault()
+      common.saveForm(opts.id+'_crud_datatype', "cruds/sub/datatypes/"+ opts.id, "", opts)
+    }.bind(this)
+
+});
+
+riot.tag2('datatype_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datatypes</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing datatype</h3> <form onsubmit="{save_form}" class="uk-form" id="form_datatype"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this datatype... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
-    self.locked_by = null
 
     this.save_form = function(e) {
       e.preventDefault()
@@ -3045,7 +3194,7 @@ riot.tag2('datatype_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-
 
     this.duplicate = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.get(url + "/cruds/datatypes/" + self.datatype._key + "/duplicate", function(data) {
+        common.get(url + "/cruds/datatypes/" + opts.datatype_id + "/duplicate", function(data) {
           route('/datatypes/' + data._key + '/edit')
           UIkit.notification({
             message : 'Successfully duplicated!',
@@ -3057,21 +3206,35 @@ riot.tag2('datatype_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-
       }, function() {})
     }.bind(this)
 
+    this.publish = function(e) {
+      UIkit.modal.confirm("Are you sure?").then(function() {
+        common.post(url + "/cruds/datatypes/" + opts.datatype_id + "/publish", JSON.stringify({}), function(data) {
+          UIkit.notification({
+            message : 'Successfully published!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+        })
+      })
+    }.bind(this)
+
     common.get(url + "/cruds/datatypes/" + opts.datatype_id, function(d) {
       self.datatype = d.data
-      self.locked_by = d.data.locked_by
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
-
       var fields = d.fields
+      var act_as_tree = d.fields.act_as_tree
 
       if(!_.isArray(fields)) fields = fields.model
       common.get(url + "/auth/whoami", function(me) {
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
+        var back_url = 'datatypes'
+        if(act_as_tree) { back_url = 'datatypes/' + self.datatype.folder_key }
         if(self.can_access)
-          common.buildForm(self.datatype, fields, '#form_datatype', 'datatypes', function() {
+          common.buildForm(self.datatype, fields, '#form_datatype', back_url, function() {
             $(".crud").each(function(i, c) {
             var id = $(c).attr("id")
             riot.mount("#" + id, "datatype_crud_index", { model: id,
@@ -3080,7 +3243,7 @@ riot.tag2('datatype_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-
               singular: self.sub_models[id].singular,
               columns: self.sub_models[id].columns,
               parent_id: opts.datatype_id,
-              parent_name: "datatypes" })
+              parent_name: back_url })
           })
         })
       })
@@ -3093,7 +3256,7 @@ riot.tag2('datatype_edit', '<virtual if="{can_access}"> <div uk-alert class="uk-
     })
 });
 
-riot.tag2('datatype_new', '<virtual if="{can_access}"> <h3>Creating datatype</h3> <form onsubmit="{save_form}" class="uk-form" id="form_new_datatype"> </form> <dataset_helper></dataset_helper> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
+riot.tag2('datatype_new', '<virtual if="{can_access}"> <h3>Creating datatype</h3> <form onsubmit="{save_form}" class="uk-form" id="form_new_datatype"> </form> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this datatype... </virtual>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -3111,8 +3274,15 @@ riot.tag2('datatype_new', '<virtual if="{can_access}"> <h3>Creating datatype</h3
         if(self.can_access) {
 
           var fields = d.fields
+          var obj = {}
           if(!_.isArray(fields)) fields = fields.model
-          common.buildForm({}, fields, '#form_new_datatype', 'datatypes');
+          var back_url = 'datatypes'
+          if(self.opts.folder_key) {
+            fields.push({ r: true, c: "1-1", n: "folder_key", t: "hidden" })
+            obj['folder_key'] = opts.folder_key
+            back_url = 'datatypes/' + opts.folder_key
+          }
+          common.buildForm(obj, fields, '#form_new_datatype', back_url);
         }
       })
     })
@@ -3124,10 +3294,10 @@ riot.tag2('datatype_new', '<virtual if="{can_access}"> <h3>Creating datatype</h3
     })
 });
 
-riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right"> <a href="#datatypes/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New datatype</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing datatypes</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{page > 0}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', 'datatypes .handle,[data-is="datatypes"] .handle{ cursor: move; }', '', function(opts) {
+riot.tag2('datatypes', '<datatype_folders show="{loaded}" folder_key="{folder_key}"></datatype_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datatypes/{folder._key}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New datatype</a> <a if="{!act_as_tree}" href="#datatypes/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New datatype</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing datatypes</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{_.get(row,col.name)[locale]} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="110"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination"> <li if="{datatype > 0}"><a onclick="{previouspage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(datatype + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextpage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per datatype : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setperpage}" class="uk-label">25</a> <a onclick="{setperpage}" class="uk-label">50</a> <a onclick="{setperpage}" class="uk-label">100</a> <a onclick="{setperpage}" class="uk-label">500</a> <a onclick="{setperpage}" class="uk-label">1000</a> <a onclick="{setperpage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this datatype... </virtual>', 'datatypes .handle,[data-is="datatypes"] .handle{ cursor: move; }', '', function(opts) {
 
     var self        = this
-    this.page       = 0
+    this.datatype    = 0
     this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
@@ -3135,10 +3305,14 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
     this.can_access = false
     this.sortable   = false
     this.loaded     = false
+    this.folder     = {}
+    this.folder_key = this.opts.folder_key || ''
+    this.act_as_tree = true
 
-    this.loadPage = function(pageIndex) {
+    this.loaddatatype = function(datatypeIndex) {
       self.loaded = false
-      common.get(url + "/cruds/datatypes/page/"+pageIndex+"/"+this.perpage, function(d) {
+      var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
+      common.get(url + "/cruds/datatypes/page/"+datatypeIndex+"/"+this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         self.export = !!d.model.export
         self.cols = _.map(common.array_diff(common.keys(self.data[0]), ["_id", "_key", "_rev"]), function(v) { return { name: v }})
@@ -3152,7 +3326,12 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
         })
       })
     }
-    this.loadPage(1)
+
+    this.setFolder = function(folder) {
+      self.folder = folder
+      self.act_as_tree = folder !== ''
+      self.loaddatatype(1)
+    }
 
     this.calc_value = function(row, col, locale) {
       value = _.get(row, col.name)
@@ -3175,7 +3354,7 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
         })
       }
       else {
-        self.loadPage(1)
+        self.loaddatatype(1)
       }
     }.bind(this)
 
@@ -3183,20 +3362,20 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
       route("/datatypes/" + e.item.row._key + "/edit")
     }.bind(this)
 
-    this.nextPage = function(e) {
-      self.page += 1
-      self.loadPage(self.page + 1)
+    this.nextpage = function(e) {
+      self.datatype += 1
+      self.loaddatatype(self.datatype + 1)
     }.bind(this)
 
-    this.previousPage = function(e) {
-      self.page -= 1
-      self.loadPage(self.page + 1)
+    this.previouspage = function(e) {
+      self.datatype -= 1
+      self.loaddatatype(self.datatype + 1)
     }.bind(this)
 
     this.destroy_object = function(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/cruds/datatypes/" + e.item.row._key, function() {
-          self.loadPage(self.page + 1)
+          self.loaddatatype(self.datatype + 1)
         })
       }, function() {})
     }.bind(this)
@@ -3210,12 +3389,12 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
       })
     }.bind(this)
 
-    this.setPerPage = function(e) {
+    this.setperpage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
-      this.loadPage(1)
+      this.loaddatatype(1)
     }.bind(this)
 
     this.export_data = function(e) {
@@ -3240,8 +3419,10 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
           ghostClass: 'blue-background-class',
           handle: '.fa-grip-vertical',
           onSort: function ( evt) {
+            var folder_key = "?folder_key=" + self.folder._key
+            if(!self.act_as_tree) folder_key = ''
             common.put(
-              url + 'cruds/datatypes/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+              url + 'cruds/datatypes/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
               function() {}
             )
           },
@@ -3251,9 +3432,6 @@ riot.tag2('datatypes', '<virtual if="{can_access}"> <div class="uk-float-right">
 });
 
 
-
-riot.tag2('dataset_helper', '<hr> <h4>Data definition sample</h4> <pre><code class="json">\\{\n    "model": [\n      \\{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \\},\n      \\{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \\},\n      \\{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \\},\n      \\{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().format(\'YYYY-MM-DD\').raw().required()", "l": "Published_at" \\},\n      \\{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \\},\n      \\{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",\n        "d": "d": "FOR doc IN datasets FILTER doc.type == \'authors\' RETURN [doc._key, CONCAT(doc.ln, \' \', doc.fn)]"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \\},\n      \\{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",\n        "d": "LET tags = (FOR doc IN datasets FILTER doc.type==\'books\' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \\},\n      \\{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \\},\n      \\{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \\},\n      \\{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \\},\n      \\{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \\},\n      \\{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \\}\n      \\{ "r": true, "c": "1-1", "n": "html_content", "t": "wysiwyg", "j": "joi.any()", "l": "Wysiwyg editor" \\}\n    ],\n    "columns": [\n      \\{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,\n        "values": \\{ "true": "online", "false": "offline" \\},\n        "truncate": 20, "uppercase": true, "lowercase": true\n      \\}\n    ],\n    "act_as_tree": true,\n    "sortable": true,\n    "revisions": 10,\n    "publishable": true,\n    "slug": ["title"],\n    "sort": "SORT doc.order ASC",\n    "search": ["title", "barcode", "desc"],\n    "includes": \\{\n      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",\n      "merges": ", customer: c "\n    \\},\n    "timestamps": true\n  \\}\n  </code></pre>', 'dataset_helper pre { padding: 0; border: none; border-radius: 4px; }', '', function(opts) {
-});
 });
 
 require.register("widgets/helpers.html.tag", function(exports, require, module) {
