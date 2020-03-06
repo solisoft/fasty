@@ -15,7 +15,7 @@ describe('Core tests', function () {
   it('Creates new datatype', function () {
     cy.get('a[href="#datatypes"]').click()
     cy.get('div[data-is="datatypes"]').contains(' New datatype').click()
-    cy.url().should('match', /static\/admin\/index.html#datatypes\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datatypes\/\d+\/new/)
     cy.get('#name').type('Mailing');
     cy.get('#slug').type('mailing');
     cy.get('#javascript').then(elem => {
