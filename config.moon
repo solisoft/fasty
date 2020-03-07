@@ -30,7 +30,7 @@ config "db_production", ->
 
 -- for test purpose
 config "db_test", ->
-  url "http://12.12.0.6:8529/"
+  url "http://12.12.0.6:8530/"
   name "cms"
   login "root"
   pass  "password"
