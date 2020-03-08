@@ -27,6 +27,7 @@ jobs:
           command: echo -e "[server.foxxy]\nurl=http://localhost:8529\nusername=root\npassword=\n\n[server.fasty]\nurl=http://localhost:8529\nusername=root\npassword=password" >> ~/.foxxrc
       - checkout
       - run: cp foxxy/app/js/config.js.sample foxxy/app/js/config.js
+      - run: cp config.moon.test config.moon
       - run:
           name: 'Edit nginx.conf'
           command: echo -e "\nuser root root;" >> nginx.conf
