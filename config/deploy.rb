@@ -39,7 +39,7 @@ desc "Deploys the current version to the server."
 task :deploy => :environment do
   to :before_hook do
     # Put things to run locally before ssh
-    find_and_replace = "ruby -pi -e \"gsub('http://localhost:8530/_db/cms/', 'http://cluster.solicms.com:8529/_db/cms/')\" dist/*.html"
+    find_and_replace = "ruby -pi -e \"gsub('http://localhost:8529/_db/cms/', 'http://cluster.solicms.com:8529/_db/cms/')\" dist/*.html"
     queue "cd foxxy; rm -Rf dist/*; yarn run brunch b -- --production;git add . ; #{find_and_replace}; cd ..; git commit -am 'dist release'; git push;"
   end
   deploy do

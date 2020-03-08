@@ -9,7 +9,7 @@ executors:
       - image: arangodb/arangodb:3.6.1
         environment:
           ARANGO_ROOT_PASSWORD: password
-        command: [--server.endpoint=http+tcp://0.0.0.0:8530 --server.password password]
+        command: [--server.endpoint=http+tcp://0.0.0.0:8529 --server.password password]
 
 jobs:
   cypress-test:
@@ -24,7 +24,7 @@ jobs:
           command: npm install -g foxxy && npm install -g foxx-cli
       - run:
           name: 'Add ~/.foxxrc'
-          command: echo -e "[server.foxxy]\nurl=http://localhost:8529\nusername=root\npassword=\n\n[server.fasty]\nurl=http://localhost:8530\nusername=root\npassword=password" >> ~/.foxxrc
+          command: echo -e "[server.foxxy]\nurl=http://localhost:8529\nusername=root\npassword=\n\n[server.fasty]\nurl=http://localhost:8529\nusername=root\npassword=password" >> ~/.foxxrc
       - checkout
       - run: cp foxxy/app/js/config.js.sample foxxy/app/js/config.js
       - run:
@@ -34,7 +34,7 @@ jobs:
       - run:
           name: 'Prepare database'
           command: |
-            echo 'db._createDatabase("db_test");' | arangosh --server.endpoint=http+tcp://0.0.0.0:8530 --server.password password
+            echo 'db._createDatabase("db_test");' | arangosh --server.endpoint=http+tcp://0.0.0.0:8529 --server.password password
             cd foxxy/
             foxxy upgrade settings --server fasty --database db_test
             foxxy upgrade --server fasty --database db_test
