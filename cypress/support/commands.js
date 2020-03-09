@@ -24,7 +24,7 @@ Cypress.Commands.add("login", () => {
 
 Cypress.Commands.add("create_page", (slug, html) => {
   cy.visit(host_admin + '/#pages')
-  cy.get('div[data-is="pages"]').contains('New page').click()
+  cy.contains('New page').click()
   cy.get('#name').type(slug);
   cy.get('#slug').type(slug);
   cy.get('#raw_html').then(elem => { elem.val(html) })
@@ -33,7 +33,7 @@ Cypress.Commands.add("create_page", (slug, html) => {
 
 Cypress.Commands.add("create_aql", (slug, aql) => {
   cy.visit(host_admin + '/#aqls')
-  cy.get('div[data-is="aqls"]').contains('New aql').click()
+  cy.contains('New aql').click()
   cy.get('#slug').type(slug);
   cy.get('#aql').then(elem => { elem.val(aql) })
   cy.get('input[type="submit"]').click();
@@ -41,7 +41,7 @@ Cypress.Commands.add("create_aql", (slug, aql) => {
 
 Cypress.Commands.add("create_partial", (slug, html) => {
   cy.visit(host_admin + '/#partials')
-  cy.get('div[data-is="partials"]').contains('New partial').click()
+  cy.contains('New partial').click()
   cy.get('#name').type(slug);
   cy.get('#slug').type(slug);
   cy.get('#html').then(elem => { elem.val(html) })
