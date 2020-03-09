@@ -10,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "cypress": "4.0.0",
+    "cypress": "^4.1.0",
     "mocha": "^4.0.1",
     "mocha-junit-reporter": "^1.13.0",
     "mocha-multi-reporters": "^1.1.4"

@@ -367,8 +367,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         output = translations[item][params.lang]
 
     -- {{ external | url }}
-    if action == 'external'
-      output = http_get(item, {}) if action == 'external'
+    output = http_get(item, {}) if action == 'external'
 
     -- {{ og_data | name }}
     if action == 'og_data'

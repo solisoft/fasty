@@ -10,9 +10,8 @@ describe('Frontend / {{ partial | key }}', function () {
   it('Basic Partial', function () {
     cy.create_partial('basic', 'This is a basic partial')
     cy.create_page('basic_partial', '{{ partial | basic }}')
-
     cy.visit(host + '/en/basic_partial')
     cy.get('body').should('contain', 'This is a basic partial')
-
   })
+
 })

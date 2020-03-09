@@ -10,20 +10,20 @@
 //
 //
 // -- This is a parent command --
-var host = 'http://test.127.0.0.1.xip.io:8080/static/admin/'
+var host = 'http://test.127.0.0.1.xip.io:8080'
+var host_admin = host + '/static/admin'
 
 Cypress.Commands.add("login", () => {
-  cy.visit(host + 'login.html')
+  cy.visit(host_admin + '/login.html')
   cy.get('#username').type('demo@foxxy.ovh');
   cy.get('#password').type('977cebdd');
   cy.get('button').click();
-  cy.visit(host + 'index.html');
-  cy.url().should('eq', host + 'index.html#welcome');
+  cy.visit(host_admin + '/index.html');
+  cy.url().should('eq', host_admin + '/index.html#welcome');
 })
 
 Cypress.Commands.add("create_page", (slug, html) => {
-  cy.visit(host)
-  cy.visit(host + '/#pages')
+  cy.visit(host_admin + '/#pages')
   cy.get('div[data-is="pages"]').contains('New page').click()
   cy.get('#name').type(slug);
   cy.get('#slug').type(slug);
@@ -32,8 +32,7 @@ Cypress.Commands.add("create_page", (slug, html) => {
 })
 
 Cypress.Commands.add("create_aql", (slug, aql) => {
-  cy.visit(host)
-  cy.visit(host + '/#aqls')
+  cy.visit(host_admin + '/#aqls')
   cy.get('div[data-is="aqls"]').contains('New aql').click()
   cy.get('#slug').type(slug);
   cy.get('#aql').then(elem => { elem.val(aql) })
@@ -41,13 +40,17 @@ Cypress.Commands.add("create_aql", (slug, aql) => {
 })
 
 Cypress.Commands.add("create_partial", (slug, html) => {
-  cy.visit(host)
-  cy.visit(host + '/#partials')
+  cy.visit(host_admin + '/#partials')
   cy.get('div[data-is="partials"]').contains('New partial').click()
   cy.get('#name').type(slug);
   cy.get('#slug').type(slug);
   cy.get('#html').then(elem => { elem.val(html) })
   cy.get('input[type="submit"]').click();
+})
+
+Cypress.Commands.add("run_aql", (slug) => {
+  cy.create_page('run_aql', '{{ aql | ' + slug + ' }} {{ aql | remove_run_aql }}')
+  cy.visit(host + '/en/run_aql')
 })
 
 //
