@@ -4,7 +4,7 @@ https://fasty.ovh
 
 A CMS built on top of OpenResty/Lapis & ArangoDB
 
-[![CircleCI](https://circleci.com/gh/solisoft/fasty/tree/master.svg)](https://circleci.com/gh/solisoft/fasty/tree/master.svg)
+[![CircleCI](https://circleci.com/gh/solisoft/fasty/tree/master.svg)](https://circleci.com/gh/solisoft/fasty/tree/master)
 
 # Installation
 
