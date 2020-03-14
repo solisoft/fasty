@@ -29,14 +29,16 @@ Cypress.Commands.add("create_page", (slug, html) => {
   cy.get('#slug').type(slug);
   cy.get('#raw_html').then(elem => { elem.val(html) })
   cy.get('input[type="submit"]').click();
+  cy.get('body').should('contain', 'Successfully')
 })
 
 Cypress.Commands.add("create_aql", (slug, aql) => {
   cy.visit(host_admin + '/#aqls')
-  cy.contains('New aql').click()
+  cy.contains(' New aql').click()
   cy.get('#slug').type(slug);
   cy.get('#aql').then(elem => { elem.val(aql) })
   cy.get('input[type="submit"]').click();
+  cy.get('body').should('contain', 'Successfully')
 })
 
 Cypress.Commands.add("create_partial", (slug, html) => {
@@ -46,6 +48,7 @@ Cypress.Commands.add("create_partial", (slug, html) => {
   cy.get('#slug').type(slug);
   cy.get('#html').then(elem => { elem.val(html) })
   cy.get('input[type="submit"]').click();
+  cy.get('body').should('contain', 'Successfully')
 })
 
 Cypress.Commands.add("run_aql", (slug) => {
