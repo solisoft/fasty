@@ -25,8 +25,6 @@ var Common = {
       editor.getSession().setUseWrapMode(true)
       editor.getSession().setValue(unescape($("#" + id).val()))
       editor.getSession().on('change', function () { $("#" + id).val(editor.getSession().getValue()) })
-
-      return editor
     }
   },
 
