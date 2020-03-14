@@ -16,16 +16,18 @@ var Common = {
       return o
     }
   },
-  startEditor: function(name, mode, id) {
-    var editor = ace.edit(name)
-    editor.setTheme("ace/theme/twilight");
-    editor.getSession().setMode(mode)
-    editor.setOptions({ tabSize: 2, useSoftTabs: true })
-    editor.getSession().setUseWrapMode(true)
-    editor.getSession().setValue(unescape($("#"+id).val()))
-    editor.getSession().on('change', function(){ $("#"+id).val(editor.getSession().getValue()); })
+  startEditor: function (name, mode, id) {
+    if ($(name).length > 0) {
+      var editor = ace.edit(name)
+      editor.setTheme("ace/theme/twilight")
+      editor.getSession().setMode(mode)
+      editor.setOptions({ tabSize: 2, useSoftTabs: true })
+      editor.getSession().setUseWrapMode(true)
+      editor.getSession().setValue(unescape($("#" + id).val()))
+      editor.getSession().on('change', function () { $("#" + id).val(editor.getSession().getValue()) })
 
-    return editor;
+      return editor
+    }
   },
 
   checkConditions: function checkConditions(fields, formId) {
