@@ -2,16 +2,16 @@
 /*jshint -W097, -W033, node: true, esversion: 6 */
 "use strict"
 
-var argv = require('yargs').argv
-var colors = require('colors')
-var request = require('request')
-var _ = require('lodash')
-var chokidar = require('chokidar')
-const notifier = require('node-notifier')
-var yaml = require('js-yaml')
-const io = require('socket.io-client')
+var argv = require("yargs").argv
+var colors = require("colors")
+var request = require("request")
+var _ = require("lodash")
+var chokidar = require("chokidar")
+const notifier = require("node-notifier")
+var yaml = require("js-yaml")
+const io = require("socket.io-client")
 var socket = null
-var fs = require('fs')
+var fs = require("fs")
 var dirname = process.cwd()
 var fullname = ""
 var webhook = null
@@ -19,16 +19,16 @@ var domain = null
 var sync = null
 var updated_by_users = []
 
-if(!fs.existsSync(dirname + '/.tokens.yml')) {
+if(!fs.existsSync(dirname + "/.tokens.yml")) {
   console.log("Please configure a .tokens.yml file for tokens".red)
   process.exit()
 }
 
-var tokens = yaml.safeLoad(fs.readFileSync(dirname + '/.tokens.yml', 'utf8'))
+var tokens = yaml.safeLoad(fs.readFileSync(dirname + "/.tokens.yml", "utf8"))
 
 var check_json = function(json, folder, fullname, api) {
   _.each(json, function(v, k) {
-    var pathname = 'fs/' + folder + '/' + k
+    var pathname = "fs/" + folder + "/" + k
     if(!fs.existsSync(pathname)) fs.mkdirSync(pathname)
     _.each(v, function (obj) {
       var endpathname = pathname
@@ -38,71 +38,73 @@ var check_json = function(json, folder, fullname, api) {
           var recursive_path = pathname
           _.each(obj.path, function(pa) {
             if(pa != "Root") {
-              recursive_path += '/' + pa
+              recursive_path += "/" + pa
               if(!fs.existsSync(recursive_path)) fs.mkdirSync(recursive_path)
             }
           })
-          endpathname = recursive_path + '/' + obj.name
+          endpathname = recursive_path + "/" + obj.name
         } else {
-          endpathname = pathname + '/' + obj.name
+          endpathname = pathname + "/" + obj.name
         }
         if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
       }
 
-      var header = obj.locked_by ? '@lock' : ''
+      var header = obj.locked_by ? "@lock" : ""
       header += "#FASTY " + obj.id
 
       if (k == "layouts") {
-        fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
-        fs.writeFileSync(endpathname + '/' + obj.name + '.scss', header + " scss\n" + obj.scss)
-        fs.writeFileSync(endpathname + '/' + obj.name + '.js', header + " js\n" + obj.js)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".scss", header + " scss\n" + obj.scss)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " js\n" + obj.js)
       }
       if (k == "components") {
-        console.log(obj.path)
-        fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
       }
       if (k == "partials") {
-        console.log(obj.path)
-        fs.writeFileSync(endpathname + '/' + obj.name + '.html', header + " html\n" + obj.html)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
       }
       if (k == "aqls") {
-        fs.writeFileSync(endpathname + '/' + obj.name + '.aql', header + " aql\n" + obj.aql)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".aql", header + " aql\n" + obj.aql)
       }
       if (k == "apis") {
         header = "#FASTY " + obj.api.id
-        endpathname = pathname + '/' + obj.api.name
+        endpathname = pathname + "/" + obj.api.name
         if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
 
-        fs.writeFileSync(endpathname + '/manifest.json', header + " manifest\n" + obj.api.manifest)
-        fs.writeFileSync(endpathname + '/main.js', header + " code\n" + obj.api.code)
+        fs.writeFileSync(endpathname + "/manifest.json", header + " manifest\n" + obj.api.manifest)
+        fs.writeFileSync(endpathname + "/main.js", header + " code\n" + obj.api.code)
         if(!fs.existsSync(endpathname + "/routes")) fs.mkdirSync(endpathname + "/routes")
         if(!fs.existsSync(endpathname + "/scripts")) fs.mkdirSync(endpathname + "/scripts")
         if(!fs.existsSync(endpathname + "/tests")) fs.mkdirSync(endpathname + "/tests")
         _.each(obj.api_routes, function (route) {
           header = "#FASTY " + route.id
-          fs.writeFileSync(endpathname + '/routes/' + route.name + '.js', header + " javascript\n" + route.js)
+          fs.writeFileSync(endpathname + "/routes/" + route.name + ".js", header + " javascript\n" + route.js)
         })
         _.each(obj.api_scripts, function (script) {
           header = "#FASTY " + script.id
-          fs.writeFileSync(endpathname + '/scripts/' + script.name + '.js', header + " javascript\n" + script.js)
+          fs.writeFileSync(endpathname + "/scripts/" + script.name + ".js", header + " javascript\n" + script.js)
         })
         _.each(obj.api_tests, function (test) {
           header = "#FASTY " + test.id
-          fs.writeFileSync(endpathname + '/tests/' + test.name + '.js', header + " javascript\n" + test.js)
+          fs.writeFileSync(endpathname + "/tests/" + test.name + ".js", header + " javascript\n" + test.js)
         })
       }
       if (k == "scripts") {
-        fs.writeFileSync(endpathname + '/index.js', header + " code\n" + obj.code)
-        fs.writeFileSync(endpathname + '/package.json', header + " package\n" + obj.package)
+        fs.writeFileSync(endpathname + "/index.js", header + " code\n" + obj.code)
+        fs.writeFileSync(endpathname + "/package.json", header + " package\n" + obj.package)
       }
       if (k == "datasets") {
         header = "#FASTY " + obj._id
         _.each(_.keys(obj), function(n) {
-          if(!_.includes(['_key', '_id', 'name', 'title', 'slug'], n)) {
-            var type = ''
-            if(_.includes(['js', 'javascript'], n)) { type = 'js' }
-            if(type == '') type = n
-            fs.writeFileSync(endpathname + '/' + type + '.' + type, header + " "+ n +"\n" + obj[n])
+          if(!_.includes(["_key", "_id", "name", "title", "slug"], n)) {
+            var type = ""
+            if(_.includes(["js", "javascript"], n)) { type = "js" }
+            if(n == "json") { type = "json" }
+            if(n == "css") { type = "css" }
+            if(n == "scss") { type = "scss" }
+            if(n == "html") { type = "html" }
+            if(type == "") type = n
+            fs.writeFileSync(endpathname + "/" + type + "." + type, header + " "+ n +"\n" + obj[n])
           }
         })
       }
@@ -110,8 +112,8 @@ var check_json = function(json, folder, fullname, api) {
   })
 
   if(argv.w) {
-    console.log("Watching folder.", dirname + '/fs/'+folder)
-    chokidar.watch(dirname + '/fs/'+ folder, {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
+    console.log("Watching folder.", dirname + "/fs/"+folder)
+    chokidar.watch(dirname + "/fs/"+ folder, {ignored: /(^|[\/\\])\../}).on("all", (event, path) => {
       if(event == "add") {
         console.log(`Added : ${path}`.cyan)
       }
@@ -141,7 +143,7 @@ var check_json = function(json, folder, fullname, api) {
                     if (webhook) {
                       var payload = { "text": fullname + " :: " + dirname + body }
                       request.post({
-                        headers : { 'Content-type' : 'application/json' },
+                        headers : { "Content-type" : "application/json" },
                         url: webhook,
                         form : { payload: JSON.stringify(payload)}
                       }, function optionalCallback(_err, _httpResponse, body) { })
@@ -150,7 +152,7 @@ var check_json = function(json, folder, fullname, api) {
                     if (socket) {
                       var fileData = fs.readFileSync(path).toString()
                       var fileMeta = fileData.split("\n")[0].trim()
-                      socket.emit('updated', { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
+                      socket.emit("updated", { path: path.replace(dirname, ""), room: domain, from: fullname, fileData: fileData, fileMeta: fileMeta, secret: sync.secret })
                     }
                   }
 
@@ -158,7 +160,7 @@ var check_json = function(json, folder, fullname, api) {
               }
 
             } else {
-              console.log('something went wrong ... please try again'.red)
+              console.log("something went wrong ... please try again".red)
             }
           })
         }, 100)
@@ -170,25 +172,25 @@ var check_json = function(json, folder, fullname, api) {
 if(argv._.length != 1) {
   console.log("usage : fasty <shortuct> -w".yellow)
 } else {
-  fullname = tokens['name']
-  domain = tokens['domains'][argv._[0]].domain
-  webhook = tokens['domains'][argv._[0]].webhook
-  var token  = tokens['domains'][argv._[0]].token
-  sync   = tokens['domains'][argv._[0]].sync
+  fullname = tokens["name"]
+  domain = tokens["domains"][argv._[0]].domain
+  webhook = tokens["domains"][argv._[0]].webhook
+  var token  = tokens["domains"][argv._[0]].token
+  sync   = tokens["domains"][argv._[0]].sync
 
   var folder = argv._[0]
 
   if(sync) {
-    const io = require('socket.io-client');
+    const io = require("socket.io-client");
     socket = io(sync.server + ":" + sync.port);
 
-    socket.on('connect', () => {
+    socket.on("connect", () => {
       console.log("Socket Connected to " + sync.server + " on port " + sync.port); // true
-      socket.emit('join', { secret: sync.secret, room: domain })
+      socket.emit("join", { secret: sync.secret, room: domain })
     });
 
-    socket.on('updated', (data) => {
-      console.log('Update event received : ' + data.fileMeta)
+    socket.on("updated", (data) => {
+      console.log("Update event received : " + data.fileMeta)
       if(data.from != fullname) {
         console.log("File " + data.path + " updated by " + data.from)
         updated_by_users.push(data.fileMeta)
@@ -207,8 +209,8 @@ if(argv._.length != 1) {
 
   var url = domain + "/sync/" + token
 
-  if(!fs.existsSync('fs')) fs.mkdirSync('fs')
-  if(!fs.existsSync('fs/'+ folder)) fs.mkdirSync('fs/' + folder)
+  if(!fs.existsSync("fs")) fs.mkdirSync("fs")
+  if(!fs.existsSync("fs/"+ folder)) fs.mkdirSync("fs/" + folder)
 
   if(argv.w) {
     console.log("Fetching data ...".green)
