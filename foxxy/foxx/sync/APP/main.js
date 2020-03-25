@@ -95,7 +95,7 @@ router.get('/:token', function (req, res) {
 router.patch('/:token', function (req, res) {
 
   if (_settings.secret == req.pathParams.token) {
-    var firstLine = req.body.data.split('\n')[0]
+    var firstLine = req.body.data.split('\n')[0].trim()
     var isLocked = firstLine.split(' ')[0].indexOf("@lock") >= 0
     var id = firstLine.split(' ')[1]
     var collection = id.split('/')[0]
