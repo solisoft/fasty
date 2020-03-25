@@ -55,7 +55,7 @@ var check_json = function(json, folder, fullname, api) {
       if (k == "layouts") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
         fs.writeFileSync(endpathname + "/" + obj.name + ".scss", header + " scss\n" + obj.scss)
-        fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " js\n" + obj.js)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " javascript\n" + obj.js)
       }
       if (k == "components") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
@@ -95,7 +95,8 @@ var check_json = function(json, folder, fullname, api) {
       }
       if (k == "datasets") {
         header = "#FASTY " + obj._id
-        _.each(_.keys(obj), function(n) {
+        _.each(_.keys(obj), function (n) {
+
           if(!_.includes(["_key", "_id", "name", "title", "slug"], n)) {
             var type = ""
             if(_.includes(["js", "javascript"], n)) { type = "js" }
@@ -199,8 +200,6 @@ if(argv._.length != 1) {
       //notifier.notify("Fasty :: Beware !! File updated " + data.fileMeta + " by " + data.from)
     })
   }
-
-
 
   if(token === undefined) {
     console.log("Token not found for this domain".red)
