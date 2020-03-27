@@ -99,10 +99,8 @@ class extends lapis.Application
     else
       status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
   ------------------------------------------------------------------------------
-  -- need_a_db
   [need_a_db: '/need_a_db']: => render: true
   ------------------------------------------------------------------------------
-  -- robots.txt
   [robots: '/robots.txt']: =>
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
@@ -112,7 +110,6 @@ class extends lapis.Application
       @params.slug  = 'robots'
       display_page(@)
   ------------------------------------------------------------------------------
-  -- root
   [root: '/(:lang)']: =>
     define_subdomain(@)
 
@@ -134,7 +131,6 @@ class extends lapis.Application
         else
           display_page(@)
   ------------------------------------------------------------------------------
-  -- datasets
   [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
     load_settings(@)
     data = aql(
@@ -146,7 +142,6 @@ class extends lapis.Application
 
     content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
   ------------------------------------------------------------------------------
-  -- js
   [js: '/:lang/:layout/js/:rev.js']: =>
     load_settings(@)
     js = aql(
@@ -160,7 +155,6 @@ class extends lapis.Application
     else
       content_type: "application/javascript", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
-  -- js_vendors
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
     load_settings(@)
     js = aql(
@@ -175,7 +169,6 @@ class extends lapis.Application
       content_type: "application/javascript", content, headers: { "expires": expire_at }
 
   ------------------------------------------------------------------------------
-  -- css
   [css: '/:lang/:layout/css/:rev.css']: =>
     load_settings(@)
     css = aql(
@@ -190,7 +183,6 @@ class extends lapis.Application
     else
       content_type: "text/css", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
-  -- css_vendors
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
     load_settings(@)
     css = aql(
@@ -204,7 +196,6 @@ class extends lapis.Application
     else
       content_type: "text/css", content, headers: { "expires": expire_at }
   ------------------------------------------------------------------------------
-  -- tag (riot)
   [component: '/:lang/:key/component/:rev.tag']: =>
     load_settings(@)
     html = ''
@@ -220,7 +211,6 @@ class extends lapis.Application
       content, headers: { "expires": expire_at }
 
   ------------------------------------------------------------------------------
-  -- page_no_lang
   [page_no_lang: '/:all/:slug']: =>
     define_subdomain(@)
 
@@ -230,7 +220,6 @@ class extends lapis.Application
       unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
       display_page(@)
   ------------------------------------------------------------------------------
-  -- page
   [page: '/:lang/:all/:slug(/*)']: =>
     define_subdomain(@)
 
@@ -239,7 +228,6 @@ class extends lapis.Application
       load_settings(@)
       display_page(@)
   ------------------------------------------------------------------------------
-  -- install service
   [service: '/service/:name']: respond_to {
     POST: =>
       load_settings(@)
@@ -282,5 +270,5 @@ class extends lapis.Application
     settings[sub_domain] = nil
     'ok'
   ------------------------------------------------------------------------------
-  -- console (kinda irb console)
+  -- console (kinda irb console in dev mode)
   [console: '/console']: console.make!
