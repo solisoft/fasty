@@ -10,16 +10,52 @@
 //
 //
 // -- This is a parent command --
-var host = 'http://test.127.0.0.1.xip.io:8080/static/admin/'
+var host = 'http://test.127.0.0.1.xip.io:8080'
+var host_admin = host + '/static/admin'
 
 Cypress.Commands.add("login", () => {
-  cy.visit(host + 'login.html')
+  cy.visit(host_admin + '/login.html')
   cy.get('#username').type('demo@foxxy.ovh');
   cy.get('#password').type('977cebdd');
   cy.get('button').click();
-  cy.visit(host + 'index.html');
-  cy.url().should('eq', host + 'index.html#welcome');
+  cy.visit(host_admin + '/index.html');
+  cy.url().should('eq', host_admin + '/index.html#welcome');
 })
+
+Cypress.Commands.add("create_page", (slug, html) => {
+  cy.visit(host_admin + '/#pages')
+  cy.contains('New page').click()
+  cy.get('#name').type(slug);
+  cy.get('#slug').type(slug);
+  cy.get('#raw_html').then(elem => { elem.val(html) })
+  cy.get('input[type="submit"]').click();
+  cy.get('body').should('contain', 'Successfully')
+})
+
+Cypress.Commands.add("create_aql", (slug, aql) => {
+  cy.visit(host_admin + '/#aqls')
+  cy.contains(' New aql').click()
+  cy.get('#slug').type(slug);
+  cy.get('#aql').then(elem => { elem.val(aql) })
+  cy.get('input[type="submit"]').click();
+  cy.get('body').should('contain', 'Successfully')
+})
+
+Cypress.Commands.add("create_partial", (slug, html) => {
+  cy.visit(host_admin + '/#partials')
+  cy.contains('New partial').click()
+  cy.get('#name').type(slug);
+  cy.get('#slug').type(slug);
+  cy.get('#html').then(elem => { elem.val(html) })
+  cy.get('input[type="submit"]').click();
+  cy.get('body').should('contain', 'Successfully')
+})
+
+Cypress.Commands.add("run_aql", (slug) => {
+  cy.create_page('run_aql', '{{ aql | ' + slug + ' }} {{ aql | remove_run_aql }}')
+  cy.visit(host + '/en/run_aql')
+})
+
 //
 //
 // -- This is a child command --

@@ -1,0 +1,12 @@
+-- config.moon
+config = require "lapis.config"
+
+config "development", ->
+  port 8080
+  measure_performance false
+
+config "db_development", ->
+  url "http://127.0.0.1:8529/"
+  name "cms"
+  login "root"
+  pass  "password"

@@ -54,6 +54,6 @@ describe('Core tests', function () {
     cy.get('div.uk-modal').should('contain', 'Are you sure?')
     cy.get('button').contains('Ok').click()
 
-    cy.get('td').contains('testaqledited').should('not.exist')
+    cy.get('body').contains('testaqledited').should('not.exist')
   })
 })

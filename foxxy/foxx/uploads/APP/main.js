@@ -61,9 +61,9 @@ router.get('/:key/:type/:field/:lang', function (req, res) {
 // -----------------------------------------------------------------------------
 // POST /uploads/:key/:type/:field
 router.post('/:key/:type/:field', function (req, res) {
-
+    const settings = db._collection('settings').firstExample()
     let date = (new Date()).toJSON().split('T')[0].split('-').join('/')
-    let path = _settings.upload_path + date
+    let path = settings.upload_path + date
     fs.makeDirectoryRecursive(path)
 
     let docs = []
@@ -78,17 +78,17 @@ router.post('/:key/:type/:field', function (req, res) {
 
       const ext = _.last(filename.split('.'))
       const filedest = path + '/' + uuid + "." + ext
-      let urldest = _settings.upload_url + date + "/" +  uuid + "." + ext
+      let urldest = settings.upload_url + date + "/" +  uuid + "." + ext
       fs.write(filedest, data.data)
 
       const image_exts = ['png', 'jpg', 'jpeg']
 
-      if (_settings.resize_ovh && _.includes(image_exts, ext.toLowerCase())) {
+      if (settings.resize_ovh && _.includes(image_exts, ext.toLowerCase())) {
         // upload to resize.ovh service
         var http_req = request.post('https://resize.ovh/upload_http', {
           form: {
             image: urldest,
-            key: _settings.resize_ovh
+            key: settings.resize_ovh
           }
         })
         console.log(http_req.body)

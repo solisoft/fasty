@@ -1,4 +1,4 @@
 database: db_demo
 username: root
 password: 'password'
-endpoint: 'http+tcp://127.0.0.1:8530'
+endpoint: 'http+tcp://127.0.0.1:8529'

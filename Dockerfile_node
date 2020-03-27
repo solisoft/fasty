@@ -4,7 +4,7 @@ LABEL Olivier Bonnaure <olivier@solisoft.net>
 RUN apk update && apk upgrade
 
 RUN apk --no-cache add --virtual native-deps \
-  nodejs npm g++ gcc libgcc libstdc++ linux-headers make python bash && \
+  nodejs npm g++ gcc libgcc libstdc++ linux-headers make python bash ffmpeg && \
   npm config set unsafe-perm true && \
   npm install --quiet yarn -g && \
   npm install --quiet nodemon -g

@@ -76,7 +76,7 @@
 
       var configs = require('js/config.js')
 
-      var host = 'http://localhost:8530/_db'
+      var host = 'http://localhost:8529/_db'
       _.each(configs, function(v, k) { if(hostname.indexOf(k) >= 0) host = v })
 
       var url = host + '/db_' + subdomain + '/'

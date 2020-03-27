@@ -1,6 +1,6 @@
 var arangojs = require("arangojs");
 var db = new arangojs.Database({
-  url: "http://localhost:8530"
+  url: "http://localhost:8529"
 });
 
 db.useBasicAuth("root", "password");
