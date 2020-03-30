@@ -1,6 +1,0 @@
-development:
-  ARANGODB_USER: "bbbb"
-  ARANGODB_PASS: "aaaa"
-  ARANGODB_DBNAME: "bbbb"
-  ARANGODB_ENDPOINT: "http+tcp://127.0.0.1:8529"
-  ARANGODB_HTTP_ENDPOINT: "http://server_ip:8529"
