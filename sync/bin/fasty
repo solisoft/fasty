@@ -9,7 +9,6 @@ var _ = require("lodash")
 var chokidar = require("chokidar")
 const notifier = require("node-notifier")
 var yaml = require("js-yaml")
-const io = require("socket.io-client")
 var socket = null
 var fs = require("fs")
 var dirname = process.cwd()
@@ -18,6 +17,8 @@ var webhook = null
 var domain = null
 var sync = null
 var updated_by_users = []
+
+console.log("fasty@0.0.16")
 
 if(!fs.existsSync(dirname + "/.tokens.yml")) {
   console.log("Please configure a .tokens.yml file for tokens".red)
@@ -191,7 +192,8 @@ if(argv._.length != 1) {
     });
 
     socket.on("updated", (data) => {
-      console.log("Update event received : " + data.fileMeta)
+      var date = new Date()
+      console.log(date.getHours() + ":" + date.getMinutes() + " Update event received : " + data.fileMeta)
       if(data.from != fullname) {
         console.log("File " + data.path + " updated by " + data.from)
         updated_by_users.push(data.fileMeta)
