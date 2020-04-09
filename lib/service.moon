@@ -1,4 +1,5 @@
-http = require 'lapis.nginx.http'
+http    = require 'lapis.nginx.http'
+stringy = require 'stringy'
 import map, table_index from require 'lib.utils'
 import from_json, to_json, trim from require 'lapis.util'
 import aql, foxx_upgrade from require 'lib.arango'
