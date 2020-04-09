@@ -61,7 +61,7 @@ deploy_site = (sub_domain, settings) ->
   db_config = require('lapis.config').get("db_#{config._name}")
   path = "dump/#{sub_domain[1]}/"
   home = from_json(settings.home)
-  deploy_to = stringy.split(home.deploy_secret, "#")
+  deploy_to = stringy.split(settings.deploy_secret, "#")
 
   request = 'FOR settings IN settings LIMIT 1 RETURN setting'
   sub_domain_settings = aql("db_#{deploy_to[1]}", request)[1]
