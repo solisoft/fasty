@@ -56,14 +56,14 @@ install_service = (sub_domain, name)->
   )
 --------------------------------------------------------------------------------
 deploy_site = (sub_domain, settings) ->
-  deploy_to = stringy.split(sub_domain, "#")
   config = require('lapis.config').get!
   db_config = require('lapis.config').get("db_#{config._name}")
   path = "dump/#{sub_domain[1]}/"
   home = from_json(settings.home)
+  deploy_to = stringy.split(home.deploy_secret, "#")
 
   request = 'FOR settings IN settings LIMIT 1 RETURN setting'
-  sub_domain_settings = aql("db_#{sub_domain}", request)[1]
+  sub_domain_settings = aql("db_#{deploy_to[1]}", request)[1]
 
   if deploy_to[2] == sub_domain_settings.token
     os.execute("mkdir -p #{path}")
