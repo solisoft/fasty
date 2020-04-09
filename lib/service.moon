@@ -63,7 +63,7 @@ deploy_site = (sub_domain, settings) ->
   home = from_json(settings.home)
   deploy_to = stringy.split(settings.deploy_secret, "#")
 
-  request = 'FOR settings IN settings LIMIT 1 RETURN setting'
+  request = 'FOR s IN settings LIMIT 1 RETURN s'
   sub_domain_settings = aql("db_#{deploy_to[1]}", request)[1]
 
   if deploy_to[2] == sub_domain_settings.token
