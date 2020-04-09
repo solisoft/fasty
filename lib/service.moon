@@ -73,7 +73,7 @@ deploy_site = (sub_domain, settings) ->
 
     os.execute(command)
 
-    os.execute("arangorestore --include-system-collections true --server.database #{settings.deploy_secret} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint}  --input-directory #{path} --overwrite true")
+    os.execute("arangorestore --include-system-collections true --server.database #{deploy_to[1]} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint}  --input-directory #{path} --overwrite true")
     os.execute("rm -Rf #{path}")
 
 --------------------------------------------------------------------------------
