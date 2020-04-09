@@ -64,7 +64,7 @@ deploy_site = (sub_domain, settings) ->
   deploy_to = stringy.split(settings.deploy_secret, "#")
 
   request = 'FOR s IN settings LIMIT 1 RETURN s'
-  sub_domain_settings = aql("db_#{deploy_to[1]}", request)[1]
+  sub_domain_settings = aql(deploy_to[1], request)[1]
 
   if deploy_to[2] == sub_domain_settings.token
     os.execute("mkdir -p #{path}")
