@@ -34,6 +34,7 @@ var typeCast = function(type, value) {
   if (type == "integer") value = parseInt(value)
   if (type == "float") value = parseFloat(value)
   if (type == "html") value = JSON.parse(value)
+  if (type == "datetime") value = value + ":00.000"
   return value
 }
 

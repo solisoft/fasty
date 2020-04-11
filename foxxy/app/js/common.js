@@ -123,6 +123,10 @@ var Common = {
           }
           if(l.t === "hidden") _html += '<input type="hidden" id="'+l.n+'"  name="'+ l.n +'"  value="'+value+'"></div><div data-hint="'+ l.n +'">'
           if(l.t === "date") _html += '<div><div class="uk-inline"><span class="uk-form-icon" uk-icon="icon: calendar"></span><input type="date" id="'+l.n+'" data-date-format="YYYY/MM/DD" class="uk-input" name="'+ l.n +'"  value="'+value+'"></div><div data-hint="'+ l.n +'" class="uk-text-danger"></div></div>'
+          if (l.t === "datetime") {
+            value = value.replace(":00.000", "")
+            _html += '<div><div class="uk-inline"><span class="uk-form-icon" uk-icon="icon: calendar"></span><input type="text" id="' + l.n + '" class="uk-input datepicker-here" data-language="en" name="' + l.n + '"  value="' + value + '" autocomplete="off"></div><div data-hint="' + l.n + '" class="uk-text-danger"></div></div>'
+          }
           if(l.t === "time") _html += '<div><div class="uk-inline"><span class="uk-form-icon" uk-icon="icon: calendar"></span><input type="time" id="'+l.n+'" class="uk-input" name="'+ l.n +'"  value="'+value+'"></div><div data-hint="'+ l.n +'" class="uk-text-danger"></div></div>'
           if(l.t === "text") _html += '<textarea id="'+l.n+'" class="uk-textarea" name="'+ l.n +'" style="'+l.s+'">'+ value +'</textarea><div data-hint="'+ l.n +'" class="uk-text-danger"></div>'
             if(l.t === "wysiwyg") {
@@ -252,6 +256,12 @@ var Common = {
 
     values.forEach(function (v, i) { $(formId + " #" + v[0]).val(v[1]) })
 
+    $('.datepicker-here').datepicker({
+      language: 'en', timepicker: true,
+      timeFormat: 'hh:ii',
+      dateFormat: 'yyyy-mm-dd'
+    })
+
     html_editors.forEach(function (e, i) {
       if(_.isString(e[1])) {
         try { e[1] = JSON.parse(e[1]) } catch(e) {}
@@ -270,8 +280,7 @@ var Common = {
         subdomains: 'abcd',
         minZoom: 0,
         maxZoom: 20,
-        ext: 'png',
-
+        ext: 'png'
       }).addTo(mymap)
       mymap.scrollWheelZoom.disable()
       var marker = L.marker(p[1], { draggable: true }).addTo(mymap)

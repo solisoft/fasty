@@ -472,5 +472,8 @@ section.editor-cms, section.edit-mode {
 .editor {
   border: 10px solid #232323; }
 
+.datepickers-container {
+  z-index: 1000000 !important; }
+
 
 /*# sourceMappingURL=css.css.map*/
