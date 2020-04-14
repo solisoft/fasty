@@ -236,13 +236,14 @@ router.get('/:service/search/:term', function (req, res) {
     "term": req.pathParams.term,
     "fields": _.flatten(fields)
   }
+
   var aql = `
-  FOR doc IN FULLTEXT(datasets, 'search', @term)
-    FILTER doc.type == @type
-    LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
-    ${order} ${includes}
-    LIMIT 100
-    RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
+  FOR doc IN viewDatasets
+  FILTER doc.type == @type
+  SEARCH PHRASE(doc['search'][@lang], @term, CONCAT("text_", @lang))
+  ${order} ${includes}
+  LIMIT 100
+  RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
   `
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }) }
 
