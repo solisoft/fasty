@@ -325,13 +325,16 @@ router.post('/:service', function (req, res) {
     var data = fieldsToData(fields, body, req.headers)
     data.type = req.pathParams.service
     if (object.act_as_tree) data['folder_key'] = body.folder_key
+    var search_arr = []
+
     if (object.search) {
-      var search_arr = []
       _.each(object.search, function(s) {
-        if (_.isPlainObject(data[s])) {
-          search_arr.push(data[s][req.headers['foxx-locale']])
-        } else {
-          search_arr.push(data[s])
+        if (_.isString(s)) {
+          if (_.isPlainObject(data[s])) {
+            search_arr.push(data[s][req.headers['foxx-locale']])
+          } else {
+            search_arr.push(data[s])
+          }
         }
       })
       data.search = {}
@@ -366,6 +369,17 @@ router.post('/:service', function (req, res) {
         collection.update(obj, { slug: slug })
       }
     }
+
+    _.each(object.search, function(s) {
+      if (_.isPlainObject(s)) {
+        var bindVars = { id: obj._id }
+        if(s.aql.indexOf("@lang")) bindVars['lang'] = req.headers['foxx-locale']
+        search_arr.push(db._query(s.aql, bindVars).toArray()[0])
+        data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+        collection.update(obj, { search: data.search })
+      }
+    })
+
     save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(obj._id, 'created', req.session.uid)
   }
@@ -462,14 +476,17 @@ router.post('/:service/:id', function (req, res) {
   if (errors.length == 0) {
     var doc = collection.document(req.pathParams.id)
     var data = fieldsToData(fields, body, req.headers)
+    var search_arr = []
+    data.search = {}
+
     if (object.search) {
-      data.search = {}
-      var search_arr = []
-      _.each(object.search, function(s) {
-        if (_.isPlainObject(data[s])) {
-          search_arr.push(data[s][req.headers['foxx-locale']])
-        } else {
-          search_arr.push(data[s])
+      _.each(object.search, function (s) {
+        if (_.isString(s)) {
+          if (_.isPlainObject(data[s])) {
+            search_arr.push(data[s][req.headers['foxx-locale']])
+          } else {
+            search_arr.push(data[s])
+          }
         }
       })
       data.search[req.headers['foxx-locale']] = search_arr.join(" ")
@@ -489,6 +506,16 @@ router.post('/:service/:id', function (req, res) {
         data['slug'] = _.kebabCase(slug)
       }
     }
+    _.each(object.search, function(s) {
+      if (_.isPlainObject(s)) {
+        var bindVars = { id: doc._id }
+        if (s.aql.indexOf("@lang")) bindVars['lang'] = req.headers['foxx-locale']
+        var search_item = db._query(s.aql, bindVars).toArray()[0]
+        search_arr.push(search_item)
+        data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+      }
+    })
+
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
     save_activity(doc._id, 'updated', req.session.uid)

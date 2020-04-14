@@ -517,10 +517,8 @@
         })
       })
     }
-    //this.loadPage(1)
 
     ////////////////////////////////////////////////////////////////////////////
-
     this.setFolder = function(folder) {
       self.folder = folder || {}
       self.folder_key = self.folder._key
@@ -559,6 +557,7 @@
       route("/datasets/" + this.opts.datatype + "/" + e.item.row._key + "/edit")
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     new_dataset(e) {
       route("/datasets/" + this.opts.datatype + "/new")
     }
