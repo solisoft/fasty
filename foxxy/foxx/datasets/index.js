@@ -338,7 +338,7 @@ router.post('/:service', function (req, res) {
         }
       })
       data.search = {}
-      data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
     }
     if (object.timestamps === true) { data.created_at = +new Date() }
     var filter_by_folder = ''
@@ -377,7 +377,7 @@ router.post('/:service', function (req, res) {
         search_arr.push(db._query(s.aql, bindVars).toArray()[0])
       }
     })
-    data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+    data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
     collection.update(obj, { search: data.search })
 
     save_revision(req.session.uid, obj, data, object.revisions)
@@ -420,7 +420,7 @@ router.post('/:service/:service_key/:sub', function (req, res) {
         }
       })
       data.search = {}
-      data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
     }
     if (object.timestamps === true) { data.created_at = +new Date() }
 
@@ -489,7 +489,7 @@ router.post('/:service/:id', function (req, res) {
           }
         }
       })
-      data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
     }
     if (object.timestamps === true) { data.updated_at = +new Date() }
     if (object.slug) {
@@ -512,7 +512,7 @@ router.post('/:service/:id', function (req, res) {
         if (s.aql.indexOf("@lang")) bindVars['lang'] = req.headers['foxx-locale']
         var search_item = db._query(s.aql, bindVars).toArray()[0]
         search_arr.push(search_item)
-        data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+        data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
       }
     })
 
