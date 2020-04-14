@@ -375,10 +375,10 @@ router.post('/:service', function (req, res) {
         var bindVars = { id: obj._id }
         if(s.aql.indexOf("@lang")) bindVars['lang'] = req.headers['foxx-locale']
         search_arr.push(db._query(s.aql, bindVars).toArray()[0])
-        data.search[req.headers['foxx-locale']] = search_arr.join(" ")
-        collection.update(obj, { search: data.search })
       }
     })
+    data.search[req.headers['foxx-locale']] = search_arr.join(" ")
+    collection.update(obj, { search: data.search })
 
     save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(obj._id, 'created', req.session.uid)
