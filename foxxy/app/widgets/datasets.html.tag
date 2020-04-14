@@ -480,7 +480,7 @@
     var self        = this
     this.show_stats = false
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -599,6 +599,7 @@
       var perpage = parseInt(e.srcElement.innerText)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
+      localStorage.setItem("perpage", perpage)
       this.loadPage(1)
     }
 
