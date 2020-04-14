@@ -117,6 +117,8 @@
 
       riot.mount('all_datatypes')
 
+      if(document.location.host.indexOf("prod") > 0) $("body").css("background", "linear-gradient(150deg,#370d13 0,#283a63 100%)")
+      if(document.location.host.indexOf("staging") > 0) $("body").css("background", "linear-gradient(150deg,#33521c 0,#283a63 100%)")
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.3/js/uikit-icons.min.js"></script>
