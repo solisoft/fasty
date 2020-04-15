@@ -475,7 +475,7 @@ router.post('/:service/:id', function (req, res) {
     })
     errors = joi.validate(body, schema, { abortEarly: false }).error.details
   }
-  catch(e) { console.log("err", e)}
+  catch(e) { console.log("err", e) }
   if (errors.length == 0) {
     var doc = collection.document(req.pathParams.id)
     var data = fieldsToData(fields, body, req.headers)

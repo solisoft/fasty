@@ -369,7 +369,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ external | url }}
     output = http_get(item, {}) if action == 'external'
-
     -- {{ og_data | name }}
     if action == 'og_data'
       output = params.og_data[item] if params.og_data
@@ -382,10 +381,11 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       request = 'FOR item IN datasets FILTER item.@field == @value RETURN item'
       object = aql(db_name, request, { field: item[1], value: item[2] })[1]
       if object
-        output = object[dataset]
         if args['only_url']
           output = "/#{params.lang}/ds/#{object._key}/#{dataset}/#{object._rev}.#{args['only_url']}"
-
+        else
+          output = object[dataset]
+          output = dynamic_replace(db_name, output, global_data, history, params)
       else output = ' '
 
     -- {{ layout | slug | field }}
