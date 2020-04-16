@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>MyCMS</title>
+    <title>FastyCMS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.1.7/css/uikit.min.css" integrity="sha256-1NCiLO1eL8xsDn3wFHlM37FhxQjBruKz/veyTbWSWHk=" crossorigin="anonymous" />
@@ -104,22 +104,18 @@
       require('widgets/redirections.html.tag')
       require('widgets/trads.html.tag')
       require('widgets/settings.html.tag')
-      require('widgets/datatypes.html.tag');
-      require('widgets/users.html.tag');
-      require('widgets/aqls.html.tag');
-      require('widgets/helpers.html.tag');
-      require('widgets/apis.html.tag');
-      require('widgets/scripts.html.tag');
+      require('widgets/datatypes.html.tag')
+      require('widgets/users.html.tag')
+      require('widgets/aqls.html.tag')
+      require('widgets/helpers.html.tag')
+      require('widgets/apis.html.tag')
+      require('widgets/scripts.html.tag')
       /*@{{riot_components}}*/
-      require('widgets/datasets.html.tag');
+      require('widgets/datasets.html.tag')
 
       require('js/js.js')
 
       riot.mount('all_datatypes')
-
-      if(document.location.host.indexOf("_prod") > 0) $("body").css("background", "linear-gradient(150deg,#370d13 0,#283a63 100%)")
-      if(document.location.host.indexOf("_staging") > 0) $("body").css("background", "linear-gradient(150deg,#33521c 0,#283a63 100%)")
-      if(document.location.host.indexOf("_qa") > 0) $("body").css("background", "linear-gradient(150deg, rgb(61, 64, 18) 0px, rgb(37, 43, 2) 100%)")
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.3/js/uikit-icons.min.js"></script>

@@ -2,7 +2,7 @@
 <html class="bg">
   <head>
     <meta charset="UTF-8">
-    <title>MyCMS -- Login</title>
+    <title>FastyCMS -- Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.35/css/uikit.min.css">
     <link rel="stylesheet" href="css/vendors.css">
@@ -25,17 +25,13 @@
 
       var url = host + "/db_" + subdomain + "/"
 
-      var common = require("js/common.js");
-      common.init();
+      var common = require("js/common.js")
+      common.init()
 
-      require("widgets/login.html.tag");
+      require("widgets/login.html.tag")
 
       // Start the app
-      require("js/js.js");
-
-      if(document.location.host.indexOf("_prod") > 0) $("body").css("background", "linear-gradient(150deg,#370d13 0,#283a63 100%)")
-      if(document.location.host.indexOf("_staging") > 0) $("body").css("background", "linear-gradient(150deg,#33521c 0,#283a63 100%)")
-      if(document.location.host.indexOf("_qa") > 0) $("body").css("background", "linear-gradient(150deg, rgb(61, 64, 18) 0px, rgb(37, 43, 2) 100%)")
+      require("js/js.js")
     </script>
   </body>
 
