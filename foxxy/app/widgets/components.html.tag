@@ -416,11 +416,7 @@
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this component...
   </virtual>
-  <style>
-    .handle { cursor: move; }
-  </style>
   <script>
-
     var self        = this
     this.component  = 0
     this.perpage    = localStorage.getItem("perpage") || per_page

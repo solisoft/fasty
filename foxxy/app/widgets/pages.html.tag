@@ -200,8 +200,6 @@
       e.preventDefault()
       common.saveForm(opts.id+'_crud_page', "cruds/sub/pages/"+ opts.id, "", opts)
     }
-
-
   </script>
 </page_crud_new>
 
@@ -225,9 +223,7 @@
       </li>
     </ul>
   </virtual>
-  <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
-  </virtual>
+  <virtual if={!can_access && loaded}>Sorry, you can't access this page...</virtual>
 
   <script>
     var self = this
@@ -312,9 +308,7 @@
     <form onsubmit="{ save_form }" class="uk-form" id="form_new_page">
     </form>
   </virtual>
-  <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
-  </virtual>
+  <virtual if={!can_access && loaded}>Sorry, you can't access this page...</virtual>
   <script>
     var self = this
     self.can_access = false
@@ -417,12 +411,8 @@
     <a onclick={ setPerPage } class="uk-label">1000</a>
     <a onclick={ setPerPage } class="uk-label">ALL</a>
   </virtual>
-  <virtual if={!can_access && loaded}>
-    Sorry, you can't access this page...
-  </virtual>
-  <style>
-    .handle { cursor: move; }
-  </style>
+  <virtual if={!can_access && loaded}>Sorry, you can't access this page...</virtual>
+
   <script>
 
     var self        = this

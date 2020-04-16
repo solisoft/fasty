@@ -328,11 +328,8 @@
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this page...
   </virtual>
-  <style>
-    .handle { cursor: move; }
-  </style>
-  <script>
 
+  <script>
     var self        = this
     this.page       = 0
     this.perpage    = localStorage.getItem("perpage") || per_page

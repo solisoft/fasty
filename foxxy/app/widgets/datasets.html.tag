@@ -476,7 +476,6 @@
     Sorry, you can't access this page...
   </virtual>
   <script>
-
     var self        = this
     this.show_stats = false
     this.page       = 0

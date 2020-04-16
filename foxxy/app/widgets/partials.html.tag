@@ -200,8 +200,6 @@
       e.preventDefault()
       common.saveForm(opts.id+'_crud_partial', "cruds/sub/partials/"+ opts.id, "", opts)
     }
-
-
   </script>
 </partial_crud_new>
 
@@ -225,9 +223,7 @@
       </li>
     </ul>
   </virtual>
-  <virtual if={!can_access && loaded}>
-    Sorry, you can't access this partial...
-  </virtual>
+  <virtual if={!can_access && loaded}>Sorry, you can't access this partial...</virtual>
 
   <script>
     var self = this
@@ -416,9 +412,7 @@
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this partial...
   </virtual>
-  <style>
-    .handle { cursor: move; }
-  </style>
+
   <script>
 
     var self        = this

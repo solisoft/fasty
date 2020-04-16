@@ -323,9 +323,7 @@
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this page...
   </virtual>
-  <style>
-    .handle { cursor: move; }
-  </style>
+
   <script>
 
     var self        = this

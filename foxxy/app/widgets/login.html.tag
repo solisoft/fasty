@@ -3,26 +3,20 @@
     Loading app ...
     <br><div uk-spinner></div>
   </div>
-
   <script>
     route('/login');
   </script>
 </loading>
 
 <login>
-
   <div class="uk-container uk-container-center">
     <div uk-grid class="uk-grid-small uk-child-width-1-3@s uk-flex-center uk-text-center" >
       <div>
         <h1 class="uk-margin-large-top"><i class="uk-icon-sign-in"></i> Connection</h1>
         <form class="uk-form uk-margin-top"  onsubmit="{ save_form }">
-
-
            <div class="uk-margin">
              <input type="email" placeholder="Email" class="uk-input" id="username" name="username" value="">
-
            </div>
-
            <div class="uk-margin">
              <input type="password" class="uk-input" placeholder="Mot de passe" class="uk-input" id="password" name="password" value="">
            </div>
@@ -35,9 +29,7 @@
                Bad login or password
              </div>
            </div>
-
         </form>
-
       </div>
     </div>
   </div>
@@ -53,5 +45,4 @@
       })
     }
   </script>
-
 </login>
