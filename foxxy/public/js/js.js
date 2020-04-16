@@ -1825,7 +1825,7 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -1931,6 +1931,7 @@ riot.tag2('apis', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -2067,7 +2068,7 @@ riot.tag2('aqls', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -2152,6 +2153,7 @@ riot.tag2('aqls', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -2453,7 +2455,7 @@ riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_
 
     var self        = this
     this.component  = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -2547,6 +2549,7 @@ riot.tag2('components', '<component_folders show="{loaded}" folder_key="{folder_
     this.setperpage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadcomponent(1)
@@ -3210,7 +3213,7 @@ riot.tag2('datatypes', '<datatype_folders show="{loaded}" folder_key="{folder_ke
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -3304,6 +3307,7 @@ riot.tag2('datatypes', '<datatype_folders show="{loaded}" folder_key="{folder_ke
     this.setperpage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loaddatatype(1)
@@ -3536,7 +3540,7 @@ riot.tag2('helpers', '<virtual if="{can_access}"> <div class="uk-float-right"> <
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -3621,6 +3625,7 @@ riot.tag2('helpers', '<virtual if="{can_access}"> <div class="uk-float-right"> <
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -3849,7 +3854,7 @@ riot.tag2('layouts', '<virtual if="{can_access}"> <div class="uk-float-right"> <
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -3934,6 +3939,7 @@ riot.tag2('layouts', '<virtual if="{can_access}"> <div class="uk-float-right"> <
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -4305,7 +4311,7 @@ riot.tag2('pages', '<page_folders show="{loaded}" folder_key="{folder_key}"></pa
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -4400,6 +4406,7 @@ riot.tag2('pages', '<page_folders show="{loaded}" folder_key="{folder_key}"></pa
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -4703,7 +4710,7 @@ riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}
 
     var self        = this
     this.partial    = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -4797,6 +4804,7 @@ riot.tag2('partials', '<partial_folders show="{loaded}" folder_key="{folder_key}
     this.setperpage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadpartial(1)
@@ -5025,7 +5033,7 @@ riot.tag2('redirections', '<virtual if="{can_access}"> <div class="uk-float-righ
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -5110,6 +5118,7 @@ riot.tag2('redirections', '<virtual if="{can_access}"> <div class="uk-float-righ
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -5355,7 +5364,7 @@ riot.tag2('scripts', '<virtual if="{can_access}"> <div class="uk-float-right"> <
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -5440,6 +5449,7 @@ riot.tag2('scripts', '<virtual if="{can_access}"> <div class="uk-float-right"> <
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -5700,7 +5710,7 @@ riot.tag2('spas', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -5785,6 +5795,7 @@ riot.tag2('spas', '<virtual if="{can_access}"> <div class="uk-float-right"> <a h
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -6011,7 +6022,7 @@ riot.tag2('trads', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -6096,6 +6107,7 @@ riot.tag2('trads', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
@@ -6409,7 +6421,7 @@ riot.tag2('users', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -6494,6 +6506,7 @@ riot.tag2('users', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
     this.setPerPage = function(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)

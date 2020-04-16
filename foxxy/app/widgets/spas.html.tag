@@ -334,7 +334,7 @@
 
     var self        = this
     this.page       = 0
-    this.perpage    = per_page
+    this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -427,6 +427,7 @@
     setPerPage(e) {
       e.preventDefault()
       var perpage = parseInt(e.srcElement.innerText)
+      localStorage.setItem("perpage", perpage)
       if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
       this.perpage = perpage
       this.loadPage(1)
