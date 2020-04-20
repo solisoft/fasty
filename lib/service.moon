@@ -77,6 +77,11 @@ deploy_site = (sub_domain, settings) ->
     os.execute("arangorestore --include-system-collections true --server.database #{deploy_to[1]} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint}  --input-directory #{path} --overwrite true")
     os.execute("rm -Rf #{path}")
 
+    -- Restart scripts
+    scripts = aql(deploy_to[1], 'FOR script IN scripts RETURN script')
+    for k, item in pairs scripts
+      install_script(deploy_to[1], item.name)
+
 --------------------------------------------------------------------------------
 install_script = (sub_domain, name) ->
   path = "scripts/#{sub_domain}/#{name}"
