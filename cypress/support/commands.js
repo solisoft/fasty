@@ -51,6 +51,30 @@ Cypress.Commands.add("create_partial", (slug, html) => {
   cy.get('body').should('contain', 'Successfully')
 })
 
+Cypress.Commands.add("delete_page", (title) => {
+  cy.visit(host_admin + '/#pages')
+  cy.contains(title).parent('tr').within(() => {
+    cy.get('i.fa-trash-alt').click()
+  })
+  cy.get('div.uk-modal.uk-open').should('contain', 'Are you sure?')
+  cy.get('button').contains('Ok').click()
+
+  cy.get('body').contains(title).should('not.exist')
+})
+
+Cypress.Commands.add("delete_partial", (title) => {
+  cy.visit(host_admin + '/#partials')
+  cy.contains(title).parent('tr').within(() => {
+    cy.get('i.fa-trash-alt').click()
+  })
+  cy.get('div.uk-modal.uk-open').should('contain', 'Are you sure?')
+  cy.get('button').contains('Ok').click()
+
+  cy.get('body').contains(title).should('not.exist')
+})
+
+
+
 Cypress.Commands.add("run_aql", (slug) => {
   cy.create_page('run_aql', '{{ aql | ' + slug + ' }} {{ aql | remove_run_aql }}')
   cy.visit(host + '/en/run_aql')

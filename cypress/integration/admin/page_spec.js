@@ -48,13 +48,6 @@ describe('Pages', function () {
   })
 
   it('deletes a page', function () {
-    cy.get('a[href="#pages"]').click()
-    cy.contains('home page edited').parent('tr').within(() => {
-      cy.get('i.fa-trash-alt').click()
-    })
-    cy.get('div.uk-modal').should('contain', 'Are you sure?')
-    cy.get('button').contains('Ok').click()
-
-    cy.get('body').contains('home page edited').should('not.exist')
+    cy.delete_page('home page edited')
   })
 })

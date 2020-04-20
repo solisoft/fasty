@@ -51,13 +51,6 @@ describe('Partials', function () {
   })
 
   it('deletes a partial', function () {
-    cy.get('a[href="#partials"]').click()
-    cy.contains('test partial edited').parent('tr').within(() => {
-      cy.get('i.fa-trash-alt').click()
-    })
-    cy.get('div.uk-modal').should('contain', 'Are you sure?')
-    cy.get('button').contains('Ok').click()
-
-    cy.get('body').contains('test partial edited').should('not.exist')
+    cy.delete_partial('test partial edited')
   })
 })
