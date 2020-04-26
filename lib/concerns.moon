@@ -265,12 +265,12 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
               { slug: args['req'] }
             )[1]\gsub('{{ lang }}', params.lang)
+          -- debug
+          print(to_json(args))
 
           -- prepare the bindvar variable with variable found in the request
           -- but also on the parameters sent as args
           bindvar = prepare_bindvars(table_deep_merge(splat, args), args['aql'])
-          -- debug
-          print(to_json(args))
 
           -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
           -- @bindvar must be present in the request
