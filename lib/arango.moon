@@ -50,7 +50,7 @@ raw_aql = (db_name, stm)->
     has_more  = more['hasMore']
 
   -- debug
-  print("----------------------------------------------------------------------"
+  print("---------------------------------------------------------------------")
   print(to_json(result))
   result = {} if result == nil
   result
