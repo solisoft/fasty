@@ -49,9 +49,6 @@ raw_aql = (db_name, stm)->
     result    = table_merge(result,  more['result'])
     has_more  = more['hasMore']
 
-  -- debug
-  print("---------------------------------------------------------------------")
-  print(to_json(stm))
   result = {} if result == nil
   result
 --------------------------------------------------------------------------------
