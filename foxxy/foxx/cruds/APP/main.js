@@ -286,6 +286,7 @@ router.post('/:service/:id', function (req, res) {
     }
 
     if (can_save) {
+      console.log(data)
       obj = collection.update(object, data)
       save_revision(req.session.uid, object, data, 10)
     }
