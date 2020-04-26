@@ -31,7 +31,7 @@ var clearCache = function() {
 }
 
 var typeCast = function(type, value) {
-  var value = unescape(value)
+  value = unescape(value)
   if (type == "integer")  value = parseInt(value)
   if (type == "float")    value = parseFloat(value)
   if (type == "html")     value = JSON.parse(value)
@@ -41,7 +41,7 @@ var typeCast = function(type, value) {
 
 var fieldsToData = function(fields, body, headers) {
   var data = {}
-  _.each(fields, function(f) {
+  _.each(fields, function (f) {
     if(f.tr != true) {
       if(_.isArray(body[f.n])) {
         data[f.n] = _.map(body[f.n], function(v) { return typeCast(f.t,v) })
@@ -65,7 +65,6 @@ var fieldsToData = function(fields, body, headers) {
           body[f.n], function(v) { return typeCast(f.t,v) }
         )
       } else {
-
         data[f.n][headers['foxx-locale']] = typeCast(f.t, body[f.n])
       }
     }
@@ -265,6 +264,8 @@ router.post('/:service/:id', function (req, res) {
       if(object.locked_by != user.fn + ' ' + user.ln) can_save = false
     }
     var data = fieldsToData(fields, body, req.headers)
+    console.log(data)
+
     if(models()[req.pathParams.service].search) {
       data.search = {}
       var search_arr = []
@@ -286,7 +287,6 @@ router.post('/:service/:id', function (req, res) {
     }
 
     if (can_save) {
-      console.log(data)
       obj = collection.update(object, data)
       save_revision(req.session.uid, object, data, 10)
     }
