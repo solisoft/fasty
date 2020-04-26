@@ -291,8 +291,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
               args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
-          -- debug
-          print(to_json(args))
           db_data = { results: aql(db_name, args['aql'], bindvar) }
           db_data = table_deep_merge(db_data, { _params: args })
 
