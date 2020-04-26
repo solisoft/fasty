@@ -18,7 +18,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 
-console.log("fasty@0.0.17")
+console.log("fasty@0.0.19")
 
 if(!fs.existsSync(dirname + "/.tokens.yml")) {
   console.log("Please configure a .tokens.yml file for tokens".red)
@@ -77,6 +77,7 @@ var check_json = function(json, folder, fullname, api) {
         if(!fs.existsSync(endpathname + "/routes")) fs.mkdirSync(endpathname + "/routes")
         if(!fs.existsSync(endpathname + "/scripts")) fs.mkdirSync(endpathname + "/scripts")
         if(!fs.existsSync(endpathname + "/tests")) fs.mkdirSync(endpathname + "/tests")
+        if(!fs.existsSync(endpathname + "/libs")) fs.mkdirSync(endpathname + "/libs")
         _.each(obj.api_routes, function (route) {
           header = "#FASTY " + route.id
           fs.writeFileSync(endpathname + "/routes/" + route.name + ".js", header + " javascript\n" + route.js)
@@ -88,6 +89,10 @@ var check_json = function(json, folder, fullname, api) {
         _.each(obj.api_tests, function (test) {
           header = "#FASTY " + test.id
           fs.writeFileSync(endpathname + "/tests/" + test.name + ".js", header + " javascript\n" + test.js)
+        })
+        _.each(obj.api_libs, function (lib) {
+          header = "#FASTY " + lib.id
+          fs.writeFileSync(endpathname + "/libs/" + lib.name + ".js", header + " javascript\n" + lib.js)
         })
       }
       if (k == "scripts") {

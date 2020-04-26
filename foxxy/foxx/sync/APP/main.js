@@ -23,6 +23,36 @@ var save_revision = function (uid, object, data, max) {
   `, { id: object._id, max: max })
 }
 
+var restart_services = function (collection, id, _settings) {
+  var h_settings = JSON.parse(_settings.home)
+  var object = db._collection(collection).document(id)
+
+  if (object.api_id) {
+    object = db.apis.document(object.api_id)
+    collection = "apis"
+  }
+
+  if (collection == "apis" && h_settings.base_url) {
+    console.log(object.name)
+    request({
+      method: "POST",
+      url: h_settings.base_url + "/service/" + object.name,
+      form: {
+        token: _settings.token
+      }
+    })
+  }
+
+  if (collection == "scripts" && h_settings.base_url) {
+    request({
+      method: "POST",
+      url: h_settings.base_url + "/script/" + object.name,
+      form: {
+        token: _settings.token
+      }
+    })
+  }
+}
 // -----------------------------------------------------------------------------
 // GET /sync
 router.get('/:token', function (req, res) {
@@ -61,13 +91,17 @@ router.get('/:token', function (req, res) {
           FOR as IN api_scripts FILTER as.api_id == a._key
           RETURN { id: as._id, name: as.name, js: as.javascript, locked_by: as.locked_by }
         )
+        LET api_libs = (
+          FOR al IN api_libs FILTER al.api_id == a._key
+          RETURN { id: al._id, name: al.name, js: al.javascript, locked_by: al.locked_by }
+        )
         LET api_tests = (
           FOR at IN api_tests FILTER at.api_id == a._key
           RETURN { id: at._id, name: at.name, js: at.javascript, locked_by: at.locked_by }
         )
         RETURN {
           api: { id: a._id, name: a.name, manifest: a.manifest, code: a.code, locked_by: a.locked_by },
-          api_routes, api_scripts, api_tests
+          api_routes, api_scripts, api_tests, api_libs
         }
     )
     LET scripts = (
@@ -121,6 +155,8 @@ router.patch('/:token', function (req, res) {
           data.locked_by = null
           db._collection(collection).update(object, data)
           save_revision(null, object, data, 10)
+          restart_services(collection, object._id, _settings)
+
           res.json(`Saved! ${collection} ${id} ${field}`)
         } else {
           res.json(`Error! File is locked by ${object.locked_by}`)
@@ -128,9 +164,11 @@ router.patch('/:token', function (req, res) {
       } else {
         db._collection(collection).update(object, data)
         save_revision(null, object, data, 10)
+        restart_services(collection, object._id, _settings)
+
         res.json(`Saved! ${collection} ${id} ${field}`)
       }
-      var h_settings = JSON.stringify(_settings.home)
+      var h_settings = JSON.parse(_settings.home)
       if(h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
 
     }
