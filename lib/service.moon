@@ -87,9 +87,9 @@ deploy_site = (sub_domain, settings) ->
     os.execute("rm -Rf #{path}")
 
     -- Restart scripts
-    scripts = aql(deploy_to[1], 'FOR script IN scripts RETURN script')
-    for k, item in pairs scripts
-      install_script(deploy_to[1], item.name)
+    -- scripts = aql(deploy_to[1], 'FOR script IN scripts RETURN script')
+    -- for k, item in pairs scripts
+    --   install_script(deploy_to[1], item.name)
 
 
 --------------------------------------------------------------------------------
