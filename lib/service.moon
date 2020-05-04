@@ -56,6 +56,15 @@ install_service = (sub_domain, name)->
     "db_#{sub_domain}", name, read_zipfile("install_service/#{sub_domain}/#{name}.zip")
   )
 --------------------------------------------------------------------------------
+install_script = (sub_domain, name) ->
+  path = "scripts/#{sub_domain}/#{name}"
+  os.execute("mkdir -p #{path}")
+  request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
+  script = aql("db_#{sub_domain}", request, { 'name': name })[1]
+  write_content("#{path}/package.json", script.package)
+  os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
+  write_content("#{path}/index.js", script.code)
+--------------------------------------------------------------------------------
 deploy_site = (sub_domain, settings) ->
   config = require('lapis.config').get!
   db_config = require('lapis.config').get("db_#{config._name}")
@@ -82,15 +91,7 @@ deploy_site = (sub_domain, settings) ->
     for k, item in pairs scripts
       install_script(deploy_to[1], item.name)
 
---------------------------------------------------------------------------------
-install_script = (sub_domain, name) ->
-  path = "scripts/#{sub_domain}/#{name}"
-  os.execute("mkdir -p #{path}")
-  request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
-  script = aql("db_#{sub_domain}", request, { 'name': name })[1]
-  write_content("#{path}/package.json", script.package)
-  os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
-  write_content("#{path}/index.js", script.code)
+
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service, :install_script, :deploy_site }
