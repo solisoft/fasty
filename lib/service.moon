@@ -91,6 +91,12 @@ deploy_site = (sub_domain, settings) ->
     -- for k, item in pairs scripts
     --   install_script(deploy_to[1], item.name)
 
+    -- Restart apis
+    apis = aql(deploy_to[1], 'FOR api IN apis RETURN api')
+    for k, item in pairs scripts
+      install_service(deploy_to[1]\gsub('db_', ''), item.name)
+
+
 
 --------------------------------------------------------------------------------
 -- expose methods
