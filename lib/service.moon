@@ -93,7 +93,7 @@ deploy_site = (sub_domain, settings) ->
 
     -- Restart apis
     apis = aql(deploy_to[1], 'FOR api IN apis RETURN api')
-    for k, item in pairs scripts
+    for k, item in pairs apis
       install_service(deploy_to[1]\gsub('db_', ''), item.name)
 
 
