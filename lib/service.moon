@@ -56,6 +56,15 @@ install_service = (sub_domain, name)->
     "db_#{sub_domain}", name, read_zipfile("install_service/#{sub_domain}/#{name}.zip")
   )
 --------------------------------------------------------------------------------
+install_script = (sub_domain, name) ->
+  path = "scripts/#{sub_domain}/#{name}"
+  os.execute("mkdir -p #{path}")
+  request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
+  script = aql("db_#{sub_domain}", request, { 'name': name })[1]
+  write_content("#{path}/package.json", script.package)
+  os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
+  write_content("#{path}/index.js", script.code)
+--------------------------------------------------------------------------------
 deploy_site = (sub_domain, settings) ->
   config = require('lapis.config').get!
   db_config = require('lapis.config').get("db_#{config._name}")
@@ -69,7 +78,7 @@ deploy_site = (sub_domain, settings) ->
   if deploy_to[2] == sub_domain_settings.secret
     os.execute("mkdir -p #{path}")
 
-    command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection uploads --collection folder_path --collection folders --collection scripts --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint} --output-directory #{path} --overwrite true"
+    command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection folder_path --collection folders --collection scripts --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint} --output-directory #{path} --overwrite true"
     command ..= " --collection datasets" if home['deploy_datasets']
 
     os.execute(command)
@@ -78,19 +87,17 @@ deploy_site = (sub_domain, settings) ->
     os.execute("rm -Rf #{path}")
 
     -- Restart scripts
-    scripts = aql(deploy_to[1], 'FOR script IN scripts RETURN script')
-    for k, item in pairs scripts
-      install_script(deploy_to[1], item.name)
+    -- scripts = aql(deploy_to[1], 'FOR script IN scripts RETURN script')
+    -- for k, item in pairs scripts
+    --   install_script(deploy_to[1], item.name)
 
---------------------------------------------------------------------------------
-install_script = (sub_domain, name) ->
-  path = "scripts/#{sub_domain}/#{name}"
-  os.execute("mkdir -p #{path}")
-  request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
-  script = aql("db_#{sub_domain}", request, { 'name': name })[1]
-  write_content("#{path}/package.json", script.package)
-  os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
-  write_content("#{path}/index.js", script.code)
+    -- Restart apis
+    apis = aql(deploy_to[1], 'FOR api IN apis RETURN api')
+    for k, item in pairs apis
+      install_service(deploy_to[1]\gsub('db_', ''), item.name)
+
+
+
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service, :install_script, :deploy_site }

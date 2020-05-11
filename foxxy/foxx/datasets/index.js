@@ -356,6 +356,8 @@ router.post('/:service', function (req, res) {
     `, _.merge({ type: req.pathParams.service }, folder_params)
     ).toArray()[0]
     obj = collection.save(data, { waitForSync: true })
+
+    let obj_update = {}
     if (object.slug) {
       var slug = _.map(object.slug, function(field_name) {
         var value = ""
@@ -369,7 +371,7 @@ router.post('/:service', function (req, res) {
 
       if(data['slug'] == '' || data['slug'] == undefined ) {
         slug = _.kebabCase(slug)
-        collection.update(obj, { slug: slug })
+        obj_update["slug"] = slug
       }
     }
 
@@ -381,7 +383,8 @@ router.post('/:service', function (req, res) {
       }
     })
     data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
-    collection.update(obj, { search: data.search })
+    obj_update["search"] = data.search
+    collection.update(obj, obj_update)
 
     save_revision(req.session.uid, obj, data, object.revisions)
     save_activity(obj._id, 'created', req.session.uid)

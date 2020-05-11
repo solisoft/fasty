@@ -629,7 +629,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db"
+  ".fasty.ovh": "https://fasty.ovh/_db",
+  ".inseytel.com": "https://inseytel.com/_db",
+  "epic20.world": "/_db"
 };
 
 module.exports = Config;
@@ -1627,9 +1629,9 @@ $(function () {
   route.start(true)
   //riot.mount("*")
 
-  if(document.location.host.indexOf("_prod") > 0) $("body").css("background", "linear-gradient(150deg,#370d13 0,#283a63 100%)")
-  if(document.location.host.indexOf("_staging") > 0) $("body").css("background", "linear-gradient(150deg,#33521c 0,#283a63 100%)")
-  if(document.location.host.indexOf("_qa") > 0) $("body").css("background", "linear-gradient(150deg, rgb(61, 64, 18) 0px, rgb(37, 43, 2) 100%)")
+  if(document.location.host.indexOf("prod.") >= 0) $("body").css("background", "linear-gradient(150deg,#370d13 0,#283a63 100%)")
+  if(document.location.host.indexOf("staging.") >= 0) $("body").css("background", "linear-gradient(150deg,#33521c 0,#283a63 100%)")
+  if(document.location.host.indexOf("qa.") >= 0) $("body").css("background", "linear-gradient(150deg, rgb(61, 64, 18) 0px, rgb(37, 43, 2) 100%)")
 })
 
 });
