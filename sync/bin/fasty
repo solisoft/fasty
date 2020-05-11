@@ -58,6 +58,10 @@ var check_json = function(json, folder, fullname, api) {
         fs.writeFileSync(endpathname + "/" + obj.name + ".scss", header + " scss\n" + obj.scss)
         fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " javascript\n" + obj.js)
       }
+      if (k == "spas") {
+        fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " javascript\n" + obj.js)
+      }
       if (k == "components") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
       }
