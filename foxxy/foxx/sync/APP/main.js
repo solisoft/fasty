@@ -73,7 +73,7 @@ router.get('/:token', function (req, res) {
     )
     LET spas = (
       FOR spa IN spas
-      RETURN { id: spa._id, name: spa.name, html: spa.html, js: spa.javascript, locked_by: spa.locked_by }
+      RETURN { id: spa._id, name: spa.name, html: spa.html, js: spa.js, locked_by: spa.locked_by }
     )
     LET partials = (
       FOR p IN partials

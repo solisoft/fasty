@@ -28,14 +28,14 @@ if(!fs.existsSync(dirname + "/.tokens.yml")) {
 var tokens = yaml.safeLoad(fs.readFileSync(dirname + "/.tokens.yml", "utf8"))
 
 var check_json = function(json, folder, fullname, api) {
-  _.each(json, function(v, k) {
+  _.each(json, function (v, k) {
     var pathname = "fs/" + folder + "/" + k
     if(!fs.existsSync(pathname)) fs.mkdirSync(pathname)
     _.each(v, function (obj) {
       var endpathname = pathname
       obj.name = _.first(_.compact([obj.name, obj.title, obj.slug]))
       if (obj.name) {
-        if(obj.path) {
+        if (obj.path) {
           var recursive_path = pathname
           _.each(obj.path, function(pa) {
             if(pa != "Root") {
@@ -60,7 +60,7 @@ var check_json = function(json, folder, fullname, api) {
       }
       if (k == "spas") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
-        fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " javascript\n" + obj.js)
+        fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " js\n" + obj.js)
       }
       if (k == "components") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
