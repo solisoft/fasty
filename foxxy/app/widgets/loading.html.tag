@@ -49,16 +49,18 @@
     ////////////////////////////////////////////////////////////////////////////
     deploy(e) {
       e.preventDefault()
-      var url = "/deploy"
-      $.post(url, { token: self.settings.token }, function(data) {
-        if(data == "site deployed")
-          UIkit.notification({
-            message : 'Site Deployed Successfully!',
-            status  : 'success',
-            timeout : 1000,
-            pos     : 'bottom-right'
-          });
-      })
+      if(confirm("Are you sure?")) {
+        var url = "/deploy"
+        $.post(url, { token: self.settings.token }, function(data) {
+          if(data == "site deployed")
+            UIkit.notification({
+              message : 'Site Deployed Successfully!',
+              status  : 'success',
+              timeout : 1000,
+              pos     : 'bottom-right'
+            });
+        })
+      }
       return false
     }
   </script>

@@ -44,7 +44,8 @@
   };
 
   var expandAlias = function(name) {
-    return aliases[name] ? expandAlias(aliases[name]) : name;
+    var val = aliases[name];
+    return (val && name !== val) ? expandAlias(val) : name;
   };
 
   var _resolve = function(name, dep) {
@@ -4013,16 +4014,18 @@ riot.tag2('rightnav', '<ul class="uk-navbar-nav"> <li><a onclick="{deploy}" if="
 
     this.deploy = function(e) {
       e.preventDefault()
-      var url = "/deploy"
-      $.post(url, { token: self.settings.token }, function(data) {
-        if(data == "site deployed")
-          UIkit.notification({
-            message : 'Site Deployed Successfully!',
-            status  : 'success',
-            timeout : 1000,
-            pos     : 'bottom-right'
-          });
-      })
+      if(confirm("Are you sure?")) {
+        var url = "/deploy"
+        $.post(url, { token: self.settings.token }, function(data) {
+          if(data == "site deployed")
+            UIkit.notification({
+              message : 'Site Deployed Successfully!',
+              status  : 'success',
+              timeout : 1000,
+              pos     : 'bottom-right'
+            });
+        })
+      }
       return false
     }.bind(this)
 });
