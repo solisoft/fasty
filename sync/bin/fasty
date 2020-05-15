@@ -18,7 +18,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 
-console.log("fasty@0.0.19")
+console.log("fasty@0.0.23")
 
 if(!fs.existsSync(dirname + "/.tokens.yml")) {
   console.log("Please configure a .tokens.yml file for tokens".red)
@@ -43,11 +43,28 @@ var check_json = function(json, folder, fullname, api) {
               if(!fs.existsSync(recursive_path)) fs.mkdirSync(recursive_path)
             }
           })
-          endpathname = recursive_path + "/" + obj.name
+          if (_.isObject(obj.name)) {
+            _.each(obj.name, function (value, key) {
+              _endpathname = recursive_path + "/" + value + "_" + key
+              if(!fs.existsSync(_endpathname)) fs.mkdirSync(_endpathname)
+            })
+          } else {
+            endpathname = recursive_path + "/" + obj.name
+            if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
+          }
+
         } else {
-          endpathname = pathname + "/" + obj.name
+          if (_.isObject(obj.name)) {
+            _.each(obj.name, function (value, key) {
+              var _endpathname = pathname + "/" + value + "_" + key
+              if(!fs.existsSync(_endpathname)) fs.mkdirSync(_endpathname)
+            })
+          } else {
+            endpathname = pathname + "/" + obj.name
+            if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
+          }
         }
-        if(!fs.existsSync(endpathname)) fs.mkdirSync(endpathname)
+
       }
 
       var header = obj.locked_by ? "@lock" : ""
@@ -64,6 +81,9 @@ var check_json = function(json, folder, fullname, api) {
       }
       if (k == "components") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
+      }
+      if (k == "datatypes") {
+        fs.writeFileSync(endpathname + "/" + obj.name + ".json", header + " javascript\n" + obj.json)
       }
       if (k == "partials") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
@@ -106,7 +126,6 @@ var check_json = function(json, folder, fullname, api) {
       if (k == "datasets") {
         header = "#FASTY " + obj._id
         _.each(_.keys(obj), function (n) {
-
           if(!_.includes(["_key", "_id", "name", "title", "slug"], n)) {
             var type = ""
             if(_.includes(["js", "javascript"], n)) { type = "js" }
@@ -114,8 +133,26 @@ var check_json = function(json, folder, fullname, api) {
             if(n == "css") { type = "css" }
             if(n == "scss") { type = "scss" }
             if(n == "html") { type = "html" }
-            if(type == "") type = n
-            fs.writeFileSync(endpathname + "/" + type + "." + type, header + " "+ n +"\n" + obj[n])
+            if (type != "") {
+              if (_.isObject(obj.name)) {
+                _.each(obj.name, function (value, key) {
+                  var _endpathname = endpathname + "/" + value + "_" + key
+                  if (_.isObject(obj[n])) {
+                    fs.writeFileSync(_endpathname + "/" + type + "_" + key + "." + type, header + " " + n + "#" + key + "\n" + obj[n][key])
+                  } else {
+                    fs.writeFileSync(_endpathname + "/" + type + "." + type, header + " " + n + "\n" + obj[n])
+                  }
+                })
+              } else {
+                if (_.isObject(obj[n])) {
+                  _.each(obj[n], function (value, key) {
+                    fs.writeFileSync(endpathname + "/" + type + "_" + key + "." + type, header + " " + n + "#" + key + "\n" + obj[n][key])
+                  })
+                } else {
+                  fs.writeFileSync(endpathname + "/" + type + "." + type, header + " " + n + "\n" + obj[n])
+                }
+              }
+            }
           }
         })
       }

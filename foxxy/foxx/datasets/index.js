@@ -382,8 +382,11 @@ router.post('/:service', function (req, res) {
         search_arr.push(db._query(s.aql, bindVars).toArray()[0])
       }
     })
-    data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
-    obj_update["search"] = data.search
+
+    if (object.search) {
+      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
+      obj_update["search"] = data.search
+    }
     collection.update(obj, obj_update)
 
     save_revision(req.session.uid, obj, data, object.revisions)

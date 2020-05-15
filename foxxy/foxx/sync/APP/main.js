@@ -142,7 +142,19 @@ router.patch('/:token', function (req, res) {
     var object = db._collection(collection).document(id)
 
     var data = {}
-    data[field.trim()] = content
+    var is_i18n = false
+    var lang = "en"
+    if (field.indexOf("#") > 0) {
+      is_i18n = true
+      lang = field.split("#")[1]
+      field = field.split("#")[0]
+      data[field] = object[field]
+      data[field][lang] = content
+    } else {
+      data[field.trim()] = content
+    }
+
+    console.log(data)
 
     if (isLocked) {
       if (object.locked_by == null || object.locked_by == req.body.name) {
