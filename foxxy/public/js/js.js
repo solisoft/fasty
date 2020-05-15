@@ -905,8 +905,6 @@ require.register("js/editor.js", function(exports, require, module) {
               prepare_drop(el)
             }
             $('.drop_empty').remove()
-            $('.dragging').removeClass('dragging')
-            save_content()
             clear_empty_drags()
             set_empty_rows()
           }
@@ -930,22 +928,6 @@ require.register("js/editor.js", function(exports, require, module) {
         $('.active').removeClass('active')
         el.addClass('active')
       }
-    }
-
-    /*
-      save_content <function>
-      Save content to localStorage
-    */
-    var save_content = function () {
-      var t1 = +new Date()
-      /*
-      var history = JSON.parse(LGet('editor-history') || '[]')
-      history.push($(self).find('.edit-mode .page-content').html())
-      history.splice(0, history.length - 10);
-      LSet('editor-history', JSON.stringify(history))
-      */
-      var t2 = +new Date()
-      console.log("Save content : ", t2 - t1)
     }
 
     /*
@@ -1122,8 +1104,6 @@ require.register("js/editor.js", function(exports, require, module) {
           $(el).remove()
         }
       })
-
-      save_content()
     }
 
     /*
@@ -1213,8 +1193,6 @@ require.register("js/editor.js", function(exports, require, module) {
       // When you delete a row
       $(self).find('.edit-mode .cms_row_delete').on('click', function () {
         activeObj.closest('.edit-mode .sg-row').remove()
-        $(self).find('.edit-mode .row_editor').css('margin-left', (-99999) + 'px')
-        save_content()
         return false
       })
 
@@ -1286,8 +1264,6 @@ require.register("js/editor.js", function(exports, require, module) {
 
       // Close the editor modal
       $(self).find('.edit-mode .sg-editcontent').on('click', '.fa-times-circle', function () {
-        save_editor()
-        save_content()
         $('.edit-mode .cms_editor').removeClass('editmode')
         return false
       })
@@ -1303,8 +1279,6 @@ require.register("js/editor.js", function(exports, require, module) {
         $(self).find('.edit-mode .drag').attr('ondrop', 'drop(event)')
         $(self).find('.edit-mode .drag').attr('ondragend', 'drag_end(event)')
 
-        $(".fullscreen").scrollTop($(".fullscreen").prop('scrollHeight'));
-        save_content()
 
         set_empty_rows()
 
