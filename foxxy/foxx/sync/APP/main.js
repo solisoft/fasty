@@ -41,7 +41,7 @@ var restart_services = function (collection, id, _settings) {
         token: _settings.token
       }
     })
-  }
+  } else console.log("Missing base_url in settings")
 
   if (collection == "scripts" && h_settings.base_url) {
     request({
@@ -51,7 +51,7 @@ var restart_services = function (collection, id, _settings) {
         token: _settings.token
       }
     })
-  }
+  } else console.log("Missing base_url in settings")
 }
 // -----------------------------------------------------------------------------
 // GET /sync
@@ -153,8 +153,6 @@ router.patch('/:token', function (req, res) {
     } else {
       data[field.trim()] = content
     }
-
-    console.log(data)
 
     if (isLocked) {
       if (object.locked_by == null || object.locked_by == req.body.name) {
