@@ -18,7 +18,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 
-console.log("fasty@0.0.23")
+console.log("fasty@0.0.24")
 
 if(!fs.existsSync(dirname + "/.tokens.yml")) {
   console.log("Please configure a .tokens.yml file for tokens".red)
@@ -78,6 +78,22 @@ var check_json = function(json, folder, fullname, api) {
       if (k == "spas") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
         fs.writeFileSync(endpathname + "/" + obj.name + ".js", header + " js\n" + obj.js)
+      }
+      if (k == "pages") {
+        _.each(obj.name, function (value, key) {
+          var ext = ".html"
+          var name = value
+
+          if (value.split(".").length == 2) {
+            ext = "." + value.split(".")[1]
+            name = value.split(".")[0]
+          }
+
+          var data = obj.raw_html == null ? "" : obj.raw_html[key]
+
+          fs.writeFileSync(endpathname + "/" + value + "_" + key + "/" + value + "_" + key + ext, header + " raw_html#" + key + "\n" + data)
+        })
+
       }
       if (k == "components") {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
