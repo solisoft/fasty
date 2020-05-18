@@ -22,23 +22,28 @@
 
   <p class="uk-text-center" style="color: white">Find me in <code>app/widgets/loading.html.tag</code></p>
 
-  <h2 class="uk-text-center uk-margin-large-top"><a href="https://fasty.ovh" target="_blank">Fasty</a> is powered by powerful opensource projects</h2>
-  <div class="uk-text-center" style="color: white">
-    <div class="uk-margin-top">
-      <a href="https://www.arangodb.com/" target="_blank"><img src="/static/admin/img/ArangoDB-logo-bg.svg" style="height:50px" /></a>
-      <br>ArangoDB
-    </div>
-    <div class="uk-margin-top">
-      <a href="https://openresty.org/en/" target="_blank"><img src="/static/admin/img/logo.png" style="height:90px" /></a>
-      <br>openresty
-    </div>
-    <div class="uk-margin-top">
-      <a href="https://riot.js.org/" target="_blank"><img src="/static/admin/img/square.svg" style="height:90px" /></a>
-      <br>RiotJS
-    </div>
-    <div class="uk-margin-top">
-      <a href="https://leafo.net/lapis/" target="_blank"><img src="/static/admin/img/lapis.jpg" style="height:90px" /></a>
-      <br>LAPIS
+  <h2 class="uk-text-center" style="margin-top:80px"><a href="https://fasty.ovh" target="_blank">Fasty</a> is powered by powerful opensource projects</h2>
+  <div class="uk-container uk-text-center" style="color: white;margin-top:80px">
+    <div class="uk-column-1-2">
+      <div class="uk-margin">
+        <a href="https://www.arangodb.com/" target="_blank"><img src="/static/admin/img/ArangoDB-logo-bg.svg" style="height:90px" /></a>
+        <br>ArangoDB
+      </div>
+      <div class="uk-margin">
+        <a href="https://openresty.org/en/" target="_blank"><img src="/static/admin/img/logo.png" style="height:90px" /></a>
+        <br>openresty
+      </div>
+      </div>
+      <div class="uk-column-1-2">
+        <div class="uk-margin">
+          <a href="https://riot.js.org/" target="_blank"><img src="/static/admin/img/square.svg" style="height:90px" /></a>
+          <br>RiotJS
+        </div>
+        <div class="uk-margin">
+          <a href="https://leafo.net/lapis/" target="_blank"><img src="/static/admin/img/lapis.jpg" style="height:90px" /></a>
+          <br>LAPIS
+        </div>
+      </div>
     </div>
   </div>
 </welcome>
