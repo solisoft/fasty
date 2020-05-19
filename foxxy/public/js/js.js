@@ -44,8 +44,7 @@
   };
 
   var expandAlias = function(name) {
-    var val = aliases[name];
-    return (val && name !== val) ? expandAlias(val) : name;
+    return aliases[name] ? expandAlias(aliases[name]) : name;
   };
 
   var _resolve = function(name, dep) {
@@ -630,9 +629,10 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db",
-  ".inseytel.com": "https://inseytel.com/_db",
-  "epic20.world": "/_db"
+  ".fasty.ovh": "https://fasty.ovh/_db/",
+  ".inseytel.com": "https://app.inseytel.com/_db/",
+  "office.fasty.ovh": "http://office.fasty.ovh:8530/_db/",
+  "dev.epic20.world": "https://dev.epic20.world/_db"
 };
 
 module.exports = Config;

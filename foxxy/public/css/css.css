@@ -262,7 +262,7 @@ aside, .sg-container {
   position: absolute;
   margin-left: 20px;
   margin-top: 10px;
-  z-index: 100000;
+  z-index: 10;
   width: 137px;
   text-align: center; }
 
