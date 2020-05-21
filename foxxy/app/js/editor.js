@@ -624,6 +624,8 @@
       // Close the editor modal
       $(self).find('.edit-mode .sg-editcontent').on('click', '.fa-times-circle', function () {
         $('.edit-mode .cms_editor').removeClass('editmode')
+        save_editor()
+
         return false
       })
 
