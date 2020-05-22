@@ -228,13 +228,9 @@ router.get('/:service/search/:term', function (req, res) {
 
   if (locale.match(/[a-z]+/) == null) locale = 'en'
 
-  var fields = ["_id", "_key"]
-  fields.push(_.map(object.columns, function(d) { return d.name }))
-
   var bindVars = {
     "type": req.pathParams.service,
-    "term": req.pathParams.term,
-    "fields": _.flatten(fields)
+    "term": req.pathParams.term
   }
 
   var aql = `
@@ -244,8 +240,9 @@ router.get('/:service/search/:term', function (req, res) {
   LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
   ${order} ${includes}
   LIMIT 100
-  RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
+  RETURN MERGE(doc, { image: image ${include_merge} })
   `
+
 
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }) }
 
