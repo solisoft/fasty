@@ -13,8 +13,9 @@ foxxy/*.sh
 coverage
 foxxy/app/js/config.js
 deploy-cms
-install_service
-scripts/
+/install_service/**
+/scripts/**
+!**/.gitkeep
 sync/*.tgz
 cypress/videos
 cypress/screenshots
