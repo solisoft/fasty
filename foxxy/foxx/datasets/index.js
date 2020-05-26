@@ -723,10 +723,10 @@ router.get('/:service/stats/:tag', function (req, res) {
     FILTER d.type == @service
     FILTER d[@tag] != NULL
     FOR t IN d[@tag]
-        COLLECT tag = t WITH COUNT into countTags
+        COLLECT tag = t WITH COUNT into size
         FILTER tag != NULL
-        SORT countTags DESC
-        RETURN { tag, countTags }
+        SORT size DESC
+        RETURN { tag, size }
   `, { tag: req.pathParams.tag, service: req.pathParams.service })
 
   res.send(results);
