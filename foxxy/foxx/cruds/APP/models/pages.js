@@ -70,8 +70,8 @@ const model = function () {
       write: ['editor', 'developer', 'admin']
     },
     act_as_tree: true,
-    sortable: true,
-    //sort: "SORT doc.order ASC",
+    //sortable: true,
+    sort: "SORT doc.name[@lang] ASC",
     //search: ["title", "barcode", "desc"],
     //includes: {
     //  conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
