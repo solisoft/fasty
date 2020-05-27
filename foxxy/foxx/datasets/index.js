@@ -718,23 +718,14 @@ router.put('/:service/orders/:from/:to', function (req, res) {
 // GET /datasets/:service/stats/:tag
 router.get('/:service/stats/:tag', function (req, res) {
   var results = db._query(`
-    LET tags = (
-      FOR d IN datasets
-        FILTER d.type == @service
-        COLLECT tag = d[@tag] INTO tags
+    FOR d IN datasets
+    FILTER d.type == @service
+    FILTER d[@tag] != NULL
+    FOR t IN d[@tag]
+        COLLECT tag = t WITH COUNT into size
         FILTER tag != NULL
-        RETURN FLATTEN(tag)
-    )
-    FOR tag IN UNIQUE(FLATTEN(tags))
-      SORT tag
-      LET size = (
-        FOR d IN datasets
-          FILTER d.type == @service AND CONTAINS(d.tags, tag)
-          COLLECT WITH COUNT INTO size
-          RETURN size
-      )[0]
-      SORT size DESC
-      RETURN { tag, size }
+        SORT size DESC
+        RETURN { tag, size }
   `, { tag: req.pathParams.tag, service: req.pathParams.service })
 
   res.send(results);

@@ -121,14 +121,15 @@ router.post('/:key/:type/:field', function (req, res) {
 // POST /uploads/reorder
 router.post('/reorder', function (req, res) {
     db._query(
-      `FOR data IN @data UPDATE { _key: data.k, pos: data.c } IN uploads`,
-      { data: req.body.ids }
+      `FOR data IN @data UPDATE { _key: data.k, pos: data.c, field: @field } IN uploads`,
+      { data: req.body.ids, field: req.body.field }
     )
     res.send({ success: true })
   })
   .header('X-Session-Id')
   .body(joi.object({
-    ids: joi.array().required()
+    ids: joi.array().required(),
+    field: joi.string().required()
   }), 'data')
   .description("Reorder elements")
 // -----------------------------------------------------------------------------

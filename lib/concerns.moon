@@ -182,7 +182,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   helpers = global_data.helpers
   splat = {}
   splat = splat_to_table(params.splat) if params.splat
-  app_settings = from_json(global_data.settings[1].home)
+  app_settings = {}
+  app_settings = from_json(global_data.settings[1].home) if global_data.settings
 
   -- {{ lang }}
   html = html\gsub('{{ lang }}', params.lang)
