@@ -128,7 +128,8 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
   RETURN { count, data }
   `
 
-  if(aql.indexOf("@lang")) folder_params.lang = req.headers['foxx-locale']
+  if(aql.indexOf("@lang") >= 0) folder_params.lang = req.headers['foxx-locale']
+  console.log(folder_params)
 
   var data = db._query(aql, _.merge({
       "@collection": req.pathParams.service,
