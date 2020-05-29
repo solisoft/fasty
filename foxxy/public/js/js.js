@@ -44,7 +44,8 @@
   };
 
   var expandAlias = function(name) {
-    return aliases[name] ? expandAlias(aliases[name]) : name;
+    var val = aliases[name];
+    return (val && name !== val) ? expandAlias(val) : name;
   };
 
   var _resolve = function(name, dep) {
@@ -629,9 +630,10 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db",
-  ".inseytel.com": "https://inseytel.com/_db",
-  "epic20.world": "/_db"
+  ".fasty.ovh": "https://fasty.ovh/_db/",
+  ".inseytel.com": "https://app.inseytel.com/_db/",
+  "office.fasty.ovh": "http://office.fasty.ovh:8530/_db/",
+  "dev.epic20.world": "https://dev.epic20.world/_db"
 };
 
 module.exports = Config;
@@ -904,8 +906,6 @@ require.register("js/editor.js", function(exports, require, module) {
               prepare_drop(el)
             }
             $('.drop_empty').remove()
-            $('.dragging').removeClass('dragging')
-            save_content()
             clear_empty_drags()
             set_empty_rows()
           }
@@ -929,22 +929,6 @@ require.register("js/editor.js", function(exports, require, module) {
         $('.active').removeClass('active')
         el.addClass('active')
       }
-    }
-
-    /*
-      save_content <function>
-      Save content to localStorage
-    */
-    var save_content = function () {
-      var t1 = +new Date()
-      /*
-      var history = JSON.parse(LGet('editor-history') || '[]')
-      history.push($(self).find('.edit-mode .page-content').html())
-      history.splice(0, history.length - 10);
-      LSet('editor-history', JSON.stringify(history))
-      */
-      var t2 = +new Date()
-      console.log("Save content : ", t2 - t1)
     }
 
     /*
@@ -1121,8 +1105,6 @@ require.register("js/editor.js", function(exports, require, module) {
           $(el).remove()
         }
       })
-
-      save_content()
     }
 
     /*
@@ -1212,8 +1194,6 @@ require.register("js/editor.js", function(exports, require, module) {
       // When you delete a row
       $(self).find('.edit-mode .cms_row_delete').on('click', function () {
         activeObj.closest('.edit-mode .sg-row').remove()
-        $(self).find('.edit-mode .row_editor').css('margin-left', (-99999) + 'px')
-        save_content()
         return false
       })
 
@@ -1285,9 +1265,9 @@ require.register("js/editor.js", function(exports, require, module) {
 
       // Close the editor modal
       $(self).find('.edit-mode .sg-editcontent').on('click', '.fa-times-circle', function () {
-        save_editor()
-        save_content()
         $('.edit-mode .cms_editor').removeClass('editmode')
+        save_editor()
+
         return false
       })
 
@@ -1302,8 +1282,6 @@ require.register("js/editor.js", function(exports, require, module) {
         $(self).find('.edit-mode .drag').attr('ondrop', 'drop(event)')
         $(self).find('.edit-mode .drag').attr('ondragend', 'drag_end(event)')
 
-        $(".fullscreen").scrollTop($(".fullscreen").prop('scrollHeight'));
-        save_content()
 
         set_empty_rows()
 
@@ -3993,7 +3971,7 @@ riot.tag2('loading', '<div class="uk-text-center"> Loading app ... <br><div uk-s
     })
 });
 
-riot.tag2('welcome', '<h1>Welcome aboard</h1> <p>This is a landing page ... Nothing special here, replace it by what you want !</p> <p>Find me in <code>app/widgets/loading.html.tag</code></p>', '', '', function(opts) {
+riot.tag2('welcome', '<h1 class="uk-text-center">Welcome aboard</h1> <p class="uk-text-center" style="color: white">This is a landing page ... Nothing special here, replace it by what you want !</p> <p class="uk-text-center" style="color: white">Find me in <code>app/widgets/loading.html.tag</code></p> <h2 class="uk-text-center" style="margin-top:80px"><a href="https://fasty.ovh" target="_blank">Fasty</a> is powered by powerful opensource projects</h2> <div class="uk-container uk-text-center" style="color: white;margin-top:80px"> <div class="uk-column-1-2"> <div class="uk-margin"> <a href="https://www.arangodb.com/" target="_blank"><img src="/static/admin/img/ArangoDB-logo-bg.svg" style="height:90px"></a> <br>ArangoDB </div> <div class="uk-margin"> <a href="https://openresty.org/en/" target="_blank"><img src="/static/admin/img/logo.png" style="height:90px"></a> <br>openresty </div> </div> <div class="uk-column-1-2"> <div class="uk-margin"> <a href="https://riot.js.org/" target="_blank"><img src="/static/admin/img/square.svg" style="height:90px"></a> <br>RiotJS </div> <div class="uk-margin"> <a href="https://leafo.net/lapis/" target="_blank"><img src="/static/admin/img/lapis.jpg" style="height:90px"></a> <br>LAPIS </div> </div> </div> </div>', '', '', function(opts) {
 });
 
 riot.tag2('rightnav', '<ul class="uk-navbar-nav"> <li><a onclick="{deploy}" if="{settings.deploy_secret != ⁗⁗}">Deploy</a></li> <li each="{lang in langs}" class="{lang == window.localStorage.getItem(\'foxx-locale\') ? \'uk-active\' : \'\'}"><a onclick="{changeLang}">{lang}</a></li> <li><a href="#logout"><i class="uk-icon-sign-out"></i> Logout</a></li> </ul>', '', '', function(opts) {
@@ -4013,16 +3991,18 @@ riot.tag2('rightnav', '<ul class="uk-navbar-nav"> <li><a onclick="{deploy}" if="
 
     this.deploy = function(e) {
       e.preventDefault()
-      var url = "/deploy"
-      $.post(url, { token: self.settings.token }, function(data) {
-        if(data == "site deployed")
-          UIkit.notification({
-            message : 'Site Deployed Successfully!',
-            status  : 'success',
-            timeout : 1000,
-            pos     : 'bottom-right'
-          });
-      })
+      if(confirm("Are you sure?")) {
+        var url = "/deploy"
+        $.post(url, { token: self.settings.token }, function(data) {
+          if(data == "site deployed")
+            UIkit.notification({
+              message : 'Site Deployed Successfully!',
+              status  : 'success',
+              timeout : 1000,
+              pos     : 'bottom-right'
+            });
+        })
+      }
       return false
     }.bind(this)
 });
@@ -6147,25 +6127,30 @@ riot.tag2('trads', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
 });
 
 require.register("widgets/uploads.html.tag", function(exports, require, module) {
-riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}" target="_blank"><img riot-src="{row.url}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
+riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}" target="_blank"><img riot-src="{row.url}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
     var _this = this
     this.data = []
 
     var use_i18n = ""
     if(opts.i18n != "undefined") use_i18n = "/" + window.localStorage.getItem("foxx-locale")
-    common.get(url + "uploads/" + opts.id + '/' + opts.field + use_i18n, function(d) {
-      _this.data = d
-      _this.update()
-    })
+
+    this.load = function() {
+      common.get(url + "uploads/" + opts.id + '/' + opts.field + use_i18n, function(d) {
+        _this.data = d
+        _this.update()
+      })
+    }.bind(this)
+
+    this.load()
 
     $(function() {
-      UIkit.sortable(".sortable_" + opts.field, {}) 
+
       UIkit.util.on(".sortable_" + opts.field, 'moved', function(data) {
         var i = 0
         var ids = _.map($(".sortable_" + opts.field+" > div"), function(el) {
           return { k: "" + $(el).data("id"), c: i++ }
         })
-        common.post(url+"uploads/reorder", JSON.stringify({ ids: ids }), function(d) {
+        common.post(url+"uploads/reorder", JSON.stringify({ ids: ids, field: opts.field }), function(d) {
           if(d.success) {
             UIkit.notification({
               message : 'Successfully reordered!',
@@ -6176,6 +6161,27 @@ riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none
           }
         })
       })
+      UIkit.util.on(".sortable_" + opts.field, 'added', function(data) {
+        var i = 0
+        var ids = _.map($(".sortable_" + opts.field+" > div"), function(el) {
+          return { k: "" + $(el).data("id"), c: i++ }
+        })
+        common.post(url+"uploads/reorder", JSON.stringify({ ids: ids, field: opts.field }), function(d) {
+          if(d.success) {
+            eventHub.trigger("refresh_uploads")
+            UIkit.notification({
+              message : 'Successfully reordered!',
+              status  : 'success',
+              timeout : 1000,
+              pos     : 'bottom-right'
+            });
+          }
+        })
+      })
+    })
+
+    eventHub.on("refresh_uploads", function() {
+      _this.load()
     })
 
     this.delete_asset = function(e) {

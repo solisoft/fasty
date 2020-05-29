@@ -41,7 +41,7 @@ var restart_services = function (collection, id, _settings) {
         token: _settings.token
       }
     })
-  }
+  } else console.log("Missing base_url in settings")
 
   if (collection == "scripts" && h_settings.base_url) {
     request({
@@ -51,7 +51,7 @@ var restart_services = function (collection, id, _settings) {
         token: _settings.token
       }
     })
-  }
+  } else console.log("Missing base_url in settings")
 }
 // -----------------------------------------------------------------------------
 // GET /sync
@@ -70,6 +70,14 @@ router.get('/:token', function (req, res) {
       FOR c IN components
         LET path = (FOR vertex IN ANY SHORTEST_PATH CONCAT('folders/', c.folder_key) TO @root_component GRAPH 'folderGraph' RETURN vertex.name)
         RETURN { id: c._id, name: c.name, html: c.html, locked_by: c.locked_by, path: REVERSE(path) }
+    )
+    LET spas = (
+      FOR spa IN spas
+      RETURN { id: spa._id, name: spa.name, html: spa.html, js: spa.js, locked_by: spa.locked_by }
+    )
+    LET pages = (
+      FOR page IN pages
+      RETURN { id: page._id, name: page.name, raw_html: page.raw_html, locked_by: page.locked_by }
     )
     LET partials = (
       FOR p IN partials
@@ -116,7 +124,10 @@ router.get('/:token', function (req, res) {
           RETURN UNSET(ds, ['_rev', 'order'])
     )
 
-    RETURN { layouts, components, partials, aqls, datatypes: data_types, apis, scripts, datasets: data_sets }
+    RETURN {
+      pages, layouts, components, spas, partials, aqls, datatypes: data_types,
+      apis, scripts, datasets: data_sets
+    }
     `, { root_component, root_partial }).toArray()[0]
   }
   res.json(data)
@@ -138,7 +149,17 @@ router.patch('/:token', function (req, res) {
     var object = db._collection(collection).document(id)
 
     var data = {}
-    data[field.trim()] = content
+    var is_i18n = false
+    var lang = "en"
+    if (field.indexOf("#") > 0) {
+      is_i18n = true
+      lang = field.split("#")[1]
+      field = field.split("#")[0]
+      data[field] = object[field]
+      data[field][lang] = content
+    } else {
+      data[field.trim()] = content
+    }
 
     if (isLocked) {
       if (object.locked_by == null || object.locked_by == req.body.name) {

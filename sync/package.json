@@ -1,6 +1,6 @@
 {
   "name": "fasty-cli",
-  "version": "0.0.19",
+  "version": "0.0.24",
   "description": "CLI for Fasty",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "chokidar": "^2.0.4",
+    "chokidar": "^3.4.0",
     "colors": "^1.1.2",
     "js-yaml": "^3.12.0",
     "lodash": "^4.17.10",

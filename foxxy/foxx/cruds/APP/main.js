@@ -116,16 +116,22 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
     folder = 'FILTER !HAS(doc, "folder_key") || doc.folder_key == @folder'
     folder_params = { folder: req.queryParams.folder }
   }
-  var data = db._query(`
-    LET count = LENGTH(FOR doc IN @@collection ${folder} RETURN 1)
-    LET data = (
-      FOR doc IN @@collection
-        LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
-        ${folder} ${order} ${includes} LIMIT @offset, @perpage
-        RETURN MERGE(doc, { image: image ${include_merge} })
-    )
-    RETURN { count, data }
-    `, _.merge({
+
+  var aql = `
+  LET count = LENGTH(FOR doc IN @@collection ${folder} RETURN 1)
+  LET data = (
+    FOR doc IN @@collection
+      LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
+      ${folder} ${order} ${includes} LIMIT @offset, @perpage
+      RETURN MERGE(doc, { image: image ${include_merge} })
+  )
+  RETURN { count, data }
+  `
+
+  if(aql.indexOf("@lang") >= 0) folder_params.lang = req.headers['foxx-locale']
+  console.log(folder_params)
+
+  var data = db._query(aql, _.merge({
       "@collection": req.pathParams.service,
       "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
       "perpage": parseInt(req.pathParams.perpage)

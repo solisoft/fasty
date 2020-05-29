@@ -25,6 +25,7 @@ RUN luarocks install stringy
 RUN luarocks install busted
 RUN luarocks install sass
 RUN luarocks install lua-vips
+RUN luarocks install web_sanitize
 
 RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
     chmod +x n && mv n /usr/bin/n && n lts
@@ -33,10 +34,10 @@ RUN npm install -g yarn forever
 
 RUN curl -OL https://download.arangodb.com/arangodb35/DEBIAN/Release.key && \
     apt-key add - < Release.key && \
-    echo 'deb https://download.arangodb.com/arangodb35/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
+    echo 'deb https://download.arangodb.com/arangodb36/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
     apt-get update && \
     apt-get install apt-transport-https && \
-    apt-get install arangodb3-client=3.5.3-1
+    apt-get install arangodb3-client
 
 WORKDIR /var/www
 

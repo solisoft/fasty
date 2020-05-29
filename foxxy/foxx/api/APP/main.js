@@ -91,3 +91,13 @@ router.get('/:type', function (req, res) {
   res.json({ count, data })
 })
   .description("Fetch Data")
+
+// -----------------------------------------------------------------------------
+// Save any form to forms collection
+router.post('/form/:name', function (req, res) {
+  var data  = req.body
+  data.type = req.pathParams.name
+
+  res.json(db.forms.save(data))
+})
+  .description("Save form in the db")

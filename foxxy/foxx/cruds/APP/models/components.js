@@ -62,7 +62,7 @@ const model = function() {
     //  }, ...
     //],
     //slug: ["title"],
-    //sort: "SORT doc.order ASC",
+    sort: "SORT doc.name ASC",
     //search: ["title", "barcode", "desc"],
     //includes: {
     //  conditions: "FOR c IN customers FILTER c._key == doc.customer_key",

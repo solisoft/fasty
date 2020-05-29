@@ -182,6 +182,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   helpers = global_data.helpers
   splat = {}
   splat = splat_to_table(params.splat) if params.splat
+  app_settings = {}
+  app_settings = from_json(global_data.settings[1].home) if global_data.settings
 
   -- {{ lang }}
   html = html\gsub('{{ lang }}', params.lang)
@@ -200,8 +202,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ settings | key }}
     -- e.g. {{ settings | chatroom_url }}
-    if action == 'settings' and from_json(global_data.settings[1].home)[item]
-      output = from_json(global_data.settings[1].home)[item]
+    if action == 'settings' and app_settings[item]
+      output = app_settings[item]
 
     -- {{ splat | key }}
     -- e.g. {{ splat | salon }}
@@ -273,7 +275,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
           -- @bindvar must be present in the request
           for str in string.gmatch(args['aql'], '__IF (%w-)__') do
-            unless bindvar[str] then
+            unless splat[str] then
               args['aql'] = args['aql']\gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
             else
               args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
@@ -281,7 +283,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
           -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
           for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
-            if bindvar[str] then
+            if splat[str] then
               args['aql'] = args['aql']\gsub(
                 '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
               )

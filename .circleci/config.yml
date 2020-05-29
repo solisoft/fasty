@@ -6,7 +6,7 @@ executors:
   fasty:
     docker:
       - image: solisoft/fasty
-      - image: arangodb/arangodb:3.6.1
+      - image: arangodb/arangodb:3.6.3
         environment:
           ARANGO_ROOT_PASSWORD: password
         command: [--server.endpoint=http+tcp://0.0.0.0:8529 --server.password password]

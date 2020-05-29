@@ -228,13 +228,9 @@ router.get('/:service/search/:term', function (req, res) {
 
   if (locale.match(/[a-z]+/) == null) locale = 'en'
 
-  var fields = ["_id", "_key"]
-  fields.push(_.map(object.columns, function(d) { return d.name }))
-
   var bindVars = {
     "type": req.pathParams.service,
-    "term": req.pathParams.term,
-    "fields": _.flatten(fields)
+    "term": req.pathParams.term
   }
 
   var aql = `
@@ -244,7 +240,7 @@ router.get('/:service/search/:term', function (req, res) {
   LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
   ${order} ${includes}
   LIMIT 100
-  RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
+  RETURN MERGE(doc, { image: image ${include_merge} })
   `
 
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }) }
@@ -316,7 +312,7 @@ router.post('/:service', function (req, res) {
 
   try {
     var schema = {}
-    if (object.act_as_tree) schema['folder_key'] = joi.string().required()
+    if (object.act_as_tree) schema.folder_key = joi.string().required()
     _.each(fields, function (f) {
       schema[f.n] = _.isString(f.j) ? schema[f.n] = eval(f.j) : schema[f.n] = f.j
     })
@@ -348,9 +344,9 @@ router.post('/:service', function (req, res) {
     var folder_params = {}
     if (object.act_as_tree) {
       filter_by_folder = 'FILTER doc.folder_key == @folder'
-      folder_params['folder'] = body.folder_key
+      folder_params.folder = body.folder_key
     }
-    data['order'] = db._query(`
+    data.order = db._query(`
       LET docs = (FOR doc IN datasets FILTER doc.type == @type ${filter_by_folder} RETURN 1)
       RETURN LENGTH(docs)
     `, _.merge({ type: req.pathParams.service }, folder_params)
@@ -369,21 +365,24 @@ router.post('/:service', function (req, res) {
         return field_name == '_key' ? obj._key : value
       })
 
-      if(data['slug'] == '' || data['slug'] == undefined ) {
+      if(data.slug == '' || data.slug == undefined ) {
         slug = _.kebabCase(slug)
-        obj_update["slug"] = slug
+        obj_update.slug = slug
       }
     }
 
     _.each(object.search, function(s) {
       if (_.isPlainObject(s)) {
         var bindVars = { id: obj._id }
-        if(s.aql.indexOf("@lang")) bindVars['lang'] = req.headers['foxx-locale']
+        if(s.aql.indexOf("@lang")) bindVars.lang = req.headers['foxx-locale']
         search_arr.push(db._query(s.aql, bindVars).toArray()[0])
       }
     })
-    data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
-    obj_update["search"] = data.search
+
+    if (object.search) {
+      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
+      obj_update.search = data.search
+    }
     collection.update(obj, obj_update)
 
     save_revision(req.session.uid, obj, data, object.revisions)
@@ -430,11 +429,11 @@ router.post('/:service/:service_key/:sub', function (req, res) {
     }
     if (object.timestamps === true) { data.created_at = +new Date() }
 
-    data['order'] = db._query(
+    data.order = db._query(
       'LET docs = (FOR doc IN datasets FILTER doc.type == @type RETURN 1) RETURN LENGTH(docs)',
       { type: req.pathParams.sub }
     ).toArray()[0]
-    data['parent_id'] = req.pathParams.service_key
+    data.parent_id = req.pathParams.service_key
     obj = collection.save(data, { waitForSync: true })
     if (object.slug) {
       var slug = _.map(object.slug, function(field_name) {
@@ -446,7 +445,7 @@ router.post('/:service/:service_key/:sub', function (req, res) {
         }
         return field_name == '_key' ? obj._key : value
       })
-      if(data['slug'] == '') {
+      if(data.slug == '') {
         slug = _.kebabCase(slug)
         collection.update(obj, { slug: slug })
       }
@@ -508,14 +507,14 @@ router.post('/:service/:id', function (req, res) {
         }
         return field_name == '_key' ? doc._key : value
       })
-      if (data['slug'] == '' || data['slug'] == undefined) {
-        data['slug'] = _.kebabCase(slug)
+      if (data.slug == '' || data.slug == undefined) {
+        data.slug = _.kebabCase(slug)
       }
     }
     _.each(object.search, function(s) {
       if (_.isPlainObject(s)) {
         var bindVars = { id: doc._id }
-        if (s.aql.indexOf("@lang")) bindVars['lang'] = req.headers['foxx-locale']
+        if (s.aql.indexOf("@lang")) bindVars.lang = req.headers['foxx-locale']
         var search_item = db._query(s.aql, bindVars).toArray()[0]
         search_arr.push(search_item)
         data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
@@ -668,7 +667,7 @@ router.put('/:service/orders/:from/:to', function (req, res) {
 
   if (req.queryParams.folder_key) {
     filter_by_folder = 'FILTER doc.folder_key == @folder'
-    folder_params['folder'] = req.queryParams.folder_key
+    folder_params.folder = req.queryParams.folder_key
   }
 
   var doc = db._query(
@@ -719,23 +718,14 @@ router.put('/:service/orders/:from/:to', function (req, res) {
 // GET /datasets/:service/stats/:tag
 router.get('/:service/stats/:tag', function (req, res) {
   var results = db._query(`
-    LET tags = (
-      FOR d IN datasets
-        FILTER d.type == @service
-        COLLECT tag = d[@tag] INTO tags
+    FOR d IN datasets
+    FILTER d.type == @service
+    FILTER d[@tag] != NULL
+    FOR t IN d[@tag]
+        COLLECT tag = t WITH COUNT into size
         FILTER tag != NULL
-        RETURN FLATTEN(tag)
-    )
-    FOR tag IN UNIQUE(FLATTEN(tags))
-      SORT tag
-      LET size = (
-        FOR d IN datasets
-          FILTER d.type == @service AND CONTAINS(d.tags, tag)
-          COLLECT WITH COUNT INTO size
-          RETURN size
-      )[0]
-      SORT size DESC
-      RETURN { tag, size }
+        SORT size DESC
+        RETURN { tag, size }
   `, { tag: req.pathParams.tag, service: req.pathParams.service })
 
   res.send(results);
