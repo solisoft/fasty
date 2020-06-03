@@ -7,11 +7,6 @@ require("@arangodb/aql/cache").properties({ mode: "on" });
 
 const router = createRouter();
 
-module.context.use(function (req, res, next) {
-  res.setHeader("Access-Control-Expose-Headers", "X-Session-Id");
-  next();
-});
-
 router.tag('folders');
 
 module.exports = router;

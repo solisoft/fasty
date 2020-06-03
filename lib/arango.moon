@@ -1,4 +1,4 @@
-import table_merge from require 'lib.utils'
+import table_merge, table_deep_merge from require 'lib.utils'
 import from_json, to_json from require 'lapis.util'
 
 config = require('lapis.config').get!
@@ -52,8 +52,8 @@ raw_aql = (db_name, stm)->
   result = {} if result == nil
   result
 --------------------------------------------------------------------------------
-aql = (db_name, str, bindvars = {})->
-  raw_aql(db_name, { query: str, cache: true, bindVars: bindvars })
+aql = (db_name, str, bindvars = {}, options = {})->
+  raw_aql(db_name, table_deep_merge({ query: str, cache: true, bindVars: bindvars }, options))
 --------------------------------------------------------------------------------
 with_params = (db_name, method, handle, params)->
   body, status_code, headers = http_request(

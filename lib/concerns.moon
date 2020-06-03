@@ -262,11 +262,16 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         db_data = { "page": 1 }
         if dataset == 'arango'
           -- check if it's a stored procedure
+          aql_request = {}
+          aql_options = {}
           if args['req']
-            args['aql'] = aql(
-              db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
+            aql_request = aql(
+              db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql',
               { slug: args['req'] }
-            )[1]\gsub('{{ lang }}', params.lang)
+            )[1]
+
+            args['aql'] = aql_request.aql\gsub('{{ lang }}', params.lang)
+            aql_options = from_json(aql_request.options) if aql_request.options
 
           -- prepare the bindvar variable with variable found in the request
           -- but also on the parameters sent as args
@@ -291,7 +296,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
               args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
-          db_data = { results: aql(db_name, args['aql'], bindvar) }
+          db_data = { results: aql(db_name, args['aql'], bindvar, aql_options) }
           db_data = table_deep_merge(db_data, { _params: args })
 
         if dataset == 'rest'
@@ -353,7 +358,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         db_name, 'FOR a in aqls FILTER a.slug == @slug RETURN a', { "slug": item }
       )[1]
       if aql_request
-        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql))
+        options = {}
+        options = from_json(aql_request.options) if aql_request.options
+        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql), options)
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}
