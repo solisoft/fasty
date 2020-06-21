@@ -271,7 +271,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             )[1]
 
             args['aql'] = aql_request.aql\gsub('{{ lang }}', params.lang)
-            aql_options = from_json(aql_request.options) if aql_request.options
+            aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
 
           -- prepare the bindvar variable with variable found in the request
           -- but also on the parameters sent as args
