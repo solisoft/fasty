@@ -21,7 +21,6 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
-expire_at = 'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
 -- define_subdomain
 define_subdomain = () =>
@@ -53,6 +52,9 @@ class extends lapis.Application
   @enable "etlua"
 
   layout: false -- we don't need a layout, it will be loaded dynamically
+  expire_at = () =>
+   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
+
   ----------------------------------------------------------------------------
   display_error_page = (status=500, headers={}) =>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
@@ -154,7 +156,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "application/javascript", content
     else
-      content_type: "application/javascript", content, headers: { "expires": expire_at }
+      content_type: "application/javascript", content, headers: { "expires": expire_at! }
   ------------------------------------------------------------------------------
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
     load_settings(@)
@@ -167,7 +169,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "application/javascript", content
     else
-      content_type: "application/javascript", content, headers: { "expires": expire_at }
+      content_type: "application/javascript", content, headers: { "expires": expire_at! }
 
   ------------------------------------------------------------------------------
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -182,7 +184,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "text/css", content
     else
-      content_type: "text/css", content, headers: { "expires": expire_at }
+      content_type: "text/css", content, headers: { "expires": expire_at! }
   ------------------------------------------------------------------------------
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
     load_settings(@)
@@ -195,7 +197,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "text/css", content
     else
-      content_type: "text/css", content, headers: { "expires": expire_at }
+      content_type: "text/css", content, headers: { "expires": expire_at! }
   ------------------------------------------------------------------------------
   [component: '/:lang/:key/component/:rev.tag']: =>
     load_settings(@)
@@ -209,7 +211,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content
     else
-      content, headers: { "expires": expire_at }
+      content, headers: { "expires": expire_at! }
 
   ------------------------------------------------------------------------------
   [page_no_lang: '/:all/:slug']: =>
