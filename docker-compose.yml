@@ -19,23 +19,6 @@ services:
     networks:
       frontend:
 
-  # resize:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile_node
-  #   command: /bin/bash -c "yarn && yarn start"
-  #   ports:
-  #     - 8001:3000
-  #   volumes:
-  #     - ./resize/:/workspace
-  #     - node_modules_resize:/workspace/node_modules
-  #   depends_on:
-  #     - arangodb
-  #   links:
-  #     - arangodb:arangodb
-  #   networks:
-  #     frontend:
-
   cms:
     image: solisoft/fasty
     command: /bin/bash -c "cd /var/www && lapis server"
