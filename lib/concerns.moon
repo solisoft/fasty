@@ -5,6 +5,7 @@ import table_deep_merge, to_timestamp from require 'lib.utils'
 import http_get from require 'lib.http_client'
 import encode_with_secret from require 'lapis.util.encoding'
 import from_json, to_json, trim, unescape from require 'lapis.util'
+import web_sanitize from require "web_sanitize"
 --------------------------------------------------------------------------------
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
@@ -47,7 +48,7 @@ etlua2html = (json, partial, params, global_data) ->
 
   success, data = pcall(
     template, {
-      'dataset': json, 'to_json': to_json,
+      'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
       'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
     }
   )
