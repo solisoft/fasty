@@ -327,17 +327,16 @@ class extends lapis.Application
     _uuid = upload.uuid
 
     str = ""
+    res = { "body": "", status: 0 }
     if @params.format != upload.ext
-      if io.open("#{upload.root}/#{_uuid}.#{ext}" ,"r") == nil
+      res = ngx.location.capture("/#{upload.root}/#{_uuid}.#{ext}")
+      if res and res.status == 404
         ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{upload.root}/#{_uuid}.#{ext}")
-
-      file = io.open("#{upload.root}/#{_uuid}.#{ext}", "rb")
-      str = file\read("*a")
+        res = ngx.location.capture("#{upload.root}/#{_uuid}.#{ext}")
     else
-      file = io.open(upload.path, "rb")
-      str = file\read("*a")
+      res = ngx.location.capture("/" .. upload.path)
 
-    str, content_type: "image"
+    res.body, content_type: "image"
   ------------------------------------------------------------------------------
   -- resize image
   [image_r: '/image/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
@@ -355,13 +354,12 @@ class extends lapis.Application
     height = ""
     height = "--height #{@params.height} --crop attention" if @params.height
 
-    if io.open("#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}", "r") == nil
+    res = ngx.location.capture("/#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}")
+    if res and res.status == 404
       ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext} #{@params.width} #{height} --size down")
+      res = ngx.location.capture("/#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}")
 
-    file = io.open("#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}", "rb")
-    str = file\read("*a")
-
-    str, content_type: "image"
+    res.body, content_type: "image"
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
   [console: '/console']: console.make!
