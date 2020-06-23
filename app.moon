@@ -4,9 +4,10 @@ lapis   = require 'lapis'
 stringy = require 'stringy'
 console = require 'lapis.console'
 config  = require('lapis.config').get!
+shell   = require 'resty.shell'
 
 import aqls from require 'lib.aqls'
-import check_valid_lang from require 'lib.utils'
+import check_valid_lang, uuid from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import parse_query_string, from_json, to_json from require 'lapis.util'
@@ -273,6 +274,45 @@ class extends lapis.Application
     all_domains = nil
     settings[sub_domain] = nil
     'ok'
+
+  ------------------------------------------------------------------------------
+  -- image upload
+  [image_upload: '/image/upload']: respond_to {
+    POST: =>
+      define_subdomain(@)
+      if file = @params.image
+        date = os.date("%y/%m/%d", os.time())
+        path = "static/uploads/#{sub_domain}/#{date}"
+        filename = "#{path}/#{uuid()}"
+        -- os.execute("mkdir -p #{path}")
+        current_dir = io.popen"cd":read'*l'
+        print("-----", current_dir)
+        --os.execute("mkdir static/uploads/cms/demo")
+        -- output = io.open filename, "w+"
+        -- io.output output
+        -- io.write file.content
+        -- io.close
+
+        -- ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{filename} #{filename}_2 100")
+        -- --ok, stdout, stderr, reason, status = shell.run("ls -l")
+        -- to_json(stderr)
+        'ok!!!'
+      else
+        'no file provided'
+  }
+
+  ------------------------------------------------------------------------------
+  -- get image
+  [image: '/image/o/:uuid(.:format)']: =>
+    define_subdomain(@)
+
+    'ok'
+  ------------------------------------------------------------------------------
+  -- resize image
+  [image: '/image/r/:uuid/:width(/:height)(.:format)']: =>
+    define_subdomain(@)
+    'ok'
+
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
   [console: '/console']: console.make!

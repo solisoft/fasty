@@ -1,6 +1,14 @@
 import from_json, to_json from require 'lapis.util'
 stringy = require 'stringy'
-date = require 'date'
+date    = require 'date'
+--------------------------------------------------------------------------------
+uuid = () ->
+  template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+  math.randomseed(os.clock())
+  return string.gsub(template, '[xy]', (c) ->
+      v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+      return string.format('%x', v)
+  )
 --------------------------------------------------------------------------------
 table_merge = (t1, t2) ->
   for k,v in ipairs(t2) do table.insert(t1, v)
@@ -34,4 +42,4 @@ to_timestamp = (d) ->
   date.diff(d1, date.epoch!)\spanseconds!
 --------------------------------------------------------------------------------
 -- expose methods
-{ :table_merge, :table_deep_merge, :table_index, :check_valid_lang, :map, :to_timestamp }
+{ :table_merge, :table_deep_merge, :table_index, :check_valid_lang, :map, :to_timestamp, :uuid }
