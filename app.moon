@@ -280,39 +280,88 @@ class extends lapis.Application
   [image_upload: '/image/upload']: respond_to {
     POST: =>
       define_subdomain(@)
-      if file = @params.image
-        date = os.date("%y/%m/%d", os.time())
-        path = "static/uploads/#{sub_domain}/#{date}"
-        filename = "#{path}/#{uuid()}"
-        -- os.execute("mkdir -p #{path}")
-        current_dir = io.popen"cd":read'*l'
-        print("-----", current_dir)
-        --os.execute("mkdir static/uploads/cms/demo")
-        -- output = io.open filename, "w+"
-        -- io.output output
-        -- io.write file.content
-        -- io.close
+      auth_arangodb(sub_domain)
 
-        -- ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{filename} #{filename}_2 100")
-        -- --ok, stdout, stderr, reason, status = shell.run("ls -l")
-        -- to_json(stderr)
-        'ok!!!'
+      if file = @params.image
+        arr = stringy.split(file.filename, ".")
+        ext = arr[table.getn(arr)]
+
+        date = os.date("%y/%m/%d", os.time())
+        path = "static/assets/#{sub_domain}/#{date}"
+        _uuid = uuid()
+        filename = "#{_uuid}.#{ext}"
+
+        os.execute("mkdir -p #{path}")
+
+        print file.filename
+        output = io.open "#{path}/#{filename}", "w+"
+        io.output output
+        io.write file.content
+        io.close
+
+        print(to_json({ "uuid": _uuid, "path": path, "filename": filename, "size": #file.content }))
+
+        aql(
+          "db_#{sub_domain}",
+          "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @filename), size: @size } INTO uploads",
+          { "uuid": _uuid, "path": path, "filename": filename, "size": #file.content }
+        )
+
+        'ok'
       else
         'no file provided'
   }
-
   ------------------------------------------------------------------------------
   -- get image
-  [image: '/image/o/:uuid(.:format)']: =>
+  [image: '/image/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     define_subdomain(@)
+    auth_arangodb(sub_domain)
 
-    'ok'
+    upload = aql(
+      "db_#{sub_domain}",
+      "FOR u IN uploads FILTER u.uuid == @key RETURN u",
+      { "key": @params.uuid }
+    )[1]
+
+    ext = @params.format or upload.ext
+    _uuid = upload.uuid
+
+    str = ""
+    if @params.format != upload.ext
+      if io.open("#{upload.root}/#{_uuid}.#{ext}" ,"r") == nil
+        ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{upload.root}/#{_uuid}.#{ext}")
+
+      file = io.open("#{upload.root}/#{_uuid}.#{ext}", "rb")
+      str = file\read("*a")
+    else
+      file = io.open(upload.path, "rb")
+      str = file\read("*a")
+
+    str, content_type: "image"
   ------------------------------------------------------------------------------
   -- resize image
-  [image: '/image/r/:uuid/:width(/:height)(.:format)']: =>
+  [image_r: '/image/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
     define_subdomain(@)
-    'ok'
+    auth_arangodb(sub_domain)
 
+    ext = @params.format or "jpg"
+    upload = aql(
+      "db_#{sub_domain}",
+      "FOR u IN uploads FILTER u.uuid == @key RETURN u",
+      { "key": @params.uuid }
+    )[1]
+    _uuid = upload.uuid
+
+    height = ""
+    height = "--height #{@params.height} --crop attention" if @params.height
+
+    if io.open("#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}", "r") == nil
+      ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext} #{@params.width} #{height} --size down")
+
+    file = io.open("#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}", "rb")
+    str = file\read("*a")
+
+    str, content_type: "image"
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
   [console: '/console']: console.make!

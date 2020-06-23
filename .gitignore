@@ -25,3 +25,4 @@ staging-*
 dump/
 load*.sh
 uploads/
+assets/

@@ -1,6 +1,9 @@
 FROM ubuntu:18.04
 LABEL Olivier Bonnaure <olivier@solisoft.net>
-RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev libssl-dev gcc perl make curl git-core curl luarocks libsass-dev glib2.0-dev libexpat1-dev
+RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
+    libncurses5-dev libpcre3-dev libssl-dev gcc perl make curl git-core curl \
+    luarocks libsass-dev glib2.0-dev libexpat1-dev \
+    libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev
 
 RUN wget https://github.com/libvips/libvips/releases/download/v8.9.2/vips-8.9.2.tar.gz \
     && tar -xf vips-8.9.2.tar.gz \
