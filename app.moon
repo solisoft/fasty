@@ -1,18 +1,17 @@
 -- fasty CMS
-sass    = require 'sass'
-lapis   = require 'lapis'
-stringy = require 'stringy'
-console = require 'lapis.console'
-config  = require('lapis.config').get!
-shell   = require 'resty.shell'
+sass      = require 'sass'
+lapis     = require 'lapis'
+stringy   = require 'stringy'
+config    = require('lapis.config').get!
+shell     = require 'resty.shell'
+encoding  = require "lapis.util.encoding"
 
 import aqls from require 'lib.aqls'
+import respond_to from require 'lapis.application'
 import check_valid_lang, uuid from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import parse_query_string, from_json, to_json from require 'lapis.util'
-import capture_errors, yield_error, respond_to from require 'lapis.application'
-import install_service, install_script, deploy_site from require 'lib.service'
+import from_json, to_json from require 'lapis.util'
 import dynamic_replace, dynamic_page, page_info, splat_to_table, define_content_type
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
@@ -52,10 +51,12 @@ class extends lapis.Application
 
   @enable "etlua"
 
+  @include "applications.images"
+  @include "applications.services"
+
   layout: false -- we don't need a layout, it will be loaded dynamically
   expire_at = () =>
    'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
-
   ----------------------------------------------------------------------------
   display_error_page = (status=500, headers={}) =>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
@@ -135,6 +136,23 @@ class extends lapis.Application
         else
           display_page(@)
   ------------------------------------------------------------------------------
+  [page_no_lang: '/:all/:slug']: =>
+    define_subdomain(@)
+
+    if no_db[sub_domain] then redirect_to: '/need_a_db'
+    else
+      load_settings(@)
+      @params.lang = check_valid_lang(settings[sub_domain].langs, @params.all)
+      unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
+      display_page(@)
+  ------------------------------------------------------------------------------
+  [page: '/:lang/:all/:slug(/*)']: =>
+    define_subdomain(@)
+    if no_db[sub_domain] then redirect_to: '/need_a_db'
+    else
+      load_settings(@)
+      display_page(@)
+  ------------------------------------------------------------------------------
   [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
     load_settings(@)
     data = aql(
@@ -213,153 +231,3 @@ class extends lapis.Application
       content
     else
       content, headers: { "expires": expire_at! }
-
-  ------------------------------------------------------------------------------
-  [page_no_lang: '/:all/:slug']: =>
-    define_subdomain(@)
-
-    if no_db[sub_domain] then redirect_to: '/need_a_db'
-    else
-      load_settings(@)
-      @params.lang = check_valid_lang(settings[sub_domain].langs, @params.all)
-      unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
-      display_page(@)
-  ------------------------------------------------------------------------------
-  [page: '/:lang/:all/:slug(/*)']: =>
-    define_subdomain(@)
-
-    if no_db[sub_domain] then redirect_to: '/need_a_db'
-    else
-      load_settings(@)
-      display_page(@)
-  ------------------------------------------------------------------------------
-  [service: '/service/:name']: respond_to {
-    POST: =>
-      load_settings(@)
-      if @params.token == settings[sub_domain].token
-        install_service(sub_domain, @params.name)
-        'service installed'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
-  -- install script server side
-  [script: '/script/:name']: respond_to {
-    POST: =>
-      load_settings(@)
-      if @params.token == settings[sub_domain].token
-        install_script(sub_domain, @params.name)
-        'script installed'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
-  -- deploy site
-  [deploy: '/deploy']: respond_to {
-    POST: =>
-      load_settings(@)
-      if @params.token == settings[sub_domain].token
-        deploy_site(sub_domain, settings[sub_domain])
-        'site deployed'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
-  -- reset variables for specific sub domain
-  [reset_all: '/admin/reset_all']: =>
-    define_subdomain(@)
-
-    jwt[sub_domain] = nil
-    global_data[sub_domain] = nil
-    all_domains = nil
-    settings[sub_domain] = nil
-    'ok'
-
-  ------------------------------------------------------------------------------
-  -- image upload
-  [image_upload: '/image/upload']: respond_to {
-    POST: =>
-      define_subdomain(@)
-      auth_arangodb(sub_domain)
-
-      if file = @params.image
-        arr = stringy.split(file.filename, ".")
-        ext = arr[table.getn(arr)]
-
-        date = os.date("%y/%m/%d", os.time())
-        path = "static/assets/#{sub_domain}/#{date}"
-        _uuid = uuid()
-        filename = "#{_uuid}.#{ext}"
-
-        os.execute("mkdir -p #{path}")
-
-        print file.filename
-        output = io.open "#{path}/#{filename}", "w+"
-        io.output output
-        io.write file.content
-        io.close
-
-        print(to_json({ "uuid": _uuid, "path": path, "filename": filename, "size": #file.content }))
-
-        aql(
-          "db_#{sub_domain}",
-          "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @filename), size: @size } INTO uploads",
-          { "uuid": _uuid, "path": path, "filename": filename, "size": #file.content }
-        )
-
-        'ok'
-      else
-        'no file provided'
-  }
-  ------------------------------------------------------------------------------
-  -- get image
-  [image: '/image/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
-    define_subdomain(@)
-    auth_arangodb(sub_domain)
-
-    upload = aql(
-      "db_#{sub_domain}",
-      "FOR u IN uploads FILTER u.uuid == @key RETURN u",
-      { "key": @params.uuid }
-    )[1]
-
-    ext = @params.format or upload.ext
-    _uuid = upload.uuid
-
-    str = ""
-    res = { "body": "", status: 0 }
-    if @params.format != upload.ext
-      res = ngx.location.capture("/#{upload.root}/#{_uuid}.#{ext}")
-      if res and res.status == 404
-        ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{upload.root}/#{_uuid}.#{ext}")
-        res = ngx.location.capture("#{upload.root}/#{_uuid}.#{ext}")
-    else
-      res = ngx.location.capture("/" .. upload.path)
-
-    res.body, content_type: "image"
-  ------------------------------------------------------------------------------
-  -- resize image
-  [image_r: '/image/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
-    define_subdomain(@)
-    auth_arangodb(sub_domain)
-
-    ext = @params.format or "jpg"
-    upload = aql(
-      "db_#{sub_domain}",
-      "FOR u IN uploads FILTER u.uuid == @key RETURN u",
-      { "key": @params.uuid }
-    )[1]
-    _uuid = upload.uuid
-
-    height = ""
-    height = "--height #{@params.height} --crop attention" if @params.height
-
-    res = ngx.location.capture("/#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}")
-    if res and res.status == 404
-      ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext} #{@params.width} #{height} --size down")
-      res = ngx.location.capture("/#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}")
-
-    res.body, content_type: "image"
-  ------------------------------------------------------------------------------
-  -- console (kinda irb console in dev mode)
-  [console: '/console']: console.make!
