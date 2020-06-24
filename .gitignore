@@ -26,3 +26,4 @@ dump/
 load*.sh
 uploads/
 assets/
+certs/

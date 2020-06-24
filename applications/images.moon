@@ -1,12 +1,13 @@
 lapis   = require "lapis"
-shell   = require 'resty.shell'
-stringy = require 'stringy'
+shell   = require "resty.shell"
+stringy = require "stringy"
+google  = require "cloud_storage.google"
 
-import aqls from require 'lib.aqls'
-import uuid from require 'lib.utils'
-import to_json from require 'lapis.util'
-import respond_to from require 'lapis.application'
-import auth_arangodb, aql, list_databases from require 'lib.arango'
+import aqls from require "lib.aqls"
+import uuid from require "lib.utils"
+import from_json, to_json from require "lapis.util"
+import respond_to from require "lapis.application"
+import auth_arangodb, aql, list_databases from require "lib.arango"
 
 jwt = {}
 global_data = {}
@@ -14,7 +15,36 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+bucket = nil
+--------------------------------------------------------------------------------
+-- Upload to google cloud storage
+cloud_storage = () ->
+  certificate = nil
+  storage = nil
+  if io.open("certs/#{sub_domain}.json", "r")
+    certificate = "certs/#{sub_domain}.json"
+  else
+    if io.open("certs/default.json", "r")
+      certificate = "certs/default.json"
 
+  if certificate
+    storage = google.CloudStorage\from_json_key_file(certificate)
+
+  storage
+
+storage = cloud_storage!
+--------------------------------------------------------------------------------
+load_original_from_cloud = (key) ->
+  res = ngx.location.capture("/" .. key)
+  if bucket and res.status == 404
+    output = io.open key, "w+"
+    content = storage\get_file bucket, key
+    io.output output
+    io.write content
+    io.close
+--------------------------------------------------------------------------------
+storage_exist = (key) ->
+  storage\head_file(bucket, key) == 200
 --------------------------------------------------------------------------------
 -- define_subdomain
 define_subdomain = () =>
@@ -32,6 +62,7 @@ load_settings = () =>
     global_data[sub_domain]['partials'] = {}
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
+  bucket = from_json(settings[sub_domain].home).cloud_storage_bucket
 
 class FastyImages extends lapis.Application
     ------------------------------------------------------------------------------
@@ -51,19 +82,26 @@ class FastyImages extends lapis.Application
           filename = "#{_uuid}.#{ext}"
 
           os.execute("mkdir -p #{path}")
-
+          content = file.content
           output = io.open "#{path}/#{filename}", "w+"
           io.output output
-          io.write file.content
+          io.write content
           io.close
+
+          home_settings = from_json(settings[sub_domain].home)
+          url = "/#{path}/#{filename}"
+          if bucket
+            if storage
+              status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
+              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
 
           aql(
             "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @filename), size: @size } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": file.filename, "size": #file.content }
+            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
+            { "uuid": _uuid, "path": path, "filename": file.filename, "size": #file.content, url: url, ext: ext }
           )
 
-          to_json({ success: true, filenae: _uuid })
+          to_json({ success: true, filename: _uuid })
         else
           status: 400, 'Bad parameters'
       else
@@ -88,14 +126,21 @@ class FastyImages extends lapis.Application
           os.execute("mkdir -p #{path}")
 
           output = io.open "#{path}/#{filename}", "w+"
+          content = encoding.decode_64(@params.image)
           io.output output
-          io.write encoding.decode_64(@params.image)
+          io.write content
           io.close
+
+          url = "/#{path}/#{filename}"
+          if bucket
+            if storage
+              status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
+              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
 
           aql(
             "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @filename), size: @size } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": @params.filename, "size": #file.content }
+            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
+            { "uuid": _uuid, "path": path, "filename": @params.filename, "size": #file.content, "url": url, "ext": ext }
           )
 
           to_json({ success: true, filenae: _uuid })
@@ -107,12 +152,10 @@ class FastyImages extends lapis.Application
   ------------------------------------------------------------------------------
   -- get image
   [image: '/image/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
-    define_subdomain(@)
-    auth_arangodb(sub_domain)
+    load_settings(@)
 
     upload = aql(
-      "db_#{sub_domain}",
-      "FOR u IN uploads FILTER u.uuid == @key RETURN u",
+      "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
       { "key": @params.uuid }
     )[1]
 
@@ -121,58 +164,63 @@ class FastyImages extends lapis.Application
 
     str = ""
     res = { "body": "", status: 0 }
-    if @params.format != upload.ext
-      res = ngx.location.capture("/#{upload.root}/#{_uuid}.#{ext}")
-      if res and res.status == 404
-        ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{upload.root}/#{_uuid}.#{ext}")
-        res = ngx.location.capture("/#{upload.root}/#{_uuid}.#{ext}")
+    url = "#{upload.root}/#{_uuid}.#{ext}"
 
+    load_original_from_cloud upload.path
+
+    if ext != upload.ext
+      res = ngx.location.capture("/#{url}")
+      if res and res.status == 404
+        ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{url}")
+        res = ngx.location.capture("/#{url}")
     else
-      res = ngx.location.capture("/" .. upload.path)
+      res = ngx.location.capture("/#{url}")
 
     res.body, content_type: "image"
   ------------------------------------------------------------------------------
   -- resize image
   [image_r: '/image/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
-    define_subdomain(@)
-    auth_arangodb(sub_domain)
+    load_settings(@)
 
     ext = @params.format or "jpg"
     upload = aql(
-      "db_#{sub_domain}",
-      "FOR u IN uploads FILTER u.uuid == @key RETURN u",
+      "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
       { "key": @params.uuid }
     )[1]
     _uuid = upload.uuid
 
+    load_original_from_cloud upload.path
+
     height = ""
     height = "--height #{@params.height} --crop attention" if @params.height
 
-    res = ngx.location.capture("/#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}")
+    dest = "#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}"
+
+    res = ngx.location.capture("/#{dest}")
     if res and res.status == 404
-      ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext} #{@params.width} #{height} --size down")
-      res = ngx.location.capture("/#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}")
+      ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
+      res = ngx.location.capture("/#{dest}")
 
     res.body, content_type: "image"
   ------------------------------------------------------------------------------
   -- smart crop
   [image_sm: '/image/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
-    define_subdomain(@)
-    auth_arangodb(sub_domain)
+    load_settings(@)
 
     ext = @params.format or "jpg"
     upload = aql(
-      "db_#{sub_domain}",
-      "FOR u IN uploads FILTER u.uuid == @key RETURN u",
+      "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
       { "key": @params.uuid }
     )[1]
     _uuid = upload.uuid
+
+    load_original_from_cloud upload.path
 
     height = ""
     height = "--height #{@params.height} --crop attention" if @params.height
 
     interesting = @params.interesting or 'attention'
-    dest = "#{upload.root}/#{_uuid}-sm-#{@params.width}-#{@params.height}-#{interestingentrop}.#{ext}"
+    dest = "#{upload.root}/#{_uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
     res = ngx.location.capture("/" .. dest)
     if res and res.status == 404
       ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")

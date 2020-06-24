@@ -27,6 +27,8 @@ RUN luarocks install stringy
 RUN luarocks install busted
 RUN luarocks install sass
 RUN luarocks install web_sanitize
+RUN luarocks install luasec
+RUN luarocks install cloud_storage
 
 RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
     chmod +x n && mv n /usr/bin/n && n lts
