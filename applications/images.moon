@@ -132,7 +132,7 @@ class FastyImages extends lapis.Application
           os.execute("mkdir -p #{path}")
           output = io.open "#{path}/#{filename}", "w+"
           content = encoding.decode_64(@params.image)
-          write_content "#{path}/#{filename}" content
+          write_content "#{path}/#{filename}", content
 
           url = "/#{path}/#{filename}"
           if bucket
