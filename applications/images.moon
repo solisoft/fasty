@@ -55,6 +55,7 @@ check_file = (key) ->
   )[1]
   _uuid = upload.uuid
   load_original_from_cloud upload.path
+  upload
 --------------------------------------------------------------------------------
 -- define_subdomain
 define_subdomain = () =>
@@ -91,7 +92,6 @@ class FastyImages extends lapis.Application
           _uuid = uuid()
           filename = "#{_uuid}.#{ext}"
 
-          print(path)
           os.execute("mkdir -p #{path}")
           content = file.content
           write_content "#{path}/#{filename}", content
@@ -158,7 +158,7 @@ class FastyImages extends lapis.Application
   [image: '/image/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     load_settings(@)
 
-    check_file @params.uuid
+    upload = check_file @params.uuid
 
     ext   = @params.format or upload.ext
     _uuid = upload.uuid
@@ -181,7 +181,7 @@ class FastyImages extends lapis.Application
     load_settings(@)
 
     ext = @params.format or "jpg"
-    check_file upload.path
+    upload = check_file upload.path
 
     height  = ""
     height  = "--height #{@params.height} --crop attention" if @params.height
@@ -199,7 +199,7 @@ class FastyImages extends lapis.Application
     load_settings(@)
 
     ext = @params.format or "jpg"
-    check_file upload.path
+    upload = check_file upload.path
 
     height = ""
     height = "--height #{@params.height} --crop attention" if @params.height
