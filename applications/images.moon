@@ -17,7 +17,12 @@ no_db = {}
 sub_domain = ''
 bucket = nil
 --------------------------------------------------------------------------------
--- Upload to google cloud storage
+write_content = (file, content) ->
+  output = io.open file, "w+"
+  io.output output
+  io.write content
+  io.close
+--------------------------------------------------------------------------------
 cloud_storage = () ->
   certificate = nil
   storage = nil
@@ -43,8 +48,13 @@ load_original_from_cloud = (key) ->
     io.write content
     io.close
 --------------------------------------------------------------------------------
-storage_exist = (key) ->
-  storage\head_file(bucket, key) == 200
+check_file = (key) ->
+  upload = aql(
+    "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
+    { "key": key }
+  )[1]
+  _uuid = upload.uuid
+  load_original_from_cloud upload.path
 --------------------------------------------------------------------------------
 -- define_subdomain
 define_subdomain = () =>
@@ -83,12 +93,8 @@ class FastyImages extends lapis.Application
 
           os.execute("mkdir -p #{path}")
           content = file.content
-          output = io.open "#{path}/#{filename}", "w+"
-          io.output output
-          io.write content
-          io.close
+          write_content "#{path}/#{filename}", content
 
-          home_settings = from_json(settings[sub_domain].home)
           url = "/#{path}/#{filename}"
           if bucket
             if storage
@@ -124,12 +130,9 @@ class FastyImages extends lapis.Application
           filename = "#{_uuid}.#{ext}"
 
           os.execute("mkdir -p #{path}")
-
           output = io.open "#{path}/#{filename}", "w+"
           content = encoding.decode_64(@params.image)
-          io.output output
-          io.write content
-          io.close
+          write_content "#{path}/#{filename}" content
 
           url = "/#{path}/#{filename}"
           if bucket
@@ -154,19 +157,13 @@ class FastyImages extends lapis.Application
   [image: '/image/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     load_settings(@)
 
-    upload = aql(
-      "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
-      { "key": @params.uuid }
-    )[1]
+    check_file @params.uuid
 
-    ext = @params.format or upload.ext
+    ext   = @params.format or upload.ext
     _uuid = upload.uuid
-
-    str = ""
-    res = { "body": "", status: 0 }
-    url = "#{upload.root}/#{_uuid}.#{ext}"
-
-    load_original_from_cloud upload.path
+    str   = ""
+    res   = { "body": "", status: 0 }
+    url   = "#{upload.root}/#{_uuid}.#{ext}"
 
     if ext != upload.ext
       res = ngx.location.capture("/#{url}")
@@ -183,18 +180,11 @@ class FastyImages extends lapis.Application
     load_settings(@)
 
     ext = @params.format or "jpg"
-    upload = aql(
-      "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
-      { "key": @params.uuid }
-    )[1]
-    _uuid = upload.uuid
+    check_file upload.path
 
-    load_original_from_cloud upload.path
-
-    height = ""
-    height = "--height #{@params.height} --crop attention" if @params.height
-
-    dest = "#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}"
+    height  = ""
+    height  = "--height #{@params.height} --crop attention" if @params.height
+    dest    = "#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}"
 
     res = ngx.location.capture("/#{dest}")
     if res and res.status == 404
@@ -208,13 +198,7 @@ class FastyImages extends lapis.Application
     load_settings(@)
 
     ext = @params.format or "jpg"
-    upload = aql(
-      "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
-      { "key": @params.uuid }
-    )[1]
-    _uuid = upload.uuid
-
-    load_original_from_cloud upload.path
+    check_file upload.path
 
     height = ""
     height = "--height #{@params.height} --crop attention" if @params.height
