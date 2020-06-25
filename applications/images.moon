@@ -181,7 +181,7 @@ class FastyImages extends lapis.Application
     load_settings(@)
 
     ext = @params.format or "jpg"
-    upload = check_file upload.path
+    upload = check_file @params.uuid
 
     height  = ""
     height  = "--height #{@params.height} --crop attention" if @params.height
