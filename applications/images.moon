@@ -91,6 +91,7 @@ class FastyImages extends lapis.Application
           _uuid = uuid()
           filename = "#{_uuid}.#{ext}"
 
+          print(path)
           os.execute("mkdir -p #{path}")
           content = file.content
           write_content "#{path}/#{filename}", content
