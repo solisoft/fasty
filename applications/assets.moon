@@ -16,6 +16,25 @@ sub_domain = ''
 expire_at = () ->
   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 
+--------------------------------------------------------------------------------
+-- define_subdomain
+define_subdomain = () =>
+  sub_domain = stringy.split(@req.headers.host, '.')[1]
+--------------------------------------------------------------------------------
+-- load_settings
+load_settings = () =>
+  define_subdomain(@)
+  jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
+  all_domains = list_databases! if all_domains == nil
+  if all_domains["db_#{sub_domain}"] == nil
+    no_db[sub_domain] = true
+  else
+    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
+    global_data[sub_domain]['partials'] = {}
+
+    settings[sub_domain] = global_data[sub_domain].settings[1]
+  bucket = from_json(settings[sub_domain].home).cloud_storage_bucket
+
 class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
@@ -32,9 +51,7 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [js: '/:lang/:layout/js/:rev.js']: =>
     sub_domain = define_subdomain(@)
-    print("-+-#{sub_domain}+-+")
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
-    print("-+-#{sub_domain}+-+")
     js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
@@ -48,9 +65,7 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
     sub_domain = define_subdomain(@)
-    print("-+-#{sub_domain}+-+")
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
-    print("-+-#{sub_domain}+-+")
     js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
@@ -65,9 +80,7 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [css: '/:lang/:layout/css/:rev.css']: =>
     sub_domain = define_subdomain(@)
-    print("-+-#{sub_domain}+-+")
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
-    print("-+-#{sub_domain}+-+")
     css = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.scss",
@@ -82,9 +95,7 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
     sub_domain = define_subdomain(@)
-    print("-+-#{sub_domain}+-+")
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
-    print("-+-#{sub_domain}+-+")
     css = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",

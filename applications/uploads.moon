@@ -76,7 +76,7 @@ load_settings = () =>
   bucket = from_json(settings[sub_domain].home).cloud_storage_bucket
 
 class FastyImages extends lapis.Application
-    ------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
   -- image upload
   [image_upload: '/image/upload']: respond_to {
     POST: =>
