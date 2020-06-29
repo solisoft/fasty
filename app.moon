@@ -8,11 +8,11 @@ encoding  = require "lapis.util.encoding"
 
 import aqls from require 'lib.aqls'
 import respond_to from require 'lapis.application'
-import check_valid_lang, uuid from require 'lib.utils'
+import check_valid_lang, uuid, define_content_type from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import from_json, to_json from require 'lapis.util'
-import dynamic_replace, dynamic_page, page_info, splat_to_table, define_content_type
+import dynamic_replace, dynamic_page, page_info, splat_to_table
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
 jwt = {}

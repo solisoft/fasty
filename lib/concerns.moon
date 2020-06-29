@@ -54,21 +54,6 @@ etlua2html = (json, partial, params, global_data) ->
   )
   data
 --------------------------------------------------------------------------------
-last_element = (str, pattern) ->
-  splitted = stringy.split(str, pattern)
-  splitted[table.getn(splitted)]
---------------------------------------------------------------------------------
-define_content_type = (slug) ->
-  ext = last_element(slug, ".")
-  mimes_types = {
-    'json': 'application/json', 'kml': 'application/vnd.google-earth.kml+xml',
-    'xml': 'application/xml', 'js': 'application/javascript', 'csv': 'text/csv',
-    'css': 'text/css', 'svg': 'image/svg+xml', 'ics': 'text/calendar'
-  }
-  page_content_type = mimes_types[ext]
-  page_content_type = "text/html" if page_content_type == nil
-  page_content_type
---------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object) ->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
   aql(db_name, request, { slug: slug })[1]
@@ -419,5 +404,5 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   html
 --------------------------------------------------------------------------------
 -- expose methods
-{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern, :last_element
-  :dynamic_replace, :load_redirection, :page_info, :prepare_bindvars, :define_content_type }
+{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern
+  :dynamic_replace, :load_redirection, :page_info, :prepare_bindvars }

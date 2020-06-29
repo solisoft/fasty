@@ -4,7 +4,7 @@ stringy = require "stringy"
 google  = require "cloud_storage.google"
 
 import aqls from require "lib.aqls"
-import uuid from require "lib.utils"
+import uuid, define_content_type from require "lib.utils"
 import from_json, to_json from require "lapis.util"
 import respond_to from require "lapis.application"
 import auth_arangodb, aql, list_databases from require "lib.arango"
@@ -78,7 +78,7 @@ load_settings = () =>
 class FastyImages extends lapis.Application
   ------------------------------------------------------------------------------
   -- image upload
-  [image_upload: '/image/upload']: respond_to {
+  [image_upload: '/file/upload']: respond_to {
     POST: =>
       load_settings(@)
 
@@ -116,7 +116,7 @@ class FastyImages extends lapis.Application
   }
     ------------------------------------------------------------------------------
   -- image upload base64
-  [image_upload_base64: '/image/upload_base64']: respond_to {
+  [image_upload_base64: '/file/upload_base64']: respond_to {
     POST: =>
       load_settings(@)
 
@@ -155,7 +155,7 @@ class FastyImages extends lapis.Application
   }
   ------------------------------------------------------------------------------
   -- get image
-  [image: '/image/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
+  [image: '/asset/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     load_settings(@)
 
     upload = check_file @params.uuid
@@ -174,10 +174,10 @@ class FastyImages extends lapis.Application
     else
       res = ngx.location.capture("/#{url}")
 
-    res.body, content_type: "image"
+    res.body, content_type: define_content_type(ext)
   ------------------------------------------------------------------------------
   -- resize image
-  [image_r: '/image/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
+  [image_r: '/asset/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
     load_settings(@)
 
     ext = @params.format or "jpg"
@@ -192,10 +192,10 @@ class FastyImages extends lapis.Application
       ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
       res = ngx.location.capture("/#{dest}")
 
-    res.body, content_type: "image"
+    res.body, content_type: define_content_type(ext)
   ------------------------------------------------------------------------------
   -- smart crop
-  [image_sm: '/image/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
+  [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
     load_settings(@)
 
     ext = @params.format or "jpg"
@@ -211,4 +211,4 @@ class FastyImages extends lapis.Application
       ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
       res = ngx.location.capture("/" .. dest)
 
-    res.body, content_type: "image"
+    res.body, content_type: define_content_type(ext)

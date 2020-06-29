@@ -3,8 +3,8 @@ lapis     = require 'lapis'
 stringy   = require 'stringy'
 
 import aql from require 'lib.arango'
-import dynamic_replace, define_content_type
-       define_subdomain, load_settings from require 'lib.concerns'
+import define_content_type from require 'lib.utils'
+import dynamic_replace, define_subdomain, load_settings from require 'lib.concerns'
 
 jwt = {}
 global_data = {}
