@@ -51,7 +51,7 @@ class extends lapis.Application
 
   @enable "etlua"
 
-  @include "applications.images"
+  @include "applications.uploads"
   @include "applications.services"
 
   layout: false -- we don't need a layout, it will be loaded dynamically
