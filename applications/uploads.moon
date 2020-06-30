@@ -135,12 +135,6 @@ class FastyImages extends lapis.Application
 
           content, status_code, headers = http.simple url_src
 
-          print to_json url_src
-          print to_json headers
-          print to_json status_code
-          print "---------------------"
-          print #content
-
           write_content "#{path}/#{filename}", content
 
           url = "/#{path}/#{filename}"
