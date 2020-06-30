@@ -19,6 +19,10 @@ sub_domain = ''
 bucket = nil
 --------------------------------------------------------------------------------
 write_content = (file, content) ->
+  path_arr = stringy.split(file, "/")
+  table.remove(path_arr, table.getn(path_arr))
+  path = table.concat(path_arr, "/")
+  os.execute("mkdir -p #{path}")
   output = io.open file, "w+"
   io.output output
   io.write content
@@ -43,11 +47,8 @@ storage = cloud_storage!
 load_original_from_cloud = (key) ->
   res = ngx.location.capture("/" .. key)
   if bucket and res.status == 404
-    output = io.open key, "w+"
     content = storage\get_file bucket, key
-    io.output output
-    io.write content
-    io.close
+    write_content key, content
 --------------------------------------------------------------------------------
 check_file = (key) ->
   upload = aql(
