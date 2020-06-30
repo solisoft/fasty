@@ -36,10 +36,8 @@ cloud_storage = () ->
   else
     if io.open("certs/default.json", "r")
       certificate = "certs/default.json"
-
   if certificate
     storage = google.CloudStorage\from_json_key_file(certificate)
-
   storage
 
 storage = cloud_storage!
@@ -48,8 +46,7 @@ load_original_from_cloud = (key) ->
   res = ngx.location.capture("/" .. key)
   if bucket and res.status == 404
     content = storage\get_file bucket, key
-    print content
-    write_content key, content
+    write_content key, content if content
 --------------------------------------------------------------------------------
 check_file = (key) ->
   upload = aql(
