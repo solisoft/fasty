@@ -215,7 +215,7 @@ class FastyImages extends lapis.Application
     else
       res = ngx.location.capture("/#{url}")
 
-    res.body, content_type: define_content_type(ext)
+    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes' }
   ------------------------------------------------------------------------------
   -- resize image
   [image_r: '/asset/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
