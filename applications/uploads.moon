@@ -48,6 +48,7 @@ load_original_from_cloud = (key) ->
   res = ngx.location.capture("/" .. key)
   if bucket and res.status == 404
     content = storage\get_file bucket, key
+    print content
     write_content key, content
 --------------------------------------------------------------------------------
 check_file = (key) ->
