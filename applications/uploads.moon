@@ -2,10 +2,9 @@ lapis   = require "lapis"
 shell   = require "resty.shell"
 stringy = require "stringy"
 google  = require "cloud_storage.google"
-http    = require "lapis.nginx.http"
 
 import aqls from require "lib.aqls"
-import uuid, define_content_type from require "lib.utils"
+import uuid from require "lib.utils"
 import from_json, to_json from require "lapis.util"
 import respond_to from require "lapis.application"
 import auth_arangodb, aql, list_databases from require "lib.arango"
@@ -19,10 +18,6 @@ sub_domain = ''
 bucket = nil
 --------------------------------------------------------------------------------
 write_content = (file, content) ->
-  path_arr = stringy.split(file, "/")
-  table.remove(path_arr, table.getn(path_arr))
-  path = table.concat(path_arr, "/")
-  os.execute("mkdir -p #{path}")
   output = io.open file, "w+"
   io.output output
   io.write content
@@ -36,8 +31,10 @@ cloud_storage = () ->
   else
     if io.open("certs/default.json", "r")
       certificate = "certs/default.json"
+
   if certificate
     storage = google.CloudStorage\from_json_key_file(certificate)
+
   storage
 
 storage = cloud_storage!
@@ -45,8 +42,11 @@ storage = cloud_storage!
 load_original_from_cloud = (key) ->
   res = ngx.location.capture("/" .. key)
   if bucket and res.status == 404
+    output = io.open key, "w+"
     content = storage\get_file bucket, key
-    write_content key, content if content
+    io.output output
+    io.write content
+    io.close
 --------------------------------------------------------------------------------
 check_file = (key) ->
   upload = aql(
@@ -76,8 +76,9 @@ load_settings = () =>
   bucket = from_json(settings[sub_domain].home).cloud_storage_bucket
 
 class FastyImages extends lapis.Application
-  ------------------------------------------------------------------------------
-  [file_upload: '/file/upload']: respond_to {
+    ------------------------------------------------------------------------------
+  -- image upload
+  [image_upload: '/image/upload']: respond_to {
     POST: =>
       load_settings(@)
 
@@ -91,7 +92,7 @@ class FastyImages extends lapis.Application
           _uuid = uuid()
           filename = "#{_uuid}.#{ext}"
 
-          shell.run("mkdir -p #{path}")
+          os.execute("mkdir -p #{path}")
           content = file.content
           write_content "#{path}/#{filename}", content
 
@@ -113,51 +114,9 @@ class FastyImages extends lapis.Application
       else
         status: 401, 'Not authorized'
   }
-  ------------------------------------------------------------------------------
-  [file_upload_http: '/file/upload_http']: respond_to {
-    POST: =>
-      load_settings(@)
-
-      if @params.key == settings[sub_domain].resize_ovh
-        if url_src = @params.image
-          arr = stringy.split(url_src, "/")
-          ext = arr[table.getn(arr)]
-          arr = stringy.split(ext, ".")
-          ext = arr[table.getn(arr)]
-
-          date = os.date("%y/%m/%d", os.time())
-          path = "static/assets/#{sub_domain}/#{date}"
-          _uuid = uuid()
-          filename = "#{_uuid}.#{ext}"
-
-          shell.run("mkdir -p #{path}")
-
-          content, status_code, headers = http.simple url_src
-
-          write_content "#{path}/#{filename}", content
-
-          url = "/#{path}/#{filename}"
-
-          if bucket
-            if storage
-              status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              print "status: " .. status
-              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
-
-          aql(
-            "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": filename, "size": #content, url: url, ext: ext }
-          )
-
-          to_json({ success: true, filename: _uuid, url: url, url_src: url_src })
-        else
-          status: 400, 'Bad parameters'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
-  [file_upload_base64: '/file/upload_base64']: respond_to {
+    ------------------------------------------------------------------------------
+  -- image upload base64
+  [image_upload_base64: '/image/upload_base64']: respond_to {
     POST: =>
       load_settings(@)
 
@@ -171,7 +130,7 @@ class FastyImages extends lapis.Application
           _uuid = uuid()
           filename = "#{_uuid}.#{ext}"
 
-          shell.run("mkdir -p #{path}")
+          os.execute("mkdir -p #{path}")
           output = io.open "#{path}/#{filename}", "w+"
           content = encoding.decode_64(@params.image)
           write_content "#{path}/#{filename}", content
@@ -196,7 +155,7 @@ class FastyImages extends lapis.Application
   }
   ------------------------------------------------------------------------------
   -- get image
-  [image: '/asset/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
+  [image: '/image/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     load_settings(@)
 
     upload = check_file @params.uuid
@@ -215,10 +174,10 @@ class FastyImages extends lapis.Application
     else
       res = ngx.location.capture("/#{url}")
 
-    res.body, content_type: define_content_type(ext)
+    res.body, content_type: "image"
   ------------------------------------------------------------------------------
   -- resize image
-  [image_r: '/asset/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
+  [image_r: '/image/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
     load_settings(@)
 
     ext = @params.format or "jpg"
@@ -233,10 +192,10 @@ class FastyImages extends lapis.Application
       ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
       res = ngx.location.capture("/#{dest}")
 
-    res.body, content_type: define_content_type(ext)
+    res.body, content_type: "image"
   ------------------------------------------------------------------------------
   -- smart crop
-  [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
+  [image_sm: '/image/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
     load_settings(@)
 
     ext = @params.format or "jpg"
@@ -252,4 +211,4 @@ class FastyImages extends lapis.Application
       ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
       res = ngx.location.capture("/" .. dest)
 
-    res.body, content_type: define_content_type(ext)
+    res.body, content_type: "image"
