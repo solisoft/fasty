@@ -141,7 +141,6 @@ class FastyImages extends lapis.Application
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              print "status: " .. status
               url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
 
           aql(
