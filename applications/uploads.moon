@@ -53,7 +53,6 @@ check_file = (key) ->
     "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
     { "key": key }
   )[1]
-  _uuid = upload.uuid
   load_original_from_cloud upload.path
   upload
 --------------------------------------------------------------------------------
@@ -226,14 +225,14 @@ class FastyImages extends lapis.Application
 
     height  = ""
     height  = "--height #{@params.height} --crop attention" if @params.height
-    dest    = "#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}"
+    dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}.#{ext}"
 
     res = ngx.location.capture("/#{dest}")
     if res and res.status == 404
       ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
       res = ngx.location.capture("/#{dest}")
 
-    res.body, content_type: define_content_type(ext)
+    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes' }
   ------------------------------------------------------------------------------
   -- smart crop
   [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
@@ -246,10 +245,10 @@ class FastyImages extends lapis.Application
     height = "--height #{@params.height} --crop attention" if @params.height
 
     interesting = @params.interesting or 'attention'
-    dest = "#{upload.root}/#{_uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
+    dest = "#{upload.root}/#{upload.uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
     res = ngx.location.capture("/" .. dest)
     if res and res.status == 404
       ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
       res = ngx.location.capture("/" .. dest)
 
-    res.body, content_type: define_content_type(ext)
+    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes' }
