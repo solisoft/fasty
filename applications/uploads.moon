@@ -23,10 +23,12 @@ write_content = (file, content) ->
   table.remove(path_arr, table.getn(path_arr))
   path = table.concat(path_arr, "/")
   os.execute("mkdir -p #{path}")
+  print "Writing #{path} #{file}"
   output = io.open file, "w+"
   io.output output
   io.write content
   io.close
+  print "Done"
 --------------------------------------------------------------------------------
 cloud_storage = () ->
   certificate = nil
