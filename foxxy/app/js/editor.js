@@ -201,9 +201,9 @@
                   base64data = reader.result;
 
                   var formData = new FormData();
-                  formData.append("image", file, file.name)
+                  formData.append("image", file)
                   formData.append("key", localStorage.getItem('resize_api_key'))
-                  console.log(formData)
+
                   $.ajax({
                     xhr: function () {
                       var xhr = new window.XMLHttpRequest();
@@ -220,11 +220,7 @@
                     },
                     type: 'POST',
                     url: '/file/upload_base64',
-                    data: {
-                      key: localStorage.getItem('resize_api_key'),
-                      image: base64data,
-                      filename: file.name
-                    },
+                    data: formData,
                     success: function (data) {
                       setTimeout(function () {
                         var picture = '<picture>'
