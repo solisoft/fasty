@@ -203,7 +203,7 @@
                   var formData = new FormData();
                   formData.append("image", file, file.name)
                   formData.append("key", localStorage.getItem('resize_api_key'))
-
+                  console.log(formData)
                   $.ajax({
                     xhr: function () {
                       var xhr = new window.XMLHttpRequest();
@@ -219,9 +219,12 @@
                       return xhr;
                     },
                     type: 'POST',
-                    url: '/file/upload',
-                    //contentType: 'multipart/form-data',
-                    data: formData,
+                    url: '/file/upload_base64',
+                    data: {
+                      key: localStorage.getItem('resize_api_key'),
+                      image: base64data,
+                      filename: file.name
+                    },
                     success: function (data) {
                       setTimeout(function () {
                         var picture = '<picture>'
