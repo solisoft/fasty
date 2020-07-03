@@ -224,6 +224,7 @@
                     processData: false,
                     contentType: false,
                     success: function (data) {
+                      console.log(data)
                       setTimeout(function () {
                         var picture = '<picture>'
                         picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480/webp" type="image/webp">'
