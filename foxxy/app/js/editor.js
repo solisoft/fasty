@@ -216,9 +216,10 @@
                     },
                     type: 'POST',
                     url: '/file/upload_base64',
+                    //contentType: 'multipart/form-data',
                     data: {
                       key: localStorage.getItem('resize_api_key'),
-                      image: base64data,
+                      image: file,
                       filename: file.name
                     },
                     success: function (data) {
