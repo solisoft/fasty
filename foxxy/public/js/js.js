@@ -857,7 +857,7 @@ require.register("js/editor.js", function(exports, require, module) {
                       return xhr;
                     },
                     type: 'POST',
-                    url: 'https://resize.ovh/upload_base64',
+                    url: '/file/upload_base64',
                     data: {
                       key: localStorage.getItem('resize_api_key'),
                       image: base64data,
@@ -866,13 +866,13 @@ require.register("js/editor.js", function(exports, require, module) {
                     success: function (data) {
                       setTimeout(function () {
                         var picture = '<picture>'
-                        picture += '<source media="(max-width: 480px)" srcset="https://resize.ovh/r/' + data.filename + '/480/webp" type="image/webp">'
-                        picture += '<source media="(max-width: 480px)" srcset="https://resize.ovh/r/' + data.filename + '/480">'
-                        picture += '<source media="(max-width: 799px)" srcset="https://resize.ovh/r/' + data.filename + '/799/webp" type="image/webp">'
-                        picture += '<source media="(max-width: 799px)" srcset="https://resize.ovh/r/' + data.filename + '/799">'
-                        picture += '<source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '/webp" type="image/webp">'
-                        picture += '<source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '">'
-                        picture += '<img src="https://resize.ovh/o/' + data.filename + '">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480/webp" type="image/webp">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799/webp" type="image/webp">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '/webp" type="image/webp">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '">'
+                        picture += '<img src="/asset/o/' + data.filename + '">'
                         picture += '</picture>'
                         $(el).html(picture)
                       }, 100)
