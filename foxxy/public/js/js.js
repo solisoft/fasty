@@ -843,7 +843,7 @@ require.register("js/editor.js", function(exports, require, module) {
                   base64data = reader.result;
 
                   var formData = new FormData();
-                  formData.append("image", file)
+                  formData.append("image", file, file.name)
                   formData.append("key", localStorage.getItem('resize_api_key'))
 
                   $.ajax({
