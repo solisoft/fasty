@@ -842,6 +842,10 @@ require.register("js/editor.js", function(exports, require, module) {
                 reader.onloadend = function () {
                   base64data = reader.result;
 
+                  var formData = new FormData();
+                  formData.append("image", file)
+                  formData.append("key", localStorage.getItem('resize_api_key'))
+
                   $.ajax({
                     xhr: function () {
                       var xhr = new window.XMLHttpRequest();
@@ -859,11 +863,7 @@ require.register("js/editor.js", function(exports, require, module) {
                     type: 'POST',
                     url: '/file/upload',
                     //contentType: 'multipart/form-data',
-                    data: {
-                      key: localStorage.getItem('resize_api_key'),
-                      image: file,
-                      filename: file.name
-                    },
+                    data: formData,
                     success: function (data) {
                       setTimeout(function () {
                         var picture = '<picture>'
