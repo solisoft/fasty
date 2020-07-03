@@ -162,6 +162,7 @@ class FastyImages extends lapis.Application
       load_settings(@)
 
 
+      print to_json @params
       print @params.key
       print "----------"
       print settings[sub_domain].resize_ovh
