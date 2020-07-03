@@ -857,7 +857,7 @@ require.register("js/editor.js", function(exports, require, module) {
                       return xhr;
                     },
                     type: 'POST',
-                    url: '/file/upload_base64',
+                    url: '/file/upload',
                     //contentType: 'multipart/form-data',
                     data: {
                       key: localStorage.getItem('resize_api_key'),
