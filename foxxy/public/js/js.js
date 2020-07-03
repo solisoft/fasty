@@ -864,6 +864,7 @@ require.register("js/editor.js", function(exports, require, module) {
                     url: '/file/upload',
                     data: formData,
                     processData: false,
+                    contentType: false,
                     success: function (data) {
                       setTimeout(function () {
                         var picture = '<picture>'
