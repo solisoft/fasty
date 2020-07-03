@@ -219,8 +219,9 @@
                       return xhr;
                     },
                     type: 'POST',
-                    url: '/file/upload_base64',
+                    url: '/file/upload',
                     data: formData,
+                    processData: false,
                     success: function (data) {
                       setTimeout(function () {
                         var picture = '<picture>'
