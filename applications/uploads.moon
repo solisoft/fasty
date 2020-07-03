@@ -161,6 +161,10 @@ class FastyImages extends lapis.Application
     POST: =>
       load_settings(@)
 
+
+      print @params.key
+      print "----------"
+      print settings[sub_domain].resize_ovh
       if @params.key == settings[sub_domain].resize_ovh
         if file = @params.image
           arr = stringy.split(@params.filename, ".")
