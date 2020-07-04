@@ -24,9 +24,7 @@ sub_domain = ''
 --------------------------------------------------------------------------------
 -- define_subdomain
 define_subdomain = () =>
-  host = @req.headers.host
-  host = host[table\getn(host)] if type host == "table"
-  sub_domain = stringy.split(host, '.')[1]
+  sub_domain = stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 -- load_settings
 load_settings = () =>
