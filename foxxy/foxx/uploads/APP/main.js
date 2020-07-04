@@ -94,6 +94,7 @@ router.post('/:key/:type/:field', function (req, res) {
         })
         var _uuid = JSON.parse(http_req.body).filename
         urldest = `/asset/o/${_uuid}`
+        fs.remove(filedest)
       }
 
       var upload = {

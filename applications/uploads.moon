@@ -157,49 +157,6 @@ class FastyImages extends lapis.Application
         status: 401, 'Not authorized'
   }
   ------------------------------------------------------------------------------
-  [file_upload_base64: '/file/upload_base64']: respond_to {
-    POST: =>
-      load_settings(@)
-
-
-      print to_json @params
-      print @params.key
-      print "----------"
-      print settings[sub_domain].resize_ovh
-      if @params.key == settings[sub_domain].resize_ovh
-        if file = @params.image
-          arr = stringy.split(@params.filename, ".")
-          ext = arr[table.getn(arr)]
-
-          date = os.date("%y/%m/%d", os.time())
-          path = "static/assets/#{sub_domain}/#{date}"
-          _uuid = uuid()
-          filename = "#{_uuid}.#{ext}"
-
-          shell.run("mkdir -p #{path}")
-          output = io.open "#{path}/#{filename}", "w+"
-          content = encoding.decode_64(@params.image)
-          write_content "#{path}/#{filename}", content
-
-          url = "/#{path}/#{filename}"
-          if bucket
-            if storage
-              status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
-
-          aql(
-            "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": @params.filename, "size": #file.content, "url": url, "ext": ext }
-          )
-
-          to_json({ success: true, filenae: _uuid })
-        else
-          status: 400, 'Bad parameters'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
   -- get image
   [image: '/asset/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     load_settings(@)
