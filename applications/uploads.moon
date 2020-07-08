@@ -17,17 +17,21 @@ settings = {}
 no_db = {}
 sub_domain = ''
 bucket = nil
+
+--------------------------------------------------------------------------------
+watemark = (filename) ->
+  watermark = from_json(settings[sub_domain].home).watermark
+  if watermark
+    shell.run "vips merge #{filename} #{watermark} #{filename} vertical 1 1"
 --------------------------------------------------------------------------------
 write_content = (file, content) ->
   path_arr = stringy.split(file, "/")
   table.remove(path_arr, table.getn(path_arr))
   path = table.concat(path_arr, "/")
   os.execute("mkdir -p #{path}")
-  output = io.open file, "w+"
-  io.output output
-  io.write content
-  io.close output
-
+  out = io.open(file, "w+")
+  io.output(out) io.write(content) io.close(out)
+  watermark file
 --------------------------------------------------------------------------------
 cloud_storage = () ->
   certificate = nil
@@ -134,14 +138,12 @@ class FastyImages extends lapis.Application
 
           content, status_code, headers = http.simple url_src
 
-          write_content "#{path}/#{filename}", content
-
           url = "/#{path}/#{filename}"
+          write_content url, content
 
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              print "status: " .. status
               url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
 
           aql(
@@ -177,7 +179,10 @@ class FastyImages extends lapis.Application
     else
       res = ngx.location.capture("/#{url}")
 
-    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes' }
+    disposition = "inline"
+    disposition = "attachement" if @params.dl
+
+    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
   ------------------------------------------------------------------------------
   -- resize image
   [image_r: '/asset/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
@@ -195,7 +200,10 @@ class FastyImages extends lapis.Application
       ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
       res = ngx.location.capture("/#{dest}")
 
-    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes' }
+    disposition = "inline"
+    disposition = "attachement" if @params.dl
+
+    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
   ------------------------------------------------------------------------------
   -- smart crop
   [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
