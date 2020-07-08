@@ -28,13 +28,9 @@ write_content = (file, content) ->
   path_arr = stringy.split(file, "/")
   table.remove(path_arr, table.getn(path_arr))
   path = table.concat(path_arr, "/")
-  print(file)
-  print(path)
   os.execute("mkdir -p #{path}")
   output = io.open(file, "w+")
-  io.output(output)
-  io.write(content)
-  io.close(output)
+  io.output(output) io.write(content) io.close(output)
   watermark file
 --------------------------------------------------------------------------------
 cloud_storage = () ->
@@ -142,8 +138,9 @@ class FastyImages extends lapis.Application
 
           content, status_code, headers = http.simple url_src
 
+          write_content "#{path}/#{filename}", content
+
           url = "/#{path}/#{filename}"
-          write_content url, content
 
           if bucket
             if storage
