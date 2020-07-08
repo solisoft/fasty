@@ -28,6 +28,8 @@ write_content = (file, content) ->
   path_arr = stringy.split(file, "/")
   table.remove(path_arr, table.getn(path_arr))
   path = table.concat(path_arr, "/")
+  print(file)
+  print(path)
   os.execute("mkdir -p #{path}")
   out = io.open(file, "w+")
   io.output(out)
