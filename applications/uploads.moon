@@ -33,7 +33,7 @@ write_content = (file, content) ->
   io.output(output)
   io.write(content)
   io.close(output)
-  watermark file
+  -- watermark file
 --------------------------------------------------------------------------------
 cloud_storage = () ->
   certificate = nil
