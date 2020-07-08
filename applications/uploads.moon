@@ -31,10 +31,10 @@ write_content = (file, content) ->
   print(file)
   print(path)
   os.execute("mkdir -p #{path}")
-  out = io.open(file, "w+")
-  io.output(out)
+  output = io.open(file, "w+")
+  io.output(output)
   io.write(content)
-  io.close(out)
+  io.close(output)
   watermark file
 --------------------------------------------------------------------------------
 cloud_storage = () ->
