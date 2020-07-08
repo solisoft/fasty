@@ -180,7 +180,7 @@ class FastyImages extends lapis.Application
       res = ngx.location.capture("/#{url}")
 
     disposition = "inline"
-    disposition = "attachement" if @params.dl
+    disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
     res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
   ------------------------------------------------------------------------------
@@ -201,7 +201,7 @@ class FastyImages extends lapis.Application
       res = ngx.location.capture("/#{dest}")
 
     disposition = "inline"
-    disposition = "attachement" if @params.dl
+    disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
     res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
   ------------------------------------------------------------------------------
@@ -222,4 +222,7 @@ class FastyImages extends lapis.Application
       ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
       res = ngx.location.capture("/" .. dest)
 
-    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes' }
+    disposition = "inline"
+    disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+
+    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
