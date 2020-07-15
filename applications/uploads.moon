@@ -21,6 +21,7 @@ bucket = nil
 --------------------------------------------------------------------------------
 watermark = (filename) ->
   w = from_json(settings[sub_domain].home).watermark
+  print "vips merge #{filename} #{w} #{filename} vertical 1 1" if w
   shell.run "vips merge #{filename} #{w} #{filename} vertical 1 1" if w
 --------------------------------------------------------------------------------
 write_content = (file, content, do_watermark=false) ->
