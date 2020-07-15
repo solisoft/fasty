@@ -62,7 +62,6 @@ check_file = (params) ->
     db_name, "FOR u IN uploads FILTER u.uuid == @key RETURN u", { "key": params.uuid }
   )[1]
   load_original_from_cloud upload.path if upload
-  upload = {} if upload == nil
   upload
 --------------------------------------------------------------------------------
 -- define_subdomain
@@ -170,24 +169,27 @@ class FastyImages extends lapis.Application
 
     upload = check_file @params
 
-    ext   = @params.format or upload.ext
-    _uuid = upload.uuid
-    str   = ""
-    res   = { "body": "", status: 0 }
-    url   = "#{upload.root}/#{_uuid}.#{ext}"
+    if upload
+      ext   = @params.format or upload.ext
+      _uuid = upload.uuid
+      str   = ""
+      res   = { "body": "", status: 0 }
+      url   = "#{upload.root}/#{_uuid}.#{ext}"
 
-    if ext != upload.ext
-      res = ngx.location.capture("/#{url}")
-      if res and res.status == 404
-        ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{url}")
+      if ext != upload.ext
         res = ngx.location.capture("/#{url}")
+        if res and res.status == 404
+          ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{url}")
+          res = ngx.location.capture("/#{url}")
+      else
+        res = ngx.location.capture("/#{url}")
+
+      disposition = "inline"
+      disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
     else
-      res = ngx.location.capture("/#{url}")
-
-    disposition = "inline"
-    disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
-
-    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      'no asset found!', status: 404
   ------------------------------------------------------------------------------
   -- resize image
   [image_r: '/asset/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
@@ -196,19 +198,22 @@ class FastyImages extends lapis.Application
     ext = @params.format or "jpg"
     upload = check_file @params
 
-    height  = ""
-    height  = "--height #{@params.height} --crop attention" if @params.height
-    dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}.#{ext}"
+    if upload
+      height  = ""
+      height  = "--height #{@params.height} --crop attention" if @params.height
+      dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}.#{ext}"
 
-    res = ngx.location.capture("/#{dest}")
-    if res and res.status == 404
-      ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
       res = ngx.location.capture("/#{dest}")
+      if res and res.status == 404
+        ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
+        res = ngx.location.capture("/#{dest}")
 
-    disposition = "inline"
-    disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+      disposition = "inline"
+      disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+    else
+      'no asset found!', status: 404
   ------------------------------------------------------------------------------
   -- smart crop
   [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
@@ -217,17 +222,20 @@ class FastyImages extends lapis.Application
     ext = @params.format or "jpg"
     upload = check_file @params
 
-    height = ""
-    height = "--height #{@params.height} --crop attention" if @params.height
+    if upload
+      height = ""
+      height = "--height #{@params.height} --crop attention" if @params.height
 
-    interesting = @params.interesting or 'attention'
-    dest = "#{upload.root}/#{upload.uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
-    res = ngx.location.capture("/" .. dest)
-    if res and res.status == 404
-      ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
+      interesting = @params.interesting or 'attention'
+      dest = "#{upload.root}/#{upload.uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
       res = ngx.location.capture("/" .. dest)
+      if res and res.status == 404
+        ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
+        res = ngx.location.capture("/" .. dest)
 
-    disposition = "inline"
-    disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+      disposition = "inline"
+      disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+    else
+      'no asset found!', status: 404
