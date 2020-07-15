@@ -227,12 +227,12 @@
                       data = JSON.parse(data)
                       setTimeout(function () {
                         var picture = '<picture>'
-                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp" type="image/webp">'
-                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480">'
-                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp" type="image/webp">'
-                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799">'
-                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '.webp" type="image/webp">'
-                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480?_from='+ btoa(subdomain) +'">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799?_from='+ btoa(subdomain) +'">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '?_from='+ btoa(subdomain) +'">'
                         picture += '<img src="/asset/o/' + data.filename + '">'
                         picture += '</picture>'
                         $(el).html(picture)

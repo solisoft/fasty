@@ -869,12 +869,12 @@ require.register("js/editor.js", function(exports, require, module) {
                       data = JSON.parse(data)
                       setTimeout(function () {
                         var picture = '<picture>'
-                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp" type="image/webp">'
-                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480">'
-                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp" type="image/webp">'
-                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799">'
-                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '.webp" type="image/webp">'
-                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480?_from='+ btoa(subdomain) +'">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799?_from='+ btoa(subdomain) +'">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '?_from='+ btoa(subdomain) +'">'
                         picture += '<img src="/asset/o/' + data.filename + '">'
                         picture += '</picture>'
                         $(el).html(picture)
@@ -6130,8 +6130,9 @@ riot.tag2('trads', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
 });
 
 require.register("widgets/uploads.html.tag", function(exports, require, module) {
-riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}" target="_blank"><img riot-src="{row.url}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
+riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}" target="_blank"><img riot-src="{row.url}?_from={from}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
     var _this = this
+    this.from = btoa(subdomain)
     this.data = []
 
     var use_i18n = ""
@@ -6196,8 +6197,9 @@ riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none
     }.bind(this)
 });
 
-riot.tag2('files', '<div class="sortable_{opts.field}" style="user-select: none;"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-3-5">{row.filename} <a href="{row.url}" target="_blank"><i class="fas fa-external-link-alt"></i></a></div> <div class="uk-width-1-5 uk-text-right">{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </div>', 'files div, files span { color: white; }', '', function(opts) {
+riot.tag2('files', '<div class="sortable_{opts.field}" style="user-select: none;"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-3-5">{row.filename} <a href="{row.url}?_from={from}" target="_blank"><i class="fas fa-external-link-alt"></i></a></div> <div class="uk-width-1-5 uk-text-right">{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </div>', 'files div, files span { color: white; }', '', function(opts) {
     var _this = this;
+    this.from = btoa(subdomain)
     this.data = []
 
     var use_i18n = ""
