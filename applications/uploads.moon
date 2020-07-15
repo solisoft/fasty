@@ -20,11 +20,13 @@ sub_domain = ''
 bucket = nil
 --------------------------------------------------------------------------------
 watemark = (filename) ->
-  watermark = from_json(settings[sub_domain].home).watermark
-  if watermark
-    shell.run "vips merge #{filename} #{watermark} #{filename} vertical 1 1"
+  print to_json(settings)
+  print "#{sub_domain} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+  -- watermark = from_json(settings[sub_domain].home).watermark
+  -- if watermark
+  --   shell.run "vips merge #{filename} #{watermark} #{filename} vertical 1 1"
 --------------------------------------------------------------------------------
-write_content = (file, content) ->
+write_content = (file, content, do_watermark=false) ->
   path_arr = stringy.split(file, "/")
   table.remove(path_arr, table.getn(path_arr))
   path = table.concat(path_arr, "/")
@@ -33,7 +35,7 @@ write_content = (file, content) ->
   io.output(output)
   io.write(content)
   io.close(output)
-  -- watermark file
+  watermark file if do_watermark
 --------------------------------------------------------------------------------
 cloud_storage = () ->
   certificate = nil
@@ -100,7 +102,7 @@ class FastyImages extends lapis.Application
 
           shell.run("mkdir -p #{path}")
           content = file.content
-          write_content "#{path}/#{filename}", content
+          write_content "#{path}/#{filename}", content, true
 
           url = "/#{path}/#{filename}"
           if bucket
@@ -141,7 +143,7 @@ class FastyImages extends lapis.Application
 
           content, status_code, headers = http.simple url_src
 
-          write_content "#{path}/#{filename}", content
+          write_content "#{path}/#{filename}", content, true
 
           url = "/#{path}/#{filename}"
 
