@@ -20,9 +20,8 @@ sub_domain = ''
 bucket = nil
 --------------------------------------------------------------------------------
 watermark = (filename) ->
-  watermark = from_json(settings[sub_domain].home).watermark
-  if watermark
-    shell.run "vips merge #{filename} #{watermark} #{filename} vertical 1 1"
+  w = from_json(settings[sub_domain].home).watermark
+  shell.run "vips merge #{filename} #{w} #{filename} vertical 1 1" if w
 --------------------------------------------------------------------------------
 write_content = (file, content, do_watermark=false) ->
   path_arr = stringy.split(file, "/")
