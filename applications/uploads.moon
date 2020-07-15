@@ -62,6 +62,7 @@ check_file = (params) ->
     db_name, "FOR u IN uploads FILTER u.uuid == @key RETURN u", { "key": params.uuid }
   )[1]
   load_original_from_cloud upload.path if upload
+  upload = {} if upload == nil
   upload
 --------------------------------------------------------------------------------
 -- define_subdomain
