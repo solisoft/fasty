@@ -55,7 +55,7 @@ load_original_from_cloud = (key) ->
     content = storage\get_file bucket, key
     write_content key, content if content
 --------------------------------------------------------------------------------
-check_file = (param
+check_file = (params)
   db_name = "db_#{sub_domain}"
   db_name = "db_" .. encoding.decode_base64(params._from) if params._from
   upload = aql(
