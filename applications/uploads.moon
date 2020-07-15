@@ -1,8 +1,9 @@
-lapis   = require "lapis"
-shell   = require "resty.shell"
-stringy = require "stringy"
-google  = require "cloud_storage.google"
-http    = require "lapis.nginx.http"
+lapis     = require "lapis"
+shell     = require "resty.shell"
+stringy   = require "stringy"
+google    = require "cloud_storage.google"
+http      = require "lapis.nginx.http"
+encoding  = require "lapis.util.encoding"
 
 import aqls from require "lib.aqls"
 import uuid, define_content_type from require "lib.utils"
@@ -17,7 +18,6 @@ settings = {}
 no_db = {}
 sub_domain = ''
 bucket = nil
-
 --------------------------------------------------------------------------------
 watemark = (filename) ->
   watermark = from_json(settings[sub_domain].home).watermark
@@ -55,12 +55,13 @@ load_original_from_cloud = (key) ->
     content = storage\get_file bucket, key
     write_content key, content if content
 --------------------------------------------------------------------------------
-check_file = (key) ->
+check_file = (param
+  db_name = "db_#{sub_domain}"
+  db_name = "db_" .. encoding.decode_base64(params._from) if params._from
   upload = aql(
-    "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
-    { "key": key }
+    db_name, "FOR u IN uploads FILTER u.uuid == @key RETURN u", { "key": params.uuid }
   )[1]
-  load_original_from_cloud upload.path
+  load_original_from_cloud upload.path if upload
   upload
 --------------------------------------------------------------------------------
 -- define_subdomain
@@ -166,7 +167,7 @@ class FastyImages extends lapis.Application
   [image: '/asset/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     load_settings(@)
 
-    upload = check_file @params.uuid
+    upload = check_file @params
 
     ext   = @params.format or upload.ext
     _uuid = upload.uuid
@@ -192,7 +193,7 @@ class FastyImages extends lapis.Application
     load_settings(@)
 
     ext = @params.format or "jpg"
-    upload = check_file @params.uuid
+    upload = check_file @params
 
     height  = ""
     height  = "--height #{@params.height} --crop attention" if @params.height
@@ -213,7 +214,7 @@ class FastyImages extends lapis.Application
     load_settings(@)
 
     ext = @params.format or "jpg"
-    upload = check_file @params.uuid
+    upload = check_file @params
 
     height = ""
     height = "--height #{@params.height} --crop attention" if @params.height
