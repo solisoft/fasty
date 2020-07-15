@@ -6130,7 +6130,7 @@ riot.tag2('trads', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
 });
 
 require.register("widgets/uploads.html.tag", function(exports, require, module) {
-riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}" target="_blank"><img riot-src="{row.url}?_from={from}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
+riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}?_from={from}" target="_blank"><img riot-src="{row.url}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
     var _this = this
     this.from = btoa(subdomain)
     this.data = []

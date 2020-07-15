@@ -2,7 +2,7 @@
   <div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload">
     <virtual each={ row in data }>
       <div uk-grid class="uk-grid-small" data-id="{ row._key }">
-        <div class="uk-width-1-5"><a href="{row.url}" target="_blank"><img src="{row.url}?_from={from}" alt="" style="max-width: 100%"></a></div>
+        <div class="uk-width-1-5"><a href="{row.url}?_from={from}" target="_blank"><img src="{row.url}" alt="" style="max-width: 100%"></a></div>
         <div class="uk-width-3-5">{ row.filename.split('/')[row.filename.split('/').length - 1] }<br>{ prettyBytes(row.length) }</div>
         <div class="uk-width-1-5 uk-text-center"><a onclick={ delete_asset } uk-icon="icon: trash"></a></div>
       </div>
