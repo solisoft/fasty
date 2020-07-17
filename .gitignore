@@ -24,3 +24,6 @@ cypress/screenshots
 staging-*
 dump/
 load*.sh
+uploads/
+assets/
+certs/

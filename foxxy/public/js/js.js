@@ -321,9 +321,10 @@ var Common = {
           }
           if(l.t === "tags") {
             _html +='<select name="'+l.n+'" style="width:100%" class="select_tag" multiple="multiple">'
-            var tags = _.filter(l.d[0], function(t) { return t != "undefined" })
-            _.uniq(tags).forEach(function(v) {
-              if(v != 'undefined' || v != '') {
+            var tags = _.filter(l.d[0], function (t) { return t != "undefined" })
+            if (l.tr) tags = _.flatten(_.map(tags, function (t) { return t[window.localStorage.getItem('foxx-locale')] }))
+            _.uniq(tags).forEach(function (v) {
+              if(v != 'undefined' && v != '' && v != undefined) {
                 selected = ""
                 if(value && value.indexOf(v) >= 0) selected="selected='selected'"
                 _html += '<option value="'+ v +'" '+selected+'>'+ v +'</option>'
@@ -630,10 +631,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  ".inseytel.com": "https://app.inseytel.com/_db/",
-  "office.fasty.ovh": "http://office.fasty.ovh:8530/_db/",
-  "dev.epic20.world": "https://dev.epic20.world/_db"
+  ".fasty.ovh": "/_db",
+  ".inseytel.com": "https://inseytel.com/_db",
+  "epic20.world": "/_db"
 };
 
 module.exports = Config;
@@ -842,6 +842,10 @@ require.register("js/editor.js", function(exports, require, module) {
                 reader.onloadend = function () {
                   base64data = reader.result;
 
+                  var formData = new FormData();
+                  formData.append("image", file)
+                  formData.append("key", localStorage.getItem('resize_api_key'))
+
                   $.ajax({
                     xhr: function () {
                       var xhr = new window.XMLHttpRequest();
@@ -857,22 +861,21 @@ require.register("js/editor.js", function(exports, require, module) {
                       return xhr;
                     },
                     type: 'POST',
-                    url: 'https://resize.ovh/upload_base64',
-                    data: {
-                      key: localStorage.getItem('resize_api_key'),
-                      image: base64data,
-                      filename: file.name
-                    },
+                    url: '/file/upload',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function (data) {
+                      data = JSON.parse(data)
                       setTimeout(function () {
                         var picture = '<picture>'
-                        picture += '<source media="(max-width: 480px)" srcset="https://resize.ovh/r/' + data.filename + '/480/webp" type="image/webp">'
-                        picture += '<source media="(max-width: 480px)" srcset="https://resize.ovh/r/' + data.filename + '/480">'
-                        picture += '<source media="(max-width: 799px)" srcset="https://resize.ovh/r/' + data.filename + '/799/webp" type="image/webp">'
-                        picture += '<source media="(max-width: 799px)" srcset="https://resize.ovh/r/' + data.filename + '/799">'
-                        picture += '<source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '/webp" type="image/webp">'
-                        picture += '<source media="(min-width: 800px)" srcset="https://resize.ovh/o/' + data.filename + '">'
-                        picture += '<img src="https://resize.ovh/o/' + data.filename + '">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480?_from='+ btoa(subdomain) +'">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799?_from='+ btoa(subdomain) +'">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '?_from='+ btoa(subdomain) +'">'
+                        picture += '<img src="/asset/o/' + data.filename + '">'
                         picture += '</picture>'
                         $(el).html(picture)
                       }, 100)
@@ -3329,7 +3332,7 @@ riot.tag2('datatypes', '<datatype_folders show="{loaded}" folder_key="{folder_ke
 });
 
 
-riot.tag2('dataset_helper', '<hr> <h4>Data definition sample</h4> <pre><code class="json">\\{\n    "model": [\n      \\{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \\},\n      \\{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \\},\n      \\{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \\},\n      \\{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().format(\'YYYY-MM-DD\').raw().required()", "l": "Published_at" \\},\n      \\{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \\},\n      \\{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",\n        "d": "d": "FOR doc IN datasets FILTER doc.type == \'authors\' RETURN [doc._key, CONCAT(doc.ln, \' \', doc.fn)]"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \\},\n      \\{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",\n        "d": "LET tags = (FOR doc IN datasets FILTER doc.type==\'books\' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \\},\n      \\{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \\},\n      \\{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \\},\n      \\{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \\},\n      \\{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \\},\n      \\{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \\}\n      \\{ "r": true, "c": "1-1", "n": "html_content", "t": "wysiwyg", "j": "joi.any()", "l": "Wysiwyg editor" \\}\n    ],\n    "columns": [\n      \\{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,\n        "values": \\{ "true": "online", "false": "offline" \\},\n        "truncate": 20, "uppercase": true, "lowercase": true\n      \\}\n    ],\n    "act_as_tree": true,\n    "sortable": true,\n    "revisions": 10,\n    "publishable": true,\n    "slug": ["title"],\n    "sort": "SORT doc.order ASC",\n    "search": ["title", "barcode", "desc"],\n    "includes": \\{\n      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",\n      "merges": ", customer: c "\n    \\},\n    "timestamps": true\n  \\}\n  </code></pre>', 'dataset_helper pre { padding: 0; border: none; border-radius: 4px; }', '', function(opts) {
+riot.tag2('dataset_helper', '<hr> <h4>Data definition sample</h4> <pre><code class="json">\\{\n    "model": [\n      \\{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \\},\n      \\{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \\},\n      \\{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \\},\n      \\{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().required()", "l": "Published_at" \\},\n      \\{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \\},\n      \\{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",\n        "d": "d": "FOR doc IN datasets FILTER doc.type == \'authors\' RETURN [doc._key, CONCAT(doc.ln, \' \', doc.fn)]"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \\},\n      \\{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",\n        "d": "LET tags = (FOR doc IN datasets FILTER doc.type==\'books\' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \\},\n      \\{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \\},\n      \\{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \\},\n      \\{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \\},\n      \\{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \\},\n      \\{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \\}\n      \\{ "r": true, "c": "1-1", "n": "html_content", "t": "wysiwyg", "j": "joi.any()", "l": "Wysiwyg editor" \\}\n    ],\n    "columns": [\n      \\{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,\n        "values": \\{ "true": "online", "false": "offline" \\},\n        "truncate": 20, "uppercase": true, "lowercase": true\n      \\}\n    ],\n    "act_as_tree": true,\n    "sortable": true,\n    "revisions": 10,\n    "publishable": true,\n    "slug": ["title"],\n    "sort": "SORT doc.order ASC",\n    "search": ["title", "barcode", "desc"],\n    "includes": \\{\n      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",\n      "merges": ", customer: c "\n    \\},\n    "timestamps": true\n  \\}\n  </code></pre>', 'dataset_helper pre { padding: 0; border: none; border-radius: 4px; }', '', function(opts) {
 });
 });
 
@@ -6127,8 +6130,9 @@ riot.tag2('trads', '<virtual if="{can_access}"> <div class="uk-float-right"> <a 
 });
 
 require.register("widgets/uploads.html.tag", function(exports, require, module) {
-riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}" target="_blank"><img riot-src="{row.url}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
+riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none;" uk-sortable="group: upload"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-1-5"><a href="{row.url}?_from={from}" target="_blank"><img riot-src="{row.url}" alt="" style="max-width: 100%"></a></div> <div class="uk-width-3-5">{row.filename.split(\'/\')[row.filename.split(\'/\').length - 1]}<br>{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </virtual> </div>', 'images div, images span { color: white; }', '', function(opts) {
     var _this = this
+    this.from = btoa(subdomain)
     this.data = []
 
     var use_i18n = ""
@@ -6193,8 +6197,9 @@ riot.tag2('images', '<div class="sortable_{opts.field}" style="user-select: none
     }.bind(this)
 });
 
-riot.tag2('files', '<div class="sortable_{opts.field}" style="user-select: none;"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-3-5">{row.filename} <a href="{row.url}" target="_blank"><i class="fas fa-external-link-alt"></i></a></div> <div class="uk-width-1-5 uk-text-right">{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </div>', 'files div, files span { color: white; }', '', function(opts) {
+riot.tag2('files', '<div class="sortable_{opts.field}" style="user-select: none;"> <virtual each="{row in data}"> <div uk-grid class="uk-grid-small" data-id="{row._key}"> <div class="uk-width-3-5">{row.filename} <a href="{row.url}?_from={from}" target="_blank"><i class="fas fa-external-link-alt"></i></a></div> <div class="uk-width-1-5 uk-text-right">{prettyBytes(row.length)}</div> <div class="uk-width-1-5 uk-text-center"><a onclick="{delete_asset}" uk-icon="icon: trash"></a></div> </div> </div>', 'files div, files span { color: white; }', '', function(opts) {
     var _this = this;
+    this.from = btoa(subdomain)
     this.data = []
 
     var use_i18n = ""

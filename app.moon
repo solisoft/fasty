@@ -1,18 +1,18 @@
 -- fasty CMS
-sass    = require 'sass'
-lapis   = require 'lapis'
-stringy = require 'stringy'
-console = require 'lapis.console'
-config  = require('lapis.config').get!
+sass      = require 'sass'
+lapis     = require 'lapis'
+stringy   = require 'stringy'
+config    = require('lapis.config').get!
+shell     = require 'resty.shell'
+encoding  = require "lapis.util.encoding"
 
 import aqls from require 'lib.aqls'
-import check_valid_lang from require 'lib.utils'
+import respond_to from require 'lapis.application'
+import check_valid_lang, uuid, define_content_type from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import parse_query_string, from_json, to_json from require 'lapis.util'
-import capture_errors, yield_error, respond_to from require 'lapis.application'
-import install_service, install_script, deploy_site from require 'lib.service'
-import dynamic_replace, dynamic_page, page_info, splat_to_table, define_content_type
+import from_json, to_json from require 'lapis.util'
+import dynamic_replace, dynamic_page, page_info, splat_to_table
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
 jwt = {}
@@ -21,7 +21,6 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
-expire_at = 'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
 -- define_subdomain
 define_subdomain = () =>
@@ -42,6 +41,7 @@ load_settings = () =>
 --------------------------------------------------------------------------------
 -- App
 class extends lapis.Application
+
   handle_error: (err, trace) =>
     if config._name == "production" then
       print(to_json(err) .. to_json(trace))
@@ -52,7 +52,12 @@ class extends lapis.Application
 
   @enable "etlua"
 
+  @include "applications.uploads"
+  @include "applications.services"
+
   layout: false -- we don't need a layout, it will be loaded dynamically
+  expire_at = () =>
+   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
   ----------------------------------------------------------------------------
   display_error_page = (status=500, headers={}) =>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
@@ -132,6 +137,23 @@ class extends lapis.Application
         else
           display_page(@)
   ------------------------------------------------------------------------------
+  [page_no_lang: '/:all/:slug']: =>
+    define_subdomain(@)
+
+    if no_db[sub_domain] then redirect_to: '/need_a_db'
+    else
+      load_settings(@)
+      @params.lang = check_valid_lang(settings[sub_domain].langs, @params.all)
+      unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
+      display_page(@)
+  ------------------------------------------------------------------------------
+  [page: '/:lang/:all/:slug(/*)']: =>
+    define_subdomain(@)
+    if no_db[sub_domain] then redirect_to: '/need_a_db'
+    else
+      load_settings(@)
+      display_page(@)
+  ------------------------------------------------------------------------------
   [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
     load_settings(@)
     data = aql(
@@ -154,7 +176,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "application/javascript", content
     else
-      content_type: "application/javascript", content, headers: { "expires": expire_at }
+      content_type: "application/javascript", content, headers: { "expires": expire_at! }
   ------------------------------------------------------------------------------
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
     load_settings(@)
@@ -167,7 +189,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "application/javascript", content
     else
-      content_type: "application/javascript", content, headers: { "expires": expire_at }
+      content_type: "application/javascript", content, headers: { "expires": expire_at! }
 
   ------------------------------------------------------------------------------
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -182,7 +204,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "text/css", content
     else
-      content_type: "text/css", content, headers: { "expires": expire_at }
+      content_type: "text/css", content, headers: { "expires": expire_at! }
   ------------------------------------------------------------------------------
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
     load_settings(@)
@@ -195,7 +217,7 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "text/css", content
     else
-      content_type: "text/css", content, headers: { "expires": expire_at }
+      content_type: "text/css", content, headers: { "expires": expire_at! }
   ------------------------------------------------------------------------------
   [component: '/:lang/:key/component/:rev.tag']: =>
     load_settings(@)
@@ -209,68 +231,4 @@ class extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content
     else
-      content, headers: { "expires": expire_at }
-
-  ------------------------------------------------------------------------------
-  [page_no_lang: '/:all/:slug']: =>
-    define_subdomain(@)
-
-    if no_db[sub_domain] then redirect_to: '/need_a_db'
-    else
-      load_settings(@)
-      @params.lang = check_valid_lang(settings[sub_domain].langs, @params.all)
-      unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
-      display_page(@)
-  ------------------------------------------------------------------------------
-  [page: '/:lang/:all/:slug(/*)']: =>
-    define_subdomain(@)
-
-    if no_db[sub_domain] then redirect_to: '/need_a_db'
-    else
-      load_settings(@)
-      display_page(@)
-  ------------------------------------------------------------------------------
-  [service: '/service/:name']: respond_to {
-    POST: =>
-      load_settings(@)
-      if @params.token == settings[sub_domain].token
-        install_service(sub_domain, @params.name)
-        'service installed'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
-  -- install script server side
-  [script: '/script/:name']: respond_to {
-    POST: =>
-      load_settings(@)
-      if @params.token == settings[sub_domain].token
-        install_script(sub_domain, @params.name)
-        'script installed'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
-  -- deploy site
-  [deploy: '/deploy']: respond_to {
-    POST: =>
-      load_settings(@)
-      if @params.token == settings[sub_domain].token
-        deploy_site(sub_domain, settings[sub_domain])
-        'site deployed'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
-  -- reset variables for specific sub domain
-  [reset_all: '/admin/reset_all']: =>
-    define_subdomain(@)
-
-    jwt[sub_domain] = nil
-    global_data[sub_domain] = nil
-    all_domains = nil
-    settings[sub_domain] = nil
-    'ok'
-  ------------------------------------------------------------------------------
-  -- console (kinda irb console in dev mode)
-  [console: '/console']: console.make!
+      content, headers: { "expires": expire_at! }

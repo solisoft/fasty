@@ -438,7 +438,7 @@
       \{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\},
       \{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \},
       \{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \},
-      \{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().format('YYYY-MM-DD').raw().required()", "l": "Published_at" \},
+      \{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().required()", "l": "Published_at" \},
       \{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \},
       \{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \},
       \{

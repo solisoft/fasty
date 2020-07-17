@@ -1,8 +1,0 @@
-key: secret_app_key
-root_path: /workspace/
-max_size: 1600
-mime_type: jpg,png,webp
-arango_host: "http+tcp://12.12.0.6:8529"
-arango_db: "resize"
-arango_user: "root"
-arango_pass: "password"

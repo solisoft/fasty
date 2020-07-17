@@ -5,6 +5,7 @@ import table_deep_merge, to_timestamp from require 'lib.utils'
 import http_get from require 'lib.http_client'
 import encode_with_secret from require 'lapis.util.encoding'
 import from_json, to_json, trim, unescape from require 'lapis.util'
+import web_sanitize from require "web_sanitize"
 --------------------------------------------------------------------------------
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
@@ -47,26 +48,11 @@ etlua2html = (json, partial, params, global_data) ->
 
   success, data = pcall(
     template, {
-      'dataset': json, 'to_json': to_json,
+      'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
       'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
     }
   )
   data
---------------------------------------------------------------------------------
-last_element = (str, pattern) ->
-  splitted = stringy.split(str, pattern)
-  splitted[table.getn(splitted)]
---------------------------------------------------------------------------------
-define_content_type = (slug) ->
-  ext = last_element(slug, ".")
-  mimes_types = {
-    'json': 'application/json', 'kml': 'application/vnd.google-earth.kml+xml',
-    'xml': 'application/xml', 'js': 'application/javascript', 'csv': 'text/csv',
-    'css': 'text/css', 'svg': 'image/svg+xml', 'ics': 'text/calendar'
-  }
-  page_content_type = mimes_types[ext]
-  page_content_type = "text/html" if page_content_type == nil
-  page_content_type
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object) ->
   request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
@@ -262,11 +248,16 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         db_data = { "page": 1 }
         if dataset == 'arango'
           -- check if it's a stored procedure
+          aql_request = {}
+          aql_options = {}
           if args['req']
-            args['aql'] = aql(
-              db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql.aql',
+            aql_request = aql(
+              db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql',
               { slug: args['req'] }
-            )[1]\gsub('{{ lang }}', params.lang)
+            )[1]
+
+            args['aql'] = aql_request.aql\gsub('{{ lang }}', params.lang)
+            aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
 
           -- prepare the bindvar variable with variable found in the request
           -- but also on the parameters sent as args
@@ -291,7 +282,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
               args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
               args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
-          db_data = { results: aql(db_name, args['aql'], bindvar) }
+          db_data = { results: aql(db_name, args['aql'], bindvar, aql_options) }
           db_data = table_deep_merge(db_data, { _params: args })
 
         if dataset == 'rest'
@@ -353,7 +344,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         db_name, 'FOR a in aqls FILTER a.slug == @slug RETURN a', { "slug": item }
       )[1]
       if aql_request
-        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql))
+        options = {}
+        options = from_json(aql_request.options) if aql_request.options
+        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql), options)
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}
@@ -411,5 +404,5 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
   html
 --------------------------------------------------------------------------------
 -- expose methods
-{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern, :last_element
-  :dynamic_replace, :load_redirection, :page_info, :prepare_bindvars, :define_content_type }
+{ :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern
+  :dynamic_replace, :load_redirection, :page_info, :prepare_bindvars }

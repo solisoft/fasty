@@ -83,16 +83,18 @@ router.post('/:key/:type/:field', function (req, res) {
 
       const image_exts = ['png', 'jpg', 'jpeg']
 
-      if (settings.resize_ovh && _.includes(image_exts, ext.toLowerCase())) {
+      if (settings.resize_ovh) {
+        const h_settings = JSON.parse(settings.home)
         // upload to resize.ovh service
-        var http_req = request.post('https://resize.ovh/upload_http', {
+        var http_req = request.post(h_settings.base_url + '/file/upload_http', {
           form: {
             image: urldest,
             key: settings.resize_ovh
           }
         })
         var _uuid = JSON.parse(http_req.body).filename
-        urldest = `https://resize.ovh/o/${_uuid}`
+        urldest = `/asset/o/${_uuid}`
+        fs.remove(filedest)
       }
 
       var upload = {

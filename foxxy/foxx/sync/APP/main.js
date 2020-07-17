@@ -64,7 +64,7 @@ router.get('/:token', function (req, res) {
     data = db._query(`
     LET layouts = (
       FOR l IN layouts
-      RETURN { id: l._id, name: l.name, html: l.html, scss: l.scss, js: l.javascript, locked_by: l.locked_by }
+      RETURN { id: l._id, name: l.name, html: l.html, scss: l.scss, js: l.javascript, i_js: l.i_js, i_css: l.i_css, locked_by: l.locked_by }
     )
     LET components = (
       FOR c IN components

@@ -18,7 +18,8 @@ const sessions = sessionsMiddleware({
   storage: jwtStorage({ secret: _settings.jwt_secret, ttl: 60 * 60 * 24 * 365 }),
   ttl: 60 * 60 * 24 * 365, // one year in seconds
   transport: 'header'
-});
+})
+
 module.context.use(sessions);
 module.context.use(router);
 
