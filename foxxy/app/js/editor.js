@@ -201,7 +201,7 @@
                   base64data = reader.result;
 
                   var formData = new FormData();
-                  formData.append("image", file)
+                  formData.append("files", file)
                   formData.append("key", localStorage.getItem('resize_api_key'))
 
                   $.ajax({

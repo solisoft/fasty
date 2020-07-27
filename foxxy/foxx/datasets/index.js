@@ -114,6 +114,9 @@ router.get('/datatypes', function (req, res) {
 // GET /datasets/:service/page/:page/:perpage
 router.get('/:service/page/:page/:perpage', function (req, res) {
   let model = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection_name = model.collection || 'datasets'
+  if (!db._collection(collection_name)) { db._createDocumentCollection(collection_name); }
+
   const locale = req.headers['foxx-locale']
   let order = model.sort || 'SORT doc._key DESC'
   if (model.sortable) order = 'SORT doc.order ASC'
@@ -143,13 +146,14 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
     "datatype": req.pathParams.service,
     "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
     "perpage": parseInt(req.pathParams.perpage),
-    "fields": _.flatten(fields)
+    "fields": _.flatten(fields),
+    "@collection": model.collection || 'datasets'
   }, folder_params)
 
   var aql = `
-  LET count = LENGTH((FOR doc IN datasets FILTER doc.type == @datatype ${folder} RETURN 1))
+  LET count = LENGTH((FOR doc IN @@collection FILTER doc.type == @datatype ${folder} RETURN 1))
   LET data = (
-    FOR doc IN datasets
+    FOR doc IN @@collection
       FILTER doc.type == @datatype
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
       ${folder} ${order} ${includes}
@@ -187,13 +191,14 @@ router.get('/:service/:service_key/:sub/page/:page/:perpage', function (req, res
     "datatype": req.pathParams.sub,
     "parent": req.pathParams.service_key,
     "offset": (req.pathParams.page - 1) * parseInt(req.pathParams.perpage),
-    "perpage": parseInt(req.pathParams.perpage)
+    "perpage": parseInt(req.pathParams.perpage),
+    "@collection": model.collection || 'datasets'
   }
 
   var aql = `
-  LET count = LENGTH((FOR doc IN datasets FILTER doc.type == @datatype RETURN 1))
+  LET count = LENGTH((FOR doc IN @@collection FILTER doc.type == @datatype RETURN 1))
   LET data = (
-    FOR doc IN datasets
+    FOR doc IN @@collection
       FILTER doc.parent_id == @parent
       FILTER doc.type == @datatype
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
@@ -230,11 +235,12 @@ router.get('/:service/search/:term', function (req, res) {
 
   var bindVars = {
     "type": req.pathParams.service,
-    "term": req.pathParams.term
+    "term": req.pathParams.term,
+    "@collection": object.view_collection || 'viewDatasets'
   }
 
   var aql = `
-  FOR doc IN viewDatasets
+  FOR doc IN @@collection
   SEARCH PHRASE(doc['search'][@lang], @term, CONCAT("text_", @lang))
   FILTER doc.type == @type
   LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
@@ -254,8 +260,8 @@ router.get('/:service/search/:term', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // GET /datasets/:service/:id
 router.get('/:service/:id', function (req, res) {
-  const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection = db._collection(object.collection || 'datasets')
   let fields = object.model
   _.each(fields, function (field, i) { if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
   res.send({
@@ -271,8 +277,8 @@ router.get('/:service/:id', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // GET /datasets/:service/sub/:sub_service/:id
 router.get('/:service/sub/:sub_service/:id', function (req, res) {
-  const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection = db._collection(object.collection || 'datasets')
   let fields = object.sub_models[req.pathParams.sub_service]
   _.each(fields, function (field, i) { if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
   res.send({
@@ -301,8 +307,10 @@ router.get('/:service/fields', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // POST /datasets/:service
 router.post('/:service', function (req, res) {
-  const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection_name = object.collection || 'datasets'
+  const collection = db._collection(collection_name)
+
   object.revisions = object.revisions || 10
   let fields = object.model
   const body = JSON.parse(req.body.toString())
@@ -347,9 +355,9 @@ router.post('/:service', function (req, res) {
       folder_params.folder = body.folder_key
     }
     data.order = db._query(`
-      LET docs = (FOR doc IN datasets FILTER doc.type == @type ${filter_by_folder} RETURN 1)
+      LET docs = (FOR doc IN @@collection FILTER doc.type == @type ${filter_by_folder} RETURN 1)
       RETURN LENGTH(docs)
-    `, _.merge({ type: req.pathParams.service }, folder_params)
+    `, _.merge({ type: req.pathParams.service, '@collection': collection_name }, folder_params)
     ).toArray()[0]
     obj = collection.save(data, { waitForSync: true })
 
@@ -396,8 +404,9 @@ router.post('/:service', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // POST /datasets/:service/:service_key/:sub
 router.post('/:service/:service_key/:sub', function (req, res) {
-  const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection = db._collection(object.collection || 'datasets')
+
   object.revisions = object.revisions || 10
   const body = JSON.parse(req.body.toString())
   var obj = null
@@ -430,8 +439,8 @@ router.post('/:service/:service_key/:sub', function (req, res) {
     if (object.timestamps === true) { data.created_at = +new Date() }
 
     data.order = db._query(
-      'LET docs = (FOR doc IN datasets FILTER doc.type == @type RETURN 1) RETURN LENGTH(docs)',
-      { type: req.pathParams.sub }
+      'LET docs = (FOR doc IN @@collection FILTER doc.type == @type RETURN 1) RETURN LENGTH(docs)',
+      { type: req.pathParams.sub, "@collection": object.collection || 'datasets' }
     ).toArray()[0]
     data.parent_id = req.pathParams.service_key
     obj = collection.save(data, { waitForSync: true })
@@ -461,8 +470,9 @@ router.post('/:service/:service_key/:sub', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // POST /datasets/:service/:id
 router.post('/:service/:id', function (req, res) {
-  const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection = db._collection(object.collection || 'datasets')
+
   object.revisions = object.revisions || 10
   let fields = object.model
   const body = JSON.parse(req.body.toString())
@@ -534,8 +544,9 @@ router.post('/:service/:id', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // POST /datasets/sub/:service/:sub_service/:id
 router.post('/sub/:service/:sub_service/:id', function (req, res) {
-  const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection = db._collection(object.collection || 'datasets')
+
   object.revisions = object.revisions || 10
   let fields = object.sub_models[req.pathParams.sub_service].fields
   const body = JSON.parse(req.body.toString())
@@ -594,8 +605,9 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // PATCH /datasets/:service/:id/:field/toggle
 router.patch('/:service/:id/:field/toggle', function (req, res) {
-  const collection = db._collection('datasets')
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection = db._collection(object.collection || 'datasets')
+
   var item = collection.document(req.pathParams.id)
   let column = _.first(_.filter(object.columns, function(el) { return el.name == req.pathParams.field}))
   if (item) {
@@ -616,11 +628,14 @@ router.patch('/:service/:id/:field/toggle', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // GET /datasets/:service/:id/duplicate
 router.get('/:service/:id/duplicate', function (req, res) {
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection_name = object.collection || 'datasets'
+
   var new_obj = db._query(`
-    FOR doc IN datasets
+    FOR doc IN @@collection
     FILTER doc._key == @key
-    INSERT UNSET( doc, "_id", "_key", "_rev" ) IN datasets RETURN NEW
-  `, { key: req.pathParams.id }).toArray()[0]
+    INSERT UNSET( doc, "_id", "_key", "_rev" ) IN @@collection RETURN NEW
+  `, { key: req.pathParams.id, '@collection': collection_name }).toArray()[0]
   res.send(new_obj);
 })
 .header('X-Session-Id')
@@ -629,16 +644,20 @@ router.get('/:service/:id/duplicate', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // POST /datasets/:id/publish
 router.post('/:id/publish', function (req, res) {
-  var dataset = db.datasets.document(req.pathParams.id)
-  db.publications.save({ _key: 'datasets_' + dataset._key, data: dataset }, { overwrite: true })
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection_name = object.collection || 'datasets'
+  const collection = db._collection(collection_name)
+
+  var dataset = collection.document(req.pathParams.id)
+  db.publications.save({ _key: collection_name + '_' + dataset._key, data: dataset }, { overwrite: true })
   db._query(`
-    FOR dataset IN datasets FILTER dataset.parent_id == @key
+    FOR dataset IN @@collection FILTER dataset.parent_id == @key
     UPSERT { _id: @id }
       INSERT { data: dataset }
       UPDATE { data: dataset }
     IN publications
     RETURN dataset._key
-  `, { key: req.pathParams.id, id: 'publications/' + req.pathParams.id })
+  `, { key: req.pathParams.id, id: 'publications/' + req.pathParams.id, '@collection': collection_name })
   res.send({ success: true });
 })
 .header('X-Session-Id')
@@ -647,9 +666,11 @@ router.post('/:id/publish', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // DELETE /datasets/:service/:id
 router.delete('/:service/:id', function (req, res) {
-  const collection = db._collection('datasets')
-  collection.remove('datasets/' + req.pathParams.id)
-  db.revisions.removeByExample({ object_id: 'datasets/' + req.pathParams.id })
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection_name = object.collection || 'datasets'
+  const collection = db._collection(collection_name)
+  collection.remove(req.pathParams.id)
+  db.revisions.removeByExample({ object_id: collection_name + '/' + req.pathParams.id })
   res.send({success: true });
 })
 .header('X-Session-Id')
@@ -658,7 +679,9 @@ router.delete('/:service/:id', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // PUT /datasets/:service/orders/:from/:to
 router.put('/:service/orders/:from/:to', function (req, res) {
-  const collection = db._collection('datasets')
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection_name = object.collection || 'datasets'
+  const collection = db._collection(collection_name)
   const from = parseInt(req.pathParams.from)
   const to = parseInt(req.pathParams.to)
 
@@ -671,35 +694,36 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   }
 
   var doc = db._query(
-    `FOR doc IN datasets FILTER doc.type == @type ${filter_by_folder} SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
-    _.merge({ "type": req.pathParams.service, pos: parseInt(req.pathParams.from) }, folder_params)
+    `FOR doc IN @@collection FILTER doc.type == @type ${filter_by_folder} SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
+    _.merge({ "type": req.pathParams.service, pos: parseInt(req.pathParams.from), "@collection": collection_name }, folder_params)
   ).toArray()[0]
 
   if (from < to) {
     db._query(
-      `FOR doc IN datasets
+      `FOR doc IN @@collection
       ${filter_by_folder}
       FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
-        UPDATE({ _key: doc._key, order: doc.order - 1 }) IN datasets`,
-      _.merge({ "type": req.pathParams.service, from, to, key: doc._key }, folder_params)
+        UPDATE({ _key: doc._key, order: doc.order - 1 }) IN @@collection`,
+      _.merge({ "type": req.pathParams.service, from, to, key: doc._key, "@collection": collection_name }, folder_params)
     )
   } else {
     db._query(
-      `FOR doc IN datasets
+      `FOR doc IN @@collection
         ${filter_by_folder}
         FILTER doc.type == @type AND doc.order <= @from and doc.order >= @to and doc._key != @key
-        UPDATE({ _key: doc._key, order: doc.order + 1 }) IN datasets`,
-      _.merge({ "type": req.pathParams.service, from, to, key: doc._key }, folder_params)
+        UPDATE({ _key: doc._key, order: doc.order + 1 }) IN @@collection`,
+      _.merge({ "type": req.pathParams.service, from, to, key: doc._key, "@collection": collection_name }, folder_params)
     )
   }
 
   collection.update(doc._key, { order: to })
 
   let docs = db._query(
-    `FOR doc IN datasets
+    `FOR doc IN @@collection
       ${filter_by_folder}
       FILTER doc.type == @type SORT doc.order RETURN doc`, _.merge({
-        type: req.pathParams.service
+        type: req.pathParams.service,
+        "@collection": collection_name
       }, folder_params)).toArray()
 
   let i = 0;
@@ -717,8 +741,11 @@ router.put('/:service/orders/:from/:to', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // GET /datasets/:service/stats/:tag
 router.get('/:service/stats/:tag', function (req, res) {
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection_name = object.collection || 'datasets'
+
   var results = db._query(`
-    FOR d IN datasets
+    FOR d IN @@collection
     FILTER d.type == @service
     FILTER d[@tag] != NULL
     FOR t IN d[@tag]
@@ -726,7 +753,7 @@ router.get('/:service/stats/:tag', function (req, res) {
         FILTER tag != NULL
         SORT size DESC
         RETURN { tag, size }
-  `, { tag: req.pathParams.tag, service: req.pathParams.service })
+  `, { tag: req.pathParams.tag, service: req.pathParams.service, "@collection": collection_name })
 
   res.send(results);
 })

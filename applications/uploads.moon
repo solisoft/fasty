@@ -9,7 +9,7 @@ import aqls from require "lib.aqls"
 import uuid, define_content_type from require "lib.utils"
 import from_json, to_json from require "lapis.util"
 import respond_to from require "lapis.application"
-import auth_arangodb, aql, list_databases from require "lib.arango"
+import auth_arangodb, aql, list_databases, document_post from require "lib.arango"
 
 jwt = {}
 global_data = {}
@@ -88,12 +88,12 @@ load_settings = () =>
 
 class FastyImages extends lapis.Application
   ------------------------------------------------------------------------------
-  [file_upload: '/file/upload']: respond_to {
+  [file_upload: '/file/upload(/:id)(/:collection)(/:field)']: respond_to {
     POST: =>
       load_settings(@)
-
+      @params.key = @req.headers['apikey'] if @req.headers['apikey']
       if @params.key == settings[sub_domain].resize_ovh
-        if file = @params.image
+        if file = @params.files[""] or @params.files
           arr = stringy.split(file.filename, ".")
           ext = arr[table.getn(arr)]
 
@@ -112,11 +112,17 @@ class FastyImages extends lapis.Application
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
               url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
 
-          aql(
-            "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": file.filename, "size": #file.content, url: url, ext: ext }
-          )
+          upload = {
+            "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. _uuid .. "." .. ext,
+            "size": #content, url: url, ext: ext
+          }
+
+          if @params.id
+            upload["object_id"] = @params.collection .. "/" .. @params.id
+            upload["order"] = 10000
+            upload["field"] = @params.field
+
+          document_post("db_#{sub_domain}", "uploads", upload)
 
           to_json({ success: true, filename: _uuid })
         else
