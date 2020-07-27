@@ -139,8 +139,8 @@ class FastyImages extends lapis.Application
       if true -- @params.key == settings[sub_domain].resize_ovh
         if url_src = @params.image
           arr = stringy.split(url_src, "/")
-          ext = arr[table.getn(arr)]
-          arr = stringy.split(ext, ".")
+          file = arr[table.getn(arr)]
+          arr = stringy.split(file, ".")
           ext = arr[table.getn(arr)]
 
           date = os.date("%y/%m/%d", os.time())
@@ -162,7 +162,7 @@ class FastyImages extends lapis.Application
               google_url = "https://storage.googleapis.com/#{bucket}#{filename}" if status == 200
 
           upload = {
-            "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. filename,
+            "uuid": _uuid, "root": path, "filename": file, "path": path .. '/' .. filename,
             "length": #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
           }
 
