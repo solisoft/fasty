@@ -119,7 +119,7 @@ class FastyImages extends lapis.Application
 
           if @params.id
             upload["object_id"] = @params.collection .. "/" .. @params.id
-            upload["order"] = 10000
+            upload["pos"] = 10000
             upload["field"] = @params.field
 
           document_post("db_#{sub_domain}", "uploads", upload)
