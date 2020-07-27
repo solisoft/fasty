@@ -106,7 +106,7 @@ class FastyImages extends lapis.Application
           content = file.content
           write_content "#{path}/#{filename}", content, true
 
-          url = "/#{path}/#{filename}"
+          url = "/asset/o/#{_uuid}"
           google_url = ""
           if bucket
             if storage
