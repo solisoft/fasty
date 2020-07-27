@@ -114,7 +114,7 @@ class FastyImages extends lapis.Application
 
           upload = {
             "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. _uuid .. "." .. ext,
-            "length": #content, url: url, ext: ext
+            "length": #content, url: url, ext: ext, mime: define_content_type(ext)
           }
 
           if @params.id
