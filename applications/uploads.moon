@@ -122,9 +122,9 @@ class FastyImages extends lapis.Application
             upload["pos"] = 10000
             upload["field"] = @params.field
 
-          document_post("db_#{sub_domain}", "uploads", upload)
+          doc_key = document_post("db_#{sub_domain}", "uploads", upload)._key
 
-          to_json({ success: true, filename: _uuid })
+          to_json({ success: true, filename: _uuid, key: doc_key })
         else
           status: 400, 'Bad parameters'
       else
