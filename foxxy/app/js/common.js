@@ -425,7 +425,6 @@ var Common = {
     UIkit.upload(drop_id, {
       url: '/file/upload/' + key + '/' + collection + '/' + field, // upload url,
       multiple: true,
-
       allow: filter,
 
       error: function () {
