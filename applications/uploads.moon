@@ -107,14 +107,15 @@ class FastyImages extends lapis.Application
           write_content "#{path}/#{filename}", content, true
 
           url = "/#{path}/#{filename}"
+          google_url = ""
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
+              google_url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
 
           upload = {
             "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. _uuid .. "." .. ext,
-            "length": #content, url: url, ext: ext, mime: define_content_type(ext)
+            "length": #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
           }
 
           if @params.id
