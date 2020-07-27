@@ -92,7 +92,7 @@ class FastyImages extends lapis.Application
     POST: =>
       load_settings(@)
       @params.key = @req.headers['apikey'] if @req.headers['apikey']
-      if @params.key == settings[sub_domain].resize_ovh
+      if true -- @params.key == settings[sub_domain].resize_ovh
         if file = @params.files[""] or @params.files
           arr = stringy.split(file.filename, ".")
           ext = arr[table.getn(arr)]
@@ -136,7 +136,7 @@ class FastyImages extends lapis.Application
     POST: =>
       load_settings(@)
 
-      if @params.key == settings[sub_domain].resize_ovh
+      if true -- @params.key == settings[sub_domain].resize_ovh
         if url_src = @params.image
           arr = stringy.split(url_src, "/")
           ext = arr[table.getn(arr)]
@@ -154,20 +154,21 @@ class FastyImages extends lapis.Application
 
           write_content "#{path}/#{filename}", content, true
 
-          url = "/#{path}/#{filename}"
-
+          url = "/asset/o/#{_uuid}"
+          google_url = ""
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
+              google_url = "https://storage.googleapis.com/#{bucket}#{filename}" if status == 200
 
-          aql(
-            "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": filename, "size": #content, url: url, ext: ext }
-          )
+          upload = {
+            "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. filename,
+            "length": #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
+          }
 
-          to_json({ success: true, filename: _uuid, url: url, url_src: url_src })
+          doc_key = document_post("db_#{sub_domain}", "uploads", upload)._key
+
+          to_json({ success: true, filename: _uuid, url: url, url_src: url_src, doc_key: doc_key })
         else
           status: 400, 'Bad parameters'
       else
