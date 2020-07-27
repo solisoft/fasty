@@ -11,7 +11,7 @@ RUN wget https://github.com/libvips/libvips/releases/download/v8.9.2/vips-8.9.2.
     && ./configure \
     && make && make install && ldconfig
 
-ARG OPENRESTY_VERSION=1.15.8.3
+ARG OPENRESTY_VERSION=1.17.8.2
 
 RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar xf openresty-${OPENRESTY_VERSION}.tar.gz \

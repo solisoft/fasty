@@ -423,7 +423,7 @@ var Common = {
     var bar = document.getElementById(progressbar_id);
 
     UIkit.upload(drop_id, {
-      url: url + '/uploads/' + key + '/' + collection + '/' + field, // upload url,
+      url: '/file/upload/' + key + '/' + collection + '/' + field, // upload url,
       multiple: true,
       allow: filter,
 
@@ -433,6 +433,7 @@ var Common = {
 
       beforeSend: function(env) {
         env.headers = {
+          'apikey': localStorage.getItem('resize_api_key'),
           'X-Session-Id': localStorage.getItem('X-Session-Id'),
           'foxx-locale': i18n == true ? localStorage.getItem('foxx-locale') : null
         }

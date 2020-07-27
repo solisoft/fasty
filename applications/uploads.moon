@@ -1,14 +1,15 @@
-lapis   = require "lapis"
-shell   = require "resty.shell"
-stringy = require "stringy"
-google  = require "cloud_storage.google"
-http    = require "lapis.nginx.http"
+lapis     = require "lapis"
+shell     = require "resty.shell"
+stringy   = require "stringy"
+google    = require "cloud_storage.google"
+http      = require "lapis.nginx.http"
+encoding  = require "lapis.util.encoding"
 
 import aqls from require "lib.aqls"
 import uuid, define_content_type from require "lib.utils"
 import from_json, to_json from require "lapis.util"
 import respond_to from require "lapis.application"
-import auth_arangodb, aql, list_databases from require "lib.arango"
+import auth_arangodb, aql, list_databases, document_post from require "lib.arango"
 
 jwt = {}
 global_data = {}
@@ -18,15 +19,25 @@ no_db = {}
 sub_domain = ''
 bucket = nil
 --------------------------------------------------------------------------------
-write_content = (file, content) ->
+watermark = (filename) ->
+  w = from_json(settings[sub_domain].home).watermark
+  arr = stringy.split(filename, ".")
+  ext = arr[table.getn(arr)]
+
+  if w
+    shell.run "vips merge #{filename} #{w} #{filename}.out.#{ext} vertical 1 1"
+    shell.run "mv #{filename}.out.#{ext} #{filename}"
+--------------------------------------------------------------------------------
+write_content = (file, content, do_watermark=false) ->
   path_arr = stringy.split(file, "/")
   table.remove(path_arr, table.getn(path_arr))
   path = table.concat(path_arr, "/")
   os.execute("mkdir -p #{path}")
-  output = io.open file, "w+"
-  io.output output
-  io.write content
-  io.close
+  output = io.open(file, "w+")
+  io.output(output)
+  io.write(content)
+  io.close(output)
+  watermark file if do_watermark
 --------------------------------------------------------------------------------
 cloud_storage = () ->
   certificate = nil
@@ -48,13 +59,13 @@ load_original_from_cloud = (key) ->
     content = storage\get_file bucket, key
     write_content key, content if content
 --------------------------------------------------------------------------------
-check_file = (key) ->
+check_file = (params) ->
+  db_name = "db_#{sub_domain}"
+  db_name = "db_" .. encoding.decode_base64(params._from) if params._from
   upload = aql(
-    "db_#{sub_domain}", "FOR u IN uploads FILTER u.uuid == @key RETURN u",
-    { "key": key }
+    db_name, "FOR u IN uploads FILTER u.uuid == @key RETURN u", { "key": params.uuid }
   )[1]
-  _uuid = upload.uuid
-  load_original_from_cloud upload.path
+  load_original_from_cloud upload.path if upload
   upload
 --------------------------------------------------------------------------------
 -- define_subdomain
@@ -77,12 +88,12 @@ load_settings = () =>
 
 class FastyImages extends lapis.Application
   ------------------------------------------------------------------------------
-  [file_upload: '/file/upload']: respond_to {
+  [file_upload: '/file/upload(/:id)(/:collection)(/:field)']: respond_to {
     POST: =>
       load_settings(@)
-
+      @params.key = @req.headers['apikey'] if @req.headers['apikey']
       if @params.key == settings[sub_domain].resize_ovh
-        if file = @params.image
+        if file = @params.files[""] or @params.files
           arr = stringy.split(file.filename, ".")
           ext = arr[table.getn(arr)]
 
@@ -93,21 +104,28 @@ class FastyImages extends lapis.Application
 
           shell.run("mkdir -p #{path}")
           content = file.content
-          write_content "#{path}/#{filename}", content
+          write_content "#{path}/#{filename}", content, true
 
-          url = "/#{path}/#{filename}"
+          url = "/asset/o/#{_uuid}"
+          google_url = ""
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
+              google_url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
 
-          aql(
-            "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": file.filename, "size": #file.content, url: url, ext: ext }
-          )
+          upload = {
+            "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. _uuid .. "." .. ext,
+            "length": #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
+          }
 
-          to_json({ success: true, filename: _uuid })
+          if @params.id
+            upload["object_id"] = @params.collection .. "/" .. @params.id
+            upload["pos"] = 10000
+            upload["field"] = @params.field
+
+          doc_key = document_post("db_#{sub_domain}", "uploads", upload)._key
+
+          to_json({ success: true, filename: _uuid, key: doc_key })
         else
           status: 400, 'Bad parameters'
       else
@@ -134,7 +152,7 @@ class FastyImages extends lapis.Application
 
           content, status_code, headers = http.simple url_src
 
-          write_content "#{path}/#{filename}", content
+          write_content "#{path}/#{filename}", content, true
 
           url = "/#{path}/#{filename}"
 
@@ -156,99 +174,79 @@ class FastyImages extends lapis.Application
         status: 401, 'Not authorized'
   }
   ------------------------------------------------------------------------------
-  [file_upload_base64: '/file/upload_base64']: respond_to {
-    POST: =>
-      load_settings(@)
-
-      if @params.key == settings[sub_domain].resize_ovh
-        if file = @params.image
-          arr = stringy.split(@params.filename, ".")
-          ext = arr[table.getn(arr)]
-
-          date = os.date("%y/%m/%d", os.time())
-          path = "static/assets/#{sub_domain}/#{date}"
-          _uuid = uuid()
-          filename = "#{_uuid}.#{ext}"
-
-          shell.run("mkdir -p #{path}")
-          output = io.open "#{path}/#{filename}", "w+"
-          content = encoding.decode_64(@params.image)
-          write_content "#{path}/#{filename}", content
-
-          url = "/#{path}/#{filename}"
-          if bucket
-            if storage
-              status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              url = "https://storage.googleapis.com/#{bucket}#{url}" if status == 200
-
-          aql(
-            "db_#{sub_domain}",
-            "INSERT { uuid: @uuid, root: @path, filename: @filename, path: CONCAT(@path, '/', @uuid, '.', @ext), size: @size, url: @url, ext: @ext } INTO uploads",
-            { "uuid": _uuid, "path": path, "filename": @params.filename, "size": #file.content, "url": url, "ext": ext }
-          )
-
-          to_json({ success: true, filenae: _uuid })
-        else
-          status: 400, 'Bad parameters'
-      else
-        status: 401, 'Not authorized'
-  }
-  ------------------------------------------------------------------------------
   -- get image
   [image: '/asset/o/:uuid[a-z%d\\-](.:format[a-z])']: =>
     load_settings(@)
 
-    upload = check_file @params.uuid
+    upload = check_file @params
 
-    ext   = @params.format or upload.ext
-    _uuid = upload.uuid
-    str   = ""
-    res   = { "body": "", status: 0 }
-    url   = "#{upload.root}/#{_uuid}.#{ext}"
+    if upload
+      ext   = @params.format or upload.ext
+      _uuid = upload.uuid
+      str   = ""
+      res   = { "body": "", status: 0 }
+      url   = "#{upload.root}/#{_uuid}.#{ext}"
 
-    if ext != upload.ext
-      res = ngx.location.capture("/#{url}")
-      if res and res.status == 404
-        ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{url}")
+      if ext != upload.ext
         res = ngx.location.capture("/#{url}")
-    else
-      res = ngx.location.capture("/#{url}")
+        if res and res.status == 404
+          ok, stdout, stderr, reason, status = shell.run("vips copy #{upload.path} #{url}")
+          res = ngx.location.capture("/#{url}")
+      else
+        res = ngx.location.capture("/#{url}")
 
-    res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes' }
+      disposition = "inline"
+      disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+    else
+      'no asset found!', status: 404
   ------------------------------------------------------------------------------
   -- resize image
   [image_r: '/asset/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
     load_settings(@)
 
     ext = @params.format or "jpg"
-    upload = check_file @params.uuid
+    upload = check_file @params
 
-    height  = ""
-    height  = "--height #{@params.height} --crop attention" if @params.height
-    dest    = "#{upload.root}/#{_uuid}-#{@params.width}-#{@params.height}.#{ext}"
+    if upload
+      height  = ""
+      height  = "--height #{@params.height} --crop attention" if @params.height
+      dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}.#{ext}"
 
-    res = ngx.location.capture("/#{dest}")
-    if res and res.status == 404
-      ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
       res = ngx.location.capture("/#{dest}")
+      if res and res.status == 404
+        ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
+        res = ngx.location.capture("/#{dest}")
 
-    res.body, content_type: define_content_type(ext)
+      disposition = "inline"
+      disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+    else
+      'no asset found!', status: 404
   ------------------------------------------------------------------------------
   -- smart crop
   [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
     load_settings(@)
 
     ext = @params.format or "jpg"
-    upload = check_file @params.uuid
+    upload = check_file @params
 
-    height = ""
-    height = "--height #{@params.height} --crop attention" if @params.height
+    if upload
+      height = ""
+      height = "--height #{@params.height} --crop attention" if @params.height
 
-    interesting = @params.interesting or 'attention'
-    dest = "#{upload.root}/#{_uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
-    res = ngx.location.capture("/" .. dest)
-    if res and res.status == 404
-      ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
+      interesting = @params.interesting or 'attention'
+      dest = "#{upload.root}/#{upload.uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
       res = ngx.location.capture("/" .. dest)
+      if res and res.status == 404
+        ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
+        res = ngx.location.capture("/" .. dest)
 
-    res.body, content_type: define_content_type(ext)
+      disposition = "inline"
+      disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+    else
+      'no asset found!', status: 404

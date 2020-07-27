@@ -59,67 +59,6 @@ router.get('/:key/:type/:field/:lang', function (req, res) {
   .header('X-Session-Id')
   .description("Get all files for a specific id and field")
 // -----------------------------------------------------------------------------
-// POST /uploads/:key/:type/:field
-router.post('/:key/:type/:field', function (req, res) {
-    const settings = db._collection('settings').firstExample()
-    const home_settings = JSON.parse(settings.home)
-    let date = (new Date()).toJSON().split('T')[0].split('-').join('/')
-    let path = settings.upload_path + date
-    fs.makeDirectoryRecursive(path)
-
-    let docs = []
-
-    _.each(req.body, function (data) {
-
-      const uuid = crypt.genRandomAlphaNumbers(20)
-
-      let filename = querystring.parse(
-        data.headers["Content-Disposition"].split(';')[2].trim().replace(/"/g, '')
-      ).filename
-
-      const ext = _.last(filename.split('.'))
-      const filedest = path + '/' + uuid + "." + ext
-      let urldest = settings.upload_url + date + "/" +  uuid + "." + ext
-      fs.write(filedest, data.data)
-
-      const image_exts = ['png', 'jpg', 'jpeg']
-
-      if (settings.resize_ovh && home_settings.base_url) {
-        // upload to resize.ovh service
-        var http_req = request.post(home_settings.base_url + '/file/upload_http', {
-          form: {
-            image: urldest,
-            key: settings.resize_ovh
-          }
-        })
-
-        var _uuid = JSON.parse(http_req.body).filename
-        urldest = `/asset/o/${_uuid}`
-      }
-
-      var upload = {
-        path: filedest,
-        url: urldest,
-        filename: filename,
-        length: data.data.length,
-        mime: data.headers["Content-Type"],
-        object_id: req.pathParams.type + '/' + req.pathParams.key,
-        field: req.pathParams.field,
-        lang: req.headers['foxx-locale'],
-        pos: 1000
-      }
-
-      docs.push(
-        db.uploads.save(upload)
-      )
-    })
-    res.send(docs)
-  })
-  .body(['multipart/form-data'])
-  .header('foxx-locale')
-  .header('X-Session-Id')
-  .description("Upload a file")
-// -----------------------------------------------------------------------------
 // POST /uploads/reorder
 router.post('/reorder', function (req, res) {
     db._query(
