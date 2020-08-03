@@ -16,6 +16,7 @@ var Common = {
       return o
     }
   },
+
   startEditor: function (name, mode, id) {
     var editor = ace.edit(name)
     editor.setTheme("ace/theme/twilight")
@@ -28,7 +29,6 @@ var Common = {
 
   checkConditions: function checkConditions(fields, formId) {
     _.each(fields, function (field) {
-
       if (field.if) {
         if ($('#' + field.if[0]).val() != field.if[1]) {
           $('#field_' + field.n).hide()
@@ -292,6 +292,8 @@ var Common = {
         $('#'+p[0]+'_lng').val(coords.lng)
         $('#'+p[0]+'_infos span').html([coords.lat, coords.lng].join(', '))
       })
+
+      setTimeout(function() { mymap.invalidateSize(true) }, 0)
     })
 
     var _this = this
