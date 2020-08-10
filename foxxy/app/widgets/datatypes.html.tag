@@ -443,7 +443,7 @@
       \{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \},
       \{
         "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",
-        "d": "d": "FOR doc IN datasets FILTER doc.type == 'authors' RETURN [doc._key, CONCAT(doc.ln, ' ', doc.fn)]"
+        "d": "FOR doc IN datasets FILTER doc.type == 'authors' RETURN [doc._key, CONCAT(doc.ln, ' ', doc.fn)]"
       \},
       \{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \},
       \{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \},
@@ -466,6 +466,7 @@
         "truncate": 20, "uppercase": true, "lowercase": true
       \}
     ],
+    "collection": "whatever", // The default is datasets
     "act_as_tree": true,
     "sortable": true,
     "revisions": 10,
