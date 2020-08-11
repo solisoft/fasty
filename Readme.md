@@ -8,7 +8,7 @@ A CMS built on top of OpenResty/Lapis & ArangoDB
 
 # Installation
 
-Please follow instructions on [fast's documentation page](https://fasty.ovh/en/our/documentation)
+Please follow instructions on [fasty's documentation page](https://fasty.ovh/en/our/documentation)
 
 # Upgrade ArangoDB version
 
