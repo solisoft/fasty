@@ -125,7 +125,7 @@ class FastyImages extends lapis.Application
 
           doc_key = document_post("db_#{sub_domain}", "uploads", upload)._key
 
-          to_json({ success: true, filename: _uuid, key: doc_key })
+          to_json({ success: true, filename: _uuid, key: doc_key, file: { url: '/asset/o/' .. _uuid } })
         else
           status: 400, 'Bad parameters'
       else
