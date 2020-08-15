@@ -634,8 +634,8 @@ module.exports = Common;
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
   ".fasty.ovh": "/_db",
-  ".inseytel.com": "https://app.inseytel.com/_db/",
-  "dev.epic20.world": "/_db"
+  ".inseytel.com": "https://inseytel.com/_db",
+  "epic20.world": "/_db"
 };
 
 module.exports = Config;
@@ -2328,7 +2328,7 @@ riot.tag2('component_crud_new', '<a href="#" class="uk-button uk-button-link" on
 
 });
 
-riot.tag2('component_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">components</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing component</h3> <form onsubmit="{save_form}" class="uk-form" id="form_component"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this component... </virtual> <script>', '', '', function(opts) {
+riot.tag2('component_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">components</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing component</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == component.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == component.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_component"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this component... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -2365,9 +2365,26 @@ riot.tag2('component_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href
       })
     }.bind(this)
 
+    this.changePath = function(e) {
+      e.preventDefault()
+      common.put(url + "/cruds/components/" + opts.component_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+        UIkit.notification({
+            message : 'Successfully updated!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+    }.bind(this)
+
+    this.pathName = function(path) {
+      return _.map(path, function(d) { return d.name }).join(" > ")
+    }.bind(this)
+
     common.get(url + "/cruds/components/" + opts.component_id, function(d) {
       self.component = d.data
       self.fields = d.fields
+      self.folders = d.folders
       self.sub_models = d.fields.sub_models
       var fields = d.fields
       var act_as_tree = d.fields.act_as_tree
@@ -3084,7 +3101,7 @@ riot.tag2('datatype_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in 
     loadFolder(this.folder_key)
 });
 
-riot.tag2('datatype_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datatypes</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing datatype</h3> <form onsubmit="{save_form}" class="uk-form" id="form_datatype"> </form> <dataset_helper></dataset_helper> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this datatype... </virtual> <script>', '', '', function(opts) {
+riot.tag2('datatype_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datatypes</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing datatype</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == datatype.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == datatype.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_datatype"> </form> <dataset_helper></dataset_helper> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this datatype... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -3121,9 +3138,26 @@ riot.tag2('datatype_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href=
       })
     }.bind(this)
 
+    this.pathName = function(path) {
+      return _.map(path, function(d) { return d.name }).join(" > ")
+    }.bind(this)
+
+    this.changePath = function(e) {
+      e.preventDefault()
+      common.put(url + "/cruds/datatypes/" + opts.datatype_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+        UIkit.notification({
+            message : 'Successfully updated!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+    }.bind(this)
+
     common.get(url + "/cruds/datatypes/" + opts.datatype_id, function(d) {
       self.datatype = d.data
       self.fields = d.fields
+      self.folders = d.folders
       self.sub_models = d.fields.sub_models
       var fields = d.fields
       var act_as_tree = d.fields.act_as_tree
@@ -3334,7 +3368,7 @@ riot.tag2('datatypes', '<datatype_folders show="{loaded}" folder_key="{folder_ke
 });
 
 
-riot.tag2('dataset_helper', '<hr> <h4>Data definition sample</h4> <pre><code class="json">\\{\n    "model": [\n      \\{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \\},\n      \\{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \\},\n      \\{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \\},\n      \\{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().required()", "l": "Published_at" \\},\n      \\{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \\},\n      \\{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",\n        "d": "d": "FOR doc IN datasets FILTER doc.type == \'authors\' RETURN [doc._key, CONCAT(doc.ln, \' \', doc.fn)]"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \\},\n      \\{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",\n        "d": "LET tags = (FOR doc IN datasets FILTER doc.type==\'books\' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \\},\n      \\{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \\},\n      \\{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \\},\n      \\{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \\},\n      \\{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \\},\n      \\{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \\}\n      \\{ "r": true, "c": "1-1", "n": "html_content", "t": "wysiwyg", "j": "joi.any()", "l": "Wysiwyg editor" \\}\n    ],\n    "columns": [\n      \\{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,\n        "values": \\{ "true": "online", "false": "offline" \\},\n        "truncate": 20, "uppercase": true, "lowercase": true\n      \\}\n    ],\n    "act_as_tree": true,\n    "sortable": true,\n    "revisions": 10,\n    "publishable": true,\n    "slug": ["title"],\n    "sort": "SORT doc.order ASC",\n    "search": ["title", "barcode", "desc"],\n    "includes": \\{\n      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",\n      "merges": ", customer: c "\n    \\},\n    "timestamps": true\n  \\}\n  </code></pre>', 'dataset_helper pre { padding: 0; border: none; border-radius: 4px; }', '', function(opts) {
+riot.tag2('dataset_helper', '<hr> <h4>Data definition sample</h4> <pre><code class="json">\\{\n    "model": [\n      \\{ "r": true, "c": "1-1", "n": "title", "t": "string", "j": "joi.string().required()", "l": "Title", "tr": true \\},\n      \\{ "r": true, "c": "1-1", "n": "color", "t": "string:color", "j": "joi.string().required()", "l": "Pick a color"\\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "integer", "j": "joi.number().integer()", "l": "Position" \\},\n      \\{ "r": true, "c": "1-1", "n": "online", "t": "boolean", "j": "joi.number().integer()", "l": "Online?" \\},\n      \\{ "r": true, "c": "1-1", "n": "published_at", "t": "date", "j": "joi.date().required()", "l": "Published_at" \\},\n      \\{ "r": true, "c": "1-1", "n": "time", "t": "time", "j": "joi.string()", "l": "Time" \\},\n      \\{ "r": true, "c": "1-1", "n": "desc", "t": "text", "j": "joi.string()", "l": "Description" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "author_key", "t": "list", "j": "joi.string()", "l": "User",\n        "d": "FOR doc IN datasets FILTER doc.type == \'authors\' RETURN [doc._key, CONCAT(doc.ln, \' \', doc.fn)]"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "image", "t": "image", "j": "joi.string()", "l": "Pictures" \\},\n      \\{ "r": true, "c": "1-1", "n": "file", "t": "file", "j": "joi.string()", "l": "Files" \\},\n      \\{\n        "r": true, "c": "1-1", "n": "tags", "t": "tags", "j": "joi.array()", "l": "Tags",\n        "d": "LET tags = (FOR doc IN datasets FILTER doc.type==\'books\' AND doc.tags != NULL RETURN doc.tags) RETURN UNIQUE(FLATTEN(tags))"\n      \\},\n      \\{ "r": true, "c": "1-1", "n": "items", "t": "multilist", "j": "joi.array()", "l": "Multi List of tags", "d": "AQL request" \\},\n      \\{ "r": true, "c": "1-1", "n": "position", "t": "map", "j": "joi.array()", "l": "Coordinates" \\},\n      \\{ "r": true, "c": "1-1", "n": "html", "t": "code:html", "j": "joi.any()", "l": "Some HTML" \\},\n      \\{ "r": true, "c": "1-1", "n": "scss", "t": "code:scss", "j": "joi.any()", "l": "Some SCSS" \\},\n      \\{ "r": true, "c": "1-1", "n": "javascript", "t": "code:javascript", "j": "joi.any()", "l": "Some JS" \\},\n      \\{ "r": true, "c": "1-1", "n": "json", "t": "code:json", "j": "joi.any()", "l": "Some Json" \\},\n      \\{ "r": true, "c": "1-1", "n": "content", "t": "html", "j": "joi.any()", "l": "Content Editor" \\}\n      \\{ "r": true, "c": "1-1", "n": "html_content", "t": "wysiwyg", "j": "joi.any()", "l": "Wysiwyg editor" \\}\n    ],\n    "columns": [\n      \\{ "name": "title", "tr": true, "class": "uk-text-right", "toggle": true,\n        "values": \\{ "true": "online", "false": "offline" \\},\n        "truncate": 20, "uppercase": true, "lowercase": true\n      \\}\n    ],\n    "collection": "whatever", // The default is datasets\n    "act_as_tree": true,\n    "sortable": true,\n    "revisions": 10,\n    "publishable": true,\n    "slug": ["title"],\n    "sort": "SORT doc.order ASC",\n    "search": ["title", "barcode", "desc"],\n    "includes": \\{\n      "conditions": "FOR c IN customers FILTER c._key == doc.customer_key",\n      "merges": ", customer: c "\n    \\},\n    "timestamps": true\n  \\}\n  </code></pre>', 'dataset_helper pre { padding: 0; border: none; border-radius: 4px; }', '', function(opts) {
 });
 });
 
@@ -4176,14 +4210,27 @@ riot.tag2('page_crud_new', '<a href="#" class="uk-button uk-button-link" onclick
     }.bind(this)
 });
 
-riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">pages</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing page</h3> <form onsubmit="{save_form}" class="uk-form" id="form_page"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}">Sorry, you can\'t access this page...</virtual> <script>', '', '', function(opts) {
+riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">pages</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing page</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == page.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == page.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_page"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}">Sorry, you can\'t access this page...</virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
+    self.folders = []
 
     this.save_form = function(e) {
       e.preventDefault()
       common.saveForm("form_page", "cruds/pages",opts.page_id)
+    }.bind(this)
+
+    this.changePath = function(e) {
+      e.preventDefault()
+      common.put(url + "/cruds/pages/" + opts.page_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+        UIkit.notification({
+            message : 'Successfully updated!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
     }.bind(this)
 
     this.duplicate = function(e) {
@@ -4213,8 +4260,14 @@ riot.tag2('page_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">
       })
     }.bind(this)
 
+    this.pathName = function(path) {
+      return _.map(path, function(d) { return d.name }).join(" > ")
+    }.bind(this)
+
     common.get(url + "/cruds/pages/" + opts.page_id, function(d) {
       self.page = d.data
+      self.folders = d.folders
+
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields
@@ -4578,7 +4631,7 @@ riot.tag2('partial_crud_new', '<a href="#" class="uk-button uk-button-link" oncl
     }.bind(this)
 });
 
-riot.tag2('partial_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">partials</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing partial</h3> <form onsubmit="{save_form}" class="uk-form" id="form_partial"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}">Sorry, you can\'t access this partial...</virtual> <script>', '', '', function(opts) {
+riot.tag2('partial_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">partials</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing partial</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == partial.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == partial.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_partial"> </form> <a class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}">Sorry, you can\'t access this partial...</virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -4586,6 +4639,22 @@ riot.tag2('partial_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
     this.save_form = function(e) {
       e.preventDefault()
       common.saveForm("form_partial", "cruds/partials",opts.partial_id)
+    }.bind(this)
+
+    this.changePath = function(e) {
+      e.preventDefault()
+      common.put(url + "/cruds/partials/" + opts.partial_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+        UIkit.notification({
+            message : 'Successfully updated!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+    }.bind(this)
+
+    this.pathName = function(path) {
+      return _.map(path, function(d) { return d.name }).join(" > ")
     }.bind(this)
 
     this.duplicate = function(e) {
@@ -4618,6 +4687,7 @@ riot.tag2('partial_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
     common.get(url + "/cruds/partials/" + opts.partial_id, function(d) {
       self.partial = d.data
       self.fields = d.fields
+      self.folders = d.folders
       self.sub_models = d.fields.sub_models
       var fields = d.fields
       var act_as_tree = d.fields.act_as_tree

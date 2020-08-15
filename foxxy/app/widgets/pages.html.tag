@@ -213,6 +213,24 @@
     <ul class="uk-switcher uk-margin">
       <li>
         <h3>Editing page</h3>
+
+        <virtual if={folders.length > 0}>
+          <label class="uk-label">Path</label>
+          <form onsubmit={changePath}>
+            <div class="uk-grid uk-grid-small">
+              <div class="uk-width-3-4">
+                <select class="uk-select" ref="folder">
+                  <option value={folders[0].root._key} selected={folders[0].root._key == page.folder_key}>Root</option>
+                  <option each={f in folders} value={f.folder._key} selected={f.folder._key == page.folder_key}>{ pathName(f.path) }</option>
+                </select>
+              </div>
+              <div class="uk-width-1-4">
+                <a onclick={changePath} class="uk-button uk-button-primary">Change</a>
+              </div>
+            </div>
+          </form>
+        </virtual>
+
         <form onsubmit="{ save_form }" class="uk-form" id="form_page">
         </form>
         <a class="uk-button uk-button-primary" onclick="{ publish }">Publish</a>
@@ -229,10 +247,23 @@
     var self = this
     self.can_access = false
     self.loaded = false
+    self.folders = []
 
     save_form(e) {
       e.preventDefault()
       common.saveForm("form_page", "cruds/pages",opts.page_id)
+    }
+
+    changePath(e) {
+      e.preventDefault()
+      common.put(url + "/cruds/pages/" + opts.page_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+        UIkit.notification({
+            message : 'Successfully updated!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
     }
 
     duplicate(e) {
@@ -262,8 +293,15 @@
       })
     }
 
+    pathName(path) {
+      return _.map(path, function(d) { return d.name }).join(" > ")
+    }
+
+
     common.get(url + "/cruds/pages/" + opts.page_id, function(d) {
       self.page = d.data
+      self.folders = d.folders
+
       self.fields = d.fields
       self.sub_models = d.fields.sub_models
       var fields = d.fields

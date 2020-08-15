@@ -75,6 +75,22 @@
     <ul class="uk-switcher uk-margin">
       <li>
         <h3>Editing datatype</h3>
+        <virtual if={folders.length > 0}>
+          <label class="uk-label">Path</label>
+          <form onsubmit={changePath}>
+            <div class="uk-grid uk-grid-small">
+              <div class="uk-width-3-4">
+                <select class="uk-select" ref="folder">
+                  <option value={folders[0].root._key} selected={folders[0].root._key == datatype.folder_key}>Root</option>
+                  <option each={f in folders} value={f.folder._key} selected={f.folder._key == datatype.folder_key}>{ pathName(f.path) }</option>
+                </select>
+              </div>
+              <div class="uk-width-1-4">
+                <a onclick={changePath} class="uk-button uk-button-primary">Change</a>
+              </div>
+            </div>
+          </form>
+        </virtual>
         <form onsubmit="{ save_form }" class="uk-form" id="form_datatype">
         </form>
         <dataset_helper></dataset_helper>
@@ -127,9 +143,26 @@
       })
     }
 
+    pathName(path) {
+      return _.map(path, function(d) { return d.name }).join(" > ")
+    }
+
+    changePath(e) {
+      e.preventDefault()
+      common.put(url + "/cruds/datatypes/" + opts.datatype_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+        UIkit.notification({
+            message : 'Successfully updated!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+    }
+
     common.get(url + "/cruds/datatypes/" + opts.datatype_id, function(d) {
       self.datatype = d.data
       self.fields = d.fields
+      self.folders = d.folders
       self.sub_models = d.fields.sub_models
       var fields = d.fields
       var act_as_tree = d.fields.act_as_tree

@@ -130,7 +130,6 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
   `
 
   if(aql.indexOf("@lang") >= 0) folder_params.lang = req.headers['foxx-locale']
-  console.log(folder_params)
 
   var data = db._query(aql, _.merge({
       "@collection": req.pathParams.service,
@@ -138,6 +137,7 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
       "perpage": parseInt(req.pathParams.perpage)
     }, folder_params)
   ).toArray()
+
   res.send({
     model: models()[req.pathParams.service],
     data
@@ -172,11 +172,37 @@ router.get('/:service/search/:term', function (req, res) {
 // -----------------------------------------------------------------------------
 router.get('/:service/:id', function (req, res) {
   const collection = db._collection(req.pathParams.service)
-  res.send({ fields: models()[req.pathParams.service],
-             data: collection.document(req.pathParams.id) });
+  var folders = db._query(`
+    LET r = (FOR f IN folders FILTER f.object_type == @type AND f.is_root == true RETURN { _key: f._key, _id: f._id, name: f.name })[0]
+    FOR f IN folders FILTER f.is_root != true SORT f.name
+        LET path = (
+            FOR v IN ANY SHORTEST_PATH r._id TO f._id GRAPH "folderGraph"
+            RETURN { _key: v._key, name: v.name }
+        )
+        FILTER LENGTH(path) > 0
+        RETURN { folder: f, path, root: r }
+  `, { type: req.pathParams.service }).toArray()
+
+  res.send({
+    fields: models()[req.pathParams.service],
+    folders,
+    data: collection.document(req.pathParams.id)
+  });
 })
 .header('X-Session-Id')
 .description('Returns object within ID');
+// -----------------------------------------------------------------------------
+router.put('/:service/:id/change_folder', function (req, res) {
+  const collection = db._collection(req.pathParams.service)
+  var document = collection.document(req.pathParams.id)
+  collection.update(document, { folder_key: req.body.folder_key })
+})
+  .header('foxx-locale')
+  .header('X-Session-Id')
+  .body(joi.object({
+    folder_key: joi.string().required()
+  }).required())
+  .description('Update folder');
 // -----------------------------------------------------------------------------
 router.get('/:service/fields', function (req, res) {
   res.send({ fields: models()[req.pathParams.service] });
