@@ -43,7 +43,7 @@ describe('Trads', function () {
   })
 
   it('deletes a translation', function () {
-    cy.get('a[href="#trads"]').click()
+    cy.get('a[href="#datasets/trads"]').click()
     cy.contains('key1_edit').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

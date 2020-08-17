@@ -32,7 +32,7 @@ describe('Redirections', function () {
   })
 
   it('Creates new redirection', function () {
-    cy.get('a[href="#redirections"]').click()
+    cy.get('a[href="#datasets/redirections"]').click()
     cy.get('body').contains('New redirection').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/redirections\/new/)
     cy.get('#name').type('ntest redirect');
