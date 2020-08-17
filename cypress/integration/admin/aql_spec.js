@@ -15,7 +15,7 @@ describe('AQL', function () {
   it('Creates new aql', function () {
     cy.get('a[href="#datasets/aqls"]').click()
     cy.get('body').contains('New aql').click()
-    cy.url().should('match', /static\/admin\/index.html#aqls\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/aqls\/new/)
     cy.get('#slug').type('testaql');
     cy.get('#aql').then(elem => {
       elem.val('aql test function')
@@ -32,7 +32,7 @@ describe('AQL', function () {
     cy.contains('test').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#aqls\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/aqls\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing aql')
     cy.get('#slug').invoke('val').should('eq', 'testaql')
     cy.get('#slug').clear();

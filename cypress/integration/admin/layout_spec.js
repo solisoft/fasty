@@ -13,7 +13,7 @@ describe('Layouts', function () {
   })
 
   it('Creates new layout', function () {
-    cy.get('a[href="#layouts"]').click()
+    cy.get('a[href="#datasets/layouts"]').click()
     cy.get('body').contains('New layout').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/layouts\/new/)
     cy.get('#name').type('test layout');

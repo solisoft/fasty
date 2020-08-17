@@ -13,9 +13,9 @@ describe('Pages', function () {
   })
 
   it('Creates new page', function () {
-    cy.get('a[href="#pages"]').click()
+    cy.get('a[href="#datasets/pages"]').click()
     cy.get('body').contains('New page').click()
-    cy.url().should('match', /static\/admin\/index.html#datasets\/pages\/\d+\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/pages\/new\/\d+/)
     cy.get('#name').type('home page 1');
     cy.get('#slug').type('homepage1');
     cy.get('#raw_html').then(elem => {
@@ -48,6 +48,7 @@ describe('Pages', function () {
   })
 
   it('deletes a page', function () {
+    cy.get('a[href="#datasets/pages"]').click()
     cy.delete_page('home page edited')
   })
 })

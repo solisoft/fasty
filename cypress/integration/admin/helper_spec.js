@@ -9,7 +9,7 @@ describe('Helpers', function () {
     // create partial to be use by helper
     cy.get('a[href="#datasets/partials"]').click()
     cy.get('body').contains('New partial').click()
-    cy.url().should('match', /static\/admin\/index.html#partials\/\d+\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/partials\/new\/\d+/)
     cy.get('#name').type('main');
     cy.get('#slug').type('main');
     cy.get('#html').then(elem => {
@@ -23,7 +23,7 @@ describe('Helpers', function () {
 
     // create aql to be use by helper
     cy.get('a[href="#datasets/aqls"]').click()
-    cy.get('div[data-is="aqls"]').contains('New aql').click()
+    cy.get('body').contains('New aql').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/aqls\/new/)
     cy.get('#slug').type('helperaql');
     cy.get('#aql').then(elem => {
@@ -49,12 +49,12 @@ describe('Helpers', function () {
   it('Loads helper page', function () {
     cy.get('a[href="#datasets/helpers"]').click();
     cy.get('body').should('contain', 'Listing helpers')
-    cy.get('div[data-is="helpers"]').should('contain', 'New helper')
+    cy.get('body').should('contain', 'New helper')
   })
 
   it('Creates new helper', function () {
     cy.get('a[href="#datasets/helpers"]').click()
-    cy.get('div[data-is="helpers"]').contains('New helper').click()
+    cy.get('body').contains('New helper').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/helpers\/new/)
     cy.get('#shortcut').type('testhelper');
     cy.get('input[type="submit"]').click();

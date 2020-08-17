@@ -28,12 +28,12 @@ describe('Redirections', function () {
   it('Loads redirections page', function () {
     cy.get('a[href="#datasets/redirections"]').click();
     cy.get('body').should('contain', 'Listing redirections')
-    cy.get('div[data-is="redirections"]').should('contain', 'New redirection')
+    cy.get('body').should('contain', 'New redirection')
   })
 
   it('Creates new redirection', function () {
     cy.get('a[href="#redirections"]').click()
-    cy.get('div[data-is="redirections"]').contains('New redirection').click()
+    cy.get('body').contains('New redirection').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/redirections\/new/)
     cy.get('#name').type('ntest redirect');
     cy.get('#route').type('test redirect');

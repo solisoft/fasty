@@ -15,7 +15,7 @@ describe('Datatypes', function () {
   it('Creates new datatype', function () {
     cy.get('a[href="#datasets/datatypes"]').click()
     cy.get('body').contains(' New datatype').click()
-    cy.url().should('match', /static\/admin\/index.html#datasets\/datatypes\/\d+\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/datatypes\/new\/\d+/)
     cy.get('#name').type('Mailing');
     cy.get('#slug').type('mailing');
     cy.get('#javascript').then(elem => {
@@ -81,7 +81,7 @@ describe('Datatypes', function () {
       cy.get('i.fa-edit').click()
     })
     cy.url().should('match', /static\/admin\/index.html#datasets\/mailing-edited\/\d+\/edit/)
-    cy.get('body').should('contain', 'Editing mailing-edited')
+    cy.get('body').should('contain', 'Editing')
     cy.get('#title').invoke('val').should('eq', 'mail 1')
     cy.get('#title').clear();
     cy.get('#title').type('mail 1 edited');

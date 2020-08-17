@@ -15,7 +15,7 @@ describe('Partials', function () {
   it('Creates new partial', function () {
     cy.get('a[href="#datasets/partials"]').click()
     cy.get('body').contains('New partial').click()
-    cy.url().should('match', /static\/admin\/index.html#datasets\/partials\/\d+\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/partials\/new\/\d+/)
     cy.get('#name').type('test partial');
     cy.get('#slug').type('testpartial');
     cy.get('#html').then(elem => {
