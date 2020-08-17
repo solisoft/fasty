@@ -7,7 +7,7 @@ describe('Redirections', function () {
     cy.login()
     // create layout to be use by redirection
     cy.get('a[href="#datasets\/layouts"]').click()
-    cy.get('div[data-is="layouts"]').contains('New layout').click()
+    cy.get('body').contains('New layout').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/layouts\/new/)
     cy.get('#name').type('rhome layout');
     cy.get('#html').then(elem => {

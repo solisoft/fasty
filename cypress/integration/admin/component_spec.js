@@ -9,12 +9,12 @@ describe('Components', function () {
   it('Loads components page', function () {
     cy.get('a[href="#datasets/components"]').click();
     cy.get('body').should('contain', 'Listing components')
-    cy.get('div[data-is="components"]').should('contain', 'New component')
+    cy.get('body').should('contain', 'New component')
   })
 
   it('Creates new component', function () {
     cy.get('a[href="#datasets/components"]').click()
-    cy.get('div[data-is="components"]').contains('New component').click()
+    cy.get('body').contains('New component').click()
     cy.url().should('match', /static\/admin\/index.html#components\/\d+\/new/)
     cy.get('#name').type('test component');
     cy.get('#slug').type('testcomponent');

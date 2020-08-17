@@ -9,12 +9,12 @@ describe('Scripts', function () {
   it('Loads script page', function () {
     cy.get('a[href="#datasets/scripts"]').click();
     cy.get('body').should('contain', 'Listing scripts')
-    cy.get('div[data-is="scripts"]').should('contain', 'New script')
+    cy.get('body').should('contain', 'New script')
   })
 
   it('Creates new script', function () {
     cy.get('a[href="#datasets/scripts"]').click()
-    cy.get('div[data-is="scripts"]').contains('New script').click()
+    cy.get('body').contains('New script').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/scripts\/new/)
     cy.get('#name').type('testscript')
     cy.get('#package').then(elem => {

@@ -9,12 +9,12 @@ describe('AQL', function () {
   it('Loads AQL page', function () {
     cy.get('a[href="#datasets/aqls"]').click();
     cy.get('body').should('contain', 'Listing aqls')
-    cy.get('div[data-is="aqls"]').should('contain', 'New aql')
+    cy.get('body').should('contain', 'New aql')
   })
 
   it('Creates new aql', function () {
     cy.get('a[href="#datasets/aqls"]').click()
-    cy.get('div[data-is="aqls"]').contains('New aql').click()
+    cy.get('body').contains('New aql').click()
     cy.url().should('match', /static\/admin\/index.html#aqls\/new/)
     cy.get('#slug').type('testaql');
     cy.get('#aql').then(elem => {

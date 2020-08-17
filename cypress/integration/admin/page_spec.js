@@ -9,12 +9,12 @@ describe('Pages', function () {
   it('Loads pages editor', function () {
     cy.get('a[href="#datasets/pages"]').click();
     cy.get('body').should('contain', 'Listing pages')
-    cy.get('div[data-is="pages"]').should('contain', 'New page')
+    cy.get('body').should('contain', 'New page')
   })
 
   it('Creates new page', function () {
     cy.get('a[href="#pages"]').click()
-    cy.get('div[data-is="pages"]').contains('New page').click()
+    cy.get('body').contains('New page').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/pages\/\d+\/new/)
     cy.get('#name').type('home page 1');
     cy.get('#slug').type('homepage1');

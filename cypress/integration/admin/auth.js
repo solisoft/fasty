@@ -8,7 +8,7 @@ describe('Auth', function () {
   })
 
   it('Test partials & widgets', function () {
-    cy.get('a[data-cy="partials"]').click();
+    cy.get('body').click();
     cy.get('body').should('contain', 'Listing partials')
     cy.url().should('eq', host + '/static/admin/index.html#partials')
     cy.contains('New partial').click()

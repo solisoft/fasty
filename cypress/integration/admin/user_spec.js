@@ -15,12 +15,12 @@ describe('Users', function () {
   it('Loads users page', function () {
     cy.get('a[href="#datasets/users"]').click();
     cy.get('body').should('contain', 'Listing users')
-    cy.get('div[data-is="users"]').should('contain', 'New user')
+    cy.get('body').should('contain', 'New user')
   })
 
   it('Creates new user', function () {
     cy.get('a[href="#datasets/users"]').click()
-    cy.get('div[data-is="users"]').contains('New user').click()
+    cy.get('body').contains('New user').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/users\/new/)
     cy.get('#fn').type('test');
     cy.get('#ln').type('user');

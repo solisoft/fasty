@@ -9,12 +9,12 @@ describe('API', function () {
   it('Loads api page', function () {
     cy.get('a[href="#datasets/apis"]').click();
     cy.get('body').should('contain', 'Listing apis')
-    cy.get('div[data-is="apis"]').should('contain', 'New api')
+    cy.get('body').should('contain', 'New api')
   })
 
   it('Creates new api', function () {
     cy.get('a[href="#datasets/apis"]').click()
-    cy.get('div[data-is="apis"]').contains('New api').click()
+    cy.get('body').contains('New api').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/apis\/new/)
     cy.get('#name').type('testapi');
     cy.get('#manifest').then(elem => {

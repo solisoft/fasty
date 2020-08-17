@@ -9,12 +9,12 @@ describe('Layouts', function () {
   it('Loads layouts page', function () {
     cy.get('a[href="#datasets/layouts"]').click();
     cy.get('body').should('contain', 'Listing layouts')
-    cy.get('div[data-is="layouts"]').should('contain', 'New layout')
+    cy.get('body').should('contain', 'New layout')
   })
 
   it('Creates new layout', function () {
     cy.get('a[href="#layouts"]').click()
-    cy.get('div[data-is="layouts"]').contains('New layout').click()
+    cy.get('body').contains('New layout').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/layouts\/new/)
     cy.get('#name').type('test layout');
     cy.get('#html').then(elem => {

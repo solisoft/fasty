@@ -9,12 +9,12 @@ describe('Datatypes', function () {
   it('Loads datatypes page', function () {
     cy.get('a[href="#datasets/datatypes"]').click();
     cy.get('body').should('contain', 'Listing datatypes')
-    cy.get('div[data-is="datatypes"]').should('contain', ' New datatype')
+    cy.get('body').should('contain', ' New datatype')
   })
 
   it('Creates new datatype', function () {
     cy.get('a[href="#datasets/datatypes"]').click()
-    cy.get('div[data-is="datatypes"]').contains(' New datatype').click()
+    cy.get('body').contains(' New datatype').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/datatypes\/\d+\/new/)
     cy.get('#name').type('Mailing');
     cy.get('#slug').type('mailing');

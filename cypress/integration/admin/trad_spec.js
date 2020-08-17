@@ -10,12 +10,12 @@ describe('Trads', function () {
   it('Loads translation page', function () {
     cy.get('a[href="#datasets/trads"]').click();
     cy.get('body').should('contain', 'Listing trads')
-    cy.get('div[data-is="trads"]').should('contain', 'New trad')
+    cy.get('body').should('contain', 'New trad')
   })
 
   it('Creates new translation', function () {
     cy.get('a[href="#datasets/trads"]').click()
-    cy.get('div[data-is="trads"]').contains('New trad').click()
+    cy.get('body').contains('New trad').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/trads\/new/)
     cy.get('#key').type('key1');
     cy.get('#value').type('translation');

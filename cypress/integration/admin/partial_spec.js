@@ -9,12 +9,12 @@ describe('Partials', function () {
   it('Loads partials page', function () {
     cy.get('a[href="#datasets/partials"]').click();
     cy.get('body').should('contain', 'Listing partials')
-    cy.get('div[data-is="partials"]').should('contain', 'New partial')
+    cy.get('body').should('contain', 'New partial')
   })
 
   it('Creates new partial', function () {
     cy.get('a[href="#datasets/partials"]').click()
-    cy.get('div[data-is="partials"]').contains('New partial').click()
+    cy.get('body').contains('New partial').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/partials\/\d+\/new/)
     cy.get('#name').type('test partial');
     cy.get('#slug').type('testpartial');

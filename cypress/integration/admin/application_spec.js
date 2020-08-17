@@ -9,12 +9,12 @@ describe('Applications', function () {
   it('applications page', function () {
     cy.get('a[href="#datasets/spas"]').click();
     cy.get('body').should('contain', 'Listing spas')
-    cy.get('div[data-is="spas"]').should('contain', 'New spa')
+    cy.get('body').should('contain', 'New spa')
   })
 
   it('Creates new application', function () {
     cy.get('a[href="#datasets/spas"]').click()
-    cy.get('div[data-is="spas"]').contains('New spa').click()
+    cy.get('body').contains('New spa').click()
     cy.url().should('match', /static\/admin\/index.html#datasets\/spas\/new/)
     cy.get('#name').type('test application');
     cy.get('#html').then(elem => {

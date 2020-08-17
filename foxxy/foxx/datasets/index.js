@@ -3,6 +3,8 @@
 const db = require('@arangodb').db;
 const joi = require('joi');
 const _ = require('lodash');
+const createAuth = require('@arangodb/foxx/auth');
+const auth = createAuth();
 const createRouter = require('@arangodb/foxx/router');
 const sessionsMiddleware = require('@arangodb/foxx/sessions');
 const jwtStorage = require('@arangodb/foxx/sessions/storages/jwt');
@@ -79,6 +81,10 @@ var fieldsToData = function(fields, body, headers) {
         } else {
           if (f.t == "boolean") data[f.n] = true
           else data[f.n] = typeCast(f.t, body[f.n])
+          if(f.t == "password" || f.t == "password_confirmation") {
+            data.authData = auth.create(body[f.n])
+            delete data[f.n]
+          }
         }
       }
     } else {

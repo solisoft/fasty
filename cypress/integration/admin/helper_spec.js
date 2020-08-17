@@ -8,7 +8,7 @@ describe('Helpers', function () {
 
     // create partial to be use by helper
     cy.get('a[href="#datasets/partials"]').click()
-    cy.get('div[data-is="partials"]').contains('New partial').click()
+    cy.get('body').contains('New partial').click()
     cy.url().should('match', /static\/admin\/index.html#partials\/\d+\/new/)
     cy.get('#name').type('main');
     cy.get('#slug').type('main');
