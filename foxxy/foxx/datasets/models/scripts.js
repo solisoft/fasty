@@ -6,9 +6,10 @@ const model = function() {
         { r: true, c: "1-1", n: "code", t: "code:javascript", j: "joi.string().required()", l: "Javascript" }
     ],
     collection: "scripts",
+    is_script: true,
     columns: [{ name: "name" }],
     sort: "SORT doc.name ASC",
-    timestamps: true,
+    timestamps: true
   }
 }
 module.exports = model

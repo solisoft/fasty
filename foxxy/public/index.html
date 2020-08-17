@@ -33,22 +33,22 @@
           <div class="rightnav uk-card uk-card-default uk-card-body">
             <ul class="uk-nav-default" uk-nav>
               <li class="uk-nav-header">Settings</li>
-              <li><a href="#layouts">Layouts</a></li>
-              <li><a href="#partials" data-cy="partials">Partials</a></li>
-              <li><a href="#components">Components</a></li>
-              <li><a href="#spas">Applications</a></li>
-              <li><a href="#redirections">Redirections</a></li>
-              <li><a href="#datatypes">Datatypes</a></li>
+              <li><a href="#datasets/layouts">Layouts (ds)</a></li>
+              <li><a href="#datasets/partials">Partials</a></li>
+              <li><a href="#datasets/components">Components</a></li>
+              <li><a href="#datasets/spas">Applications</a></li>
+              <li><a href="#datasets/redirections">Redirections</a></li>
+              <li><a href="#datasets/datatypes">Datatypes</a></li>
               <li><a href="#settings">Settings</a></li>
-              <li><a href="#users">Users</a></li>
-              <li><a href="#aqls">AQLs</a></li>
-              <li><a href="#helpers">Helpers</a></li>
-              <li><a href="#apis">APIs</a></li>
-              <li><a href="#scripts">Scripts</a></li>
+              <li><a href="#datasets/users">Users</a></li>
+              <li><a href="#datasets/aqls">AQLs</a></li>
+              <li><a href="#datasets/helpers">Helpers</a></li>
+              <li><a href="#datasets/apis">APIs</a></li>
+              <li><a href="#datasets/scripts">Scripts</a></li>
               <!-- item_menu -->
               <li class="uk-nav-header">Content</li>
-              <li><a href="#pages">Pages</a></li>
-              <li><a href="#trads">Trads</a></li>
+              <li><a href="#datasets/pages">Pages</a></li>
+              <li><a href="#datasets/trads">Trads</a></li>
             </ul>
 
           </div>
@@ -95,22 +95,7 @@
       common.init()
 
       require('widgets/loading.html.tag')
-      require('widgets/layouts.html.tag')
-      require('widgets/uploads.html.tag')
-      require('widgets/pages.html.tag')
-      require('widgets/partials.html.tag')
-      require('widgets/components.html.tag')
-      require('widgets/spas.html.tag')
-      require('widgets/redirections.html.tag')
-      require('widgets/trads.html.tag')
       require('widgets/settings.html.tag')
-      require('widgets/datatypes.html.tag')
-      require('widgets/users.html.tag')
-      require('widgets/aqls.html.tag')
-      require('widgets/helpers.html.tag')
-      require('widgets/apis.html.tag')
-      require('widgets/scripts.html.tag')
-      /*@{{riot_components}}*/
       require('widgets/datasets.html.tag')
 
       require('js/js.js')

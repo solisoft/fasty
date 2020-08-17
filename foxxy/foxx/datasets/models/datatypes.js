@@ -18,40 +18,8 @@ const model = function() {
       read: ['developer', 'admin'],
       write: ['developer', 'admin']
     },
-    //  { name: "title", tr: true, class: "uk-text-right", toggle: true,
-    //    values: { true: "online", false: "offline" },
-    //    truncate: 20, uppercase: true, lowercase: true
-    //  }, ...
-    //],
-    //slug: ["title"],
     act_as_tree: true,
-    //sortable: false,
-    sort: "SORT doc.name ASC",
-    //search: ["title", "barcode", "desc"],
-    //includes: {
-    //  conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
-    //  merges: ", customer: c "
-    //},
-    //timestamps: true,
-    //
-    // 1-n relations
-    // Don't forget to create your collection in setup.js
-    //sub_models: {
-    //  authors: {
-    //    fields: [
-    //      { r: true, c: "1-1", n: "post_id", t: "hidden", j: joi.string().required(), l: "Post ID" },
-    //      { r: true, c: "1-1", n: "name", t: "string", j: joi.string().required(), l: "Name" },
-    //    ],
-    //    singular: "author",
-    //    key: "post_id",
-    //    columns: [{ name: "name", tr: false, class: ""}, ...], // Displayed on listing
-    //    includes: {
-    //      conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
-    //      merges: "customer: c "
-    //    },
-    //    timestamps: true,
-    //  },
-    //}
+    sort: "SORT doc.name ASC"
   }
 }
 module.exports = model

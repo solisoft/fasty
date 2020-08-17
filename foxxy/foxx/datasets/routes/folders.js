@@ -17,7 +17,7 @@ module.context.use(function (req, res, next) {
 })
 
 ////////////////////////////////////////////////////////////////////////////////
-// GET /cruds/folders/:type
+// GET /datasets/folders/:type
 router.get('/:type', function (req, res) {
   var root = db.folders.firstExample({
     is_root: true, object_type: req.pathParams.type
@@ -40,7 +40,7 @@ router.get('/:type', function (req, res) {
   .description('Get Root Folder');
 
 ////////////////////////////////////////////////////////////////////////////////
-// GET /cruds/folders/:type
+// GET /datasets/folders/:type
 router.get('/:type/:parent', function (req, res) {
   var root = db.folders.firstExample({
     is_root: true, object_type: req.pathParams.type
@@ -61,7 +61,7 @@ router.get('/:type/:parent', function (req, res) {
   .description('Get Root Folder');
 
 ////////////////////////////////////////////////////////////////////////////////
-// POST /cruds/folders/:type
+// POST /datasets/folders/:type
 router.post('/:type', function (req, res) {
   var folder = db.folders.save({
     name: req.body.name
@@ -81,7 +81,7 @@ router.post('/:type', function (req, res) {
   .description('Create a new Folder');
 
 ////////////////////////////////////////////////////////////////////////////////
-// PATCH /cruds/folders/:type
+// PATCH /datasets/folders/:type
 router.patch('/:type', function (req, res) {
   var root = db.folders.firstExample({
     is_root: true, object_type: req.pathParams.type
@@ -103,7 +103,7 @@ router.patch('/:type', function (req, res) {
   .description('Update a Folder');
 
   ////////////////////////////////////////////////////////////////////////////////
-// DELETE /cruds/folders/:type
+// DELETE /datasets/folders/:type
 router.delete('/:type/:key', function (req, res) {
   db.folders.removeByExample({ _key: req.pathParams.key })
   db.folder_path.removeByExample({ _from: 'folders/' + req.pathParams.key })

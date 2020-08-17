@@ -1,11 +1,8 @@
-const db = require('@arangodb').db
-
 const model = function () {
-  var layouts = db._query(`FOR doc in layouts RETURN [doc._id, doc.name]`).toArray()
   return {
     model: [
       { r: true, c: "3-4", n: "name", t: "string", j: "joi.string().required()", l: "Name", tr: true },
-      { r: false, c: "1-4", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: layouts },
+      { r: false, c: "1-4", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: "FOR doc in layouts RETURN [doc._id, doc.name]" },
       { r: true, c: "1-1", n: "slug", t: "string", j: "joi.string().required()", l: "Slug", tr: true },
       { r: true, c: "1-1", n: "raw_html", t: "code:html", j: "joi.any()", l: "HTML", tr: true },
       { r: true, c: "1-1", n: "html", t: "html", j: "joi.any()", l: "Content", tr: true },
@@ -27,39 +24,12 @@ const model = function () {
       { name: "online", toggle: true, values: { true: "online", false: "offline" } },
       { name: "published_at" },
     ],
-    //slug: ["title"],
     roles: {
       read: ['editor', 'developer', 'admin'],
       write: ['editor', 'developer', 'admin']
     },
     act_as_tree: true,
-    //sortable: true,
-    sort: "SORT doc.name[@lang] ASC",
-    //search: ["title", "barcode", "desc"],
-    //includes: {
-    //  conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
-    //  merges: ", customer: c "
-    //},
-    //timestamps: true,
-    //
-    // 1-n relations
-    // Don't forget to create your collection in setup.js
-    //sub_models: {
-    //  authors: {
-    //    fields: [
-    //      { r: true, c: "1-1", n: "post_id", t: "hidden", j: joi.string().required(), l: "Post ID" },
-    //      { r: true, c: "1-1", n: "name", t: "string", j: joi.string().required(), l: "Name" },
-    //    ],
-    //    singular: "author",
-    //    key: "post_id",
-    //    columns: [{ name: "name", tr: false, class: ""}, ...], // Displayed on listing
-    //    includes: {
-    //      conditions: "FOR c IN customers FILTER c._key == doc.customer_key",
-    //      merges: "customer: c "
-    //    },
-    //    timestamps: true,
-    //  },
-    //}
+    sort: "SORT doc.name[@lang] ASC"
   }
 }
 module.exports = model

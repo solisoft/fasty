@@ -20,7 +20,7 @@
     var self = this
 
     var loadFolder = function(folder_key) {
-      common.get(url + "/cruds/folders/datasets_" + opts.slug + "/" + folder_key, function(d) {
+      common.get(url + "/datasets/folders/" + opts.slug + "/" + folder_key, function(d) {
         self.folders = d.folders
         self.path = d.path
         self.folder = _.last(self.path)
@@ -31,14 +31,14 @@
 
     addFolder(e) {
       var name = prompt("Folder's name");
-      common.post(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
+      common.post(url + "/datasets/folders/" + opts.slug, JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
         loadFolder(self.folder._key)
       })
     }
 
     renameFolder(e) {
       var name = prompt("Update Folder's name");
-      common.patch(url + "/cruds/folders/datasets_" + opts.slug, JSON.stringify({ name: name, id: self.folder._key }), function(d) {
+      common.patch(url + "/datasets/folders/" + opts.slug, JSON.stringify({ name: name, id: self.folder._key }), function(d) {
         self.path = d.path
         self.update()
       })
@@ -47,8 +47,8 @@
     deleteFolder(e) {
       UIkit.modal.confirm('Are you sure? This action will destroy the folder and it\'s content').then(function() {
         var parent = _.last(_.initial(self.path))
-        common.delete(url + "/cruds/folders/datasets_" + opts.slug + "/" + self.folder._key, function(d) {
-          common.get(url + "/cruds/folders/datasets_" + opts.slug + "/" + parent._key, function(d) {
+        common.delete(url + "/datasets/folders/" + opts.slug + "/" + self.folder._key, function(d) {
+          common.get(url + "/datasets/folders/" + opts.slug + "/" + parent._key, function(d) {
             route("/datasets/" + opts.slug + "/" + parent._key)
           })
         })
@@ -143,7 +143,7 @@
     destroy_object(e) {
       e.preventDefault()
       UIkit.modal.confirm("Are you sure?").then(function() {
-        common.delete(url + "/datasets/datasets/" + e.item.row._key, function() {
+        common.delete(url + "/datasets/" + opts.parent_name + "/" + opts.model +"/" + e.item.row._key, function() {
           self.loadPage(1)
         })
       }, function() {})
@@ -255,6 +255,23 @@
     <ul class="uk-switcher uk-margin">
       <li>
         <h3>Editing {opts.datatype}</h3>
+        <virtual if={folders.length > 0}>
+          <label class="uk-label">Path</label>
+          <form onsubmit={changePath}>
+            <div class="uk-grid uk-grid-small">
+              <div class="uk-width-3-4">
+                <select class="uk-select" ref="folder">
+                  <option value={folders[0].root._key} selected={folders[0].root._key == page.folder_key}>Root</option>
+                  <option each={f in folders} value={f.folder._key} selected={f.folder._key == page.folder_key}>{ pathName(f.path) }</option>
+                </select>
+              </div>
+              <div class="uk-width-1-4">
+                <a onclick={changePath} class="uk-button uk-button-primary">Change</a>
+              </div>
+            </div>
+          </form>
+        </virtual>
+
         <form onsubmit="{ save_form }" class="uk-form" id="form_dataset">
         </form>
         <a if={publishable} class="uk-button uk-button-primary" onclick="{ publish }">Publish</a>
@@ -275,6 +292,19 @@
     self.loaded = false
     self.sub_models = []
     self.publishable = false
+    self.folders = []
+
+    changePath(e) {
+      e.preventDefault()
+      common.put(url + "/datasets/pages/" + opts.page_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+        UIkit.notification({
+            message : 'Successfully updated!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+    }
 
     save_form(e) {
       e.preventDefault()
@@ -311,6 +341,7 @@
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
       self.publishable = d.model.publishable
       self.dataset = d.data
+      self.folders = d.folders
       self.fields = d.fields
       self.sub_models = d.model.sub_models
       var act_as_tree = d.model.act_as_tree
@@ -452,8 +483,10 @@
               </virtual>
             </virtual>
           </td>
-          <td class="uk-text-center" width="110">
+          <td class="uk-text-center" width="160">
             <a onclick={edit} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a>
+            <a if={is_api} onclick={install} class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a>
+            <a if={is_script} onclick={install_script} class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a>
             <a onclick={destroy_object} class="uk-button uk-button-danger uk-button-small" ><i class="fas fa-trash-alt"></i></a>
           </td>
         </tr>
@@ -489,6 +522,10 @@
     this.folder     = {}
     this.act_as_tree = true
 
+    this.settings   = {}
+
+    common.get(url + "/settings", function(settings) { self.settings = settings.data })
+
     this.loadPage = function(pageIndex) {
       self.loaded = false
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
@@ -497,6 +534,8 @@
         self.data = d.data[0].data
         var model = d.model
         self.act_as_tree = model.act_as_tree
+        self.is_api = !!model.is_api
+        self.is_script = !!model.is_script
         if(model.stats_for_tag) {
           self.show_stats = true
           self.show_stats_tag = model.stats_for_tag
@@ -614,6 +653,40 @@
         link.click()
         document.body.removeChild(link)
       })
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    install(e) {
+      e.preventDefault()
+      var url = "/service/" + e.item.row.name
+      console.log(url)
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "service installed")
+          UIkit.notification({
+            message : 'Endpoint Deployed Successfully!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+      return false
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    install_script(e) {
+      e.preventDefault()
+      var url = "/script/" + e.item.row.name
+      console.log(url)
+      $.post(url, { token: self.settings.token }, function(data) {
+        if(data == "script installed")
+          UIkit.notification({
+            message : 'Script Launched Successfully!',
+            status  : 'success',
+            timeout : 1000,
+            pos     : 'bottom-right'
+          });
+      })
+      return false
     }
 
     ////////////////////////////////////////////////////////////////////////////

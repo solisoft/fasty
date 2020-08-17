@@ -7,6 +7,7 @@ const model = function() {
       { r: true, c: "1-1", n: "code", t: "code:javascript", j: "joi.string().required()", l: "Main.js" }
     ],
     collection: "apis",
+    is_api: true,
     columns: [{ name: "name" }],
     sub_models: {
       api_routes: {
@@ -15,6 +16,7 @@ const model = function() {
           { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().regex((/^[a-z0-9\-]+$/)).required()", l: "Name" },
           { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.string().required()", l: "Code Javascript" },
         ],
+        collection: "api_routes",
         singular: "api_route",
         key: "api_id",
         columns: [{ name: "name" }]
@@ -26,6 +28,7 @@ const model = function() {
           { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().regex((/^[a-z0-9\-]+$/)).required()", l: "Name" },
           { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.string().required()", l: "Code Javascript" },
         ],
+        collection: "api_libs",
         singular: "api_lib",
         key: "api_id",
         columns: [{ name: "name" }]
@@ -37,6 +40,7 @@ const model = function() {
           { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().regex((/^[a-z0-9\-]+$/)).required()", l: "Name" },
           { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.string().required()", l: "Code Javascript" },
         ],
+        collection: "api_scripts",
         singular: "api_script",
         key: "api_id",
         columns: [{ name: "name" }]
@@ -48,6 +52,7 @@ const model = function() {
           { r: true, c: "1-1", n: "name", t: "string", j: "joi.string().regex((/^[a-z0-9\-]+$/)).required()", l: "Name" },
           { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.string().required()", l: "Code Javascript" },
         ],
+        collection: "api_tests",
         singular: "api_test",
         key: "api_id",
         columns: [{ name: "name" }]
