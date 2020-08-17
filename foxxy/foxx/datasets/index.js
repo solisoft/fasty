@@ -169,10 +169,10 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
   }, folder_params)
 
   var aql = `
-  LET count = LENGTH((FOR doc IN @@collection FILTER doc.type == @datatype ${folder} RETURN 1))
+  LET count = LENGTH((FOR doc IN @@collection FILTER doc.is_system != true AND doc.type == @datatype ${folder} RETURN 1))
   LET data = (
     FOR doc IN @@collection
-      FILTER doc.type == @datatype
+      FILTER doc.is_system != true AND doc.type == @datatype
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
       ${folder} ${order} ${includes}
       LIMIT @offset, @perpage
