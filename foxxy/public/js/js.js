@@ -634,8 +634,8 @@ module.exports = Common;
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
   ".fasty.ovh": "/_db",
-  ".inseytel.com": "https://inseytel.com/_db",
-  "epic20.world": "/_db"
+  ".inseytel.com": "https://app.inseytel.com/_db/",
+  "dev.epic20.world": "/_db"
 };
 
 module.exports = Config;
@@ -2760,7 +2760,6 @@ riot.tag2('dataset_crud_new', '<a href="#" class="uk-button uk-button-link" oncl
     }.bind(this)
 });
 
-
 riot.tag2('all_datatypes', '<div class="rightnav uk-card uk-card-default uk-card-body"> <ul class="uk-nav-default uk-nav-parent-icon" uk-nav> <li class="uk-nav-header">Datasets</li> <li each="{datatypes}"><a href="#datasets/{slug}">{name}</a></li> </ul> </div>', '', '', function(opts) {
     var self = this
     this.datatypes = []
@@ -3044,8 +3043,6 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
       }
     })
 });
-
-
 });
 
 require.register("widgets/datatypes.html.tag", function(exports, require, module) {

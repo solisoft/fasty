@@ -105,7 +105,12 @@ module.context.use(function (req, res, next) {
 ////////////////////////////////////////////////////////////////////////////////
 // GET /datasets/datatypes
 router.get('/datatypes', function (req, res) {
-  res.send(db._query(`FOR doc IN datatypes SORT doc.name RETURN { name: doc.name, slug: doc.slug }`))
+  res.send(db._query(`
+    FOR doc IN datatypes
+    FILTER doc.is_system != true
+    SORT doc.name
+    RETURN { name: doc.name, slug: doc.slug }
+  `))
 })
 .header('X-Session-Id')
 .description('Returns all datatypes');

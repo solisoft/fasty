@@ -225,7 +225,6 @@
   </script>
 </dataset_crud_new>
 
-
 <all_datatypes>
   <div class="rightnav uk-card uk-card-default uk-card-body">
     <ul class="uk-nav-default uk-nav-parent-icon" uk-nav>
@@ -639,4 +638,3 @@
     })
   </script>
 </datasets>
-
