@@ -7,15 +7,15 @@ describe('Applications', function () {
   })
 
   it('applications page', function () {
-    cy.get('a[href="#spas"]').click();
+    cy.get('a[href="#datasets/spas"]').click();
     cy.get('body').should('contain', 'Listing spas')
     cy.get('div[data-is="spas"]').should('contain', 'New spa')
   })
 
   it('Creates new application', function () {
-    cy.get('a[href="#spas"]').click()
+    cy.get('a[href="#datasets/spas"]').click()
     cy.get('div[data-is="spas"]').contains('New spa').click()
-    cy.url().should('match', /static\/admin\/index.html#spas\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/spas\/new/)
     cy.get('#name').type('test application');
     cy.get('#html').then(elem => {
       elem.val('<html>sample test application</html>')
@@ -31,11 +31,11 @@ describe('Applications', function () {
   })
 
   it('Edits an application', function () {
-    cy.get('a[href="#spas"]').click()
+    cy.get('a[href="#datasets/spas"]').click()
     cy.contains('test application').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#spas\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/spas\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing spa')
     cy.get('#name').invoke('val').should('eq', 'test application')
     cy.get('#name').clear();
@@ -53,7 +53,7 @@ describe('Applications', function () {
   })
 
   it('deletes an application', function () {
-    cy.get('a[href="#spas"]').click()
+    cy.get('a[href="#datasets/spas"]').click()
     cy.contains('test application edited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

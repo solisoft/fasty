@@ -9,6 +9,7 @@ const model = function() {
 
     ],
     collection: "datatypes",
+    singular: "datatype",
     columns: [
       { name: "name" },
       { name: "slug" },

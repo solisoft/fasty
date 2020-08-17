@@ -7,6 +7,7 @@ const model = function() {
       { r: true, c: "1-1", n: "code", t: "code:javascript", j: "joi.string().required()", l: "Main.js" }
     ],
     collection: "apis",
+    sinigular: "api",
     is_api: true,
     columns: [{ name: "name" }],
     sub_models: {

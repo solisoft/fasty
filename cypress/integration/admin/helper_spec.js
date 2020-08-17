@@ -7,7 +7,7 @@ describe('Helpers', function () {
     cy.login()
 
     // create partial to be use by helper
-    cy.get('a[href="#partials"]').click()
+    cy.get('a[href="#datasets/partials"]').click()
     cy.get('div[data-is="partials"]').contains('New partial').click()
     cy.url().should('match', /static\/admin\/index.html#partials\/\d+\/new/)
     cy.get('#name').type('main');
@@ -22,9 +22,9 @@ describe('Helpers', function () {
     cy.get('td').should('contain', 'main')
 
     // create aql to be use by helper
-    cy.get('a[href="#aqls"]').click()
+    cy.get('a[href="#datasets/aqls"]').click()
     cy.get('div[data-is="aqls"]').contains('New aql').click()
-    cy.url().should('match', /static\/admin\/index.html#aqls\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/aqls\/new/)
     cy.get('#slug').type('helperaql');
     cy.get('#aql').then(elem => {
       elem.val('aql test function')
@@ -47,15 +47,15 @@ describe('Helpers', function () {
   })
 
   it('Loads helper page', function () {
-    cy.get('a[href="#helpers"]').click();
+    cy.get('a[href="#datasets/helpers"]').click();
     cy.get('body').should('contain', 'Listing helpers')
     cy.get('div[data-is="helpers"]').should('contain', 'New helper')
   })
 
   it('Creates new helper', function () {
-    cy.get('a[href="#helpers"]').click()
+    cy.get('a[href="#datasets/helpers"]').click()
     cy.get('div[data-is="helpers"]').contains('New helper').click()
-    cy.url().should('match', /static\/admin\/index.html#helpers\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/helpers\/new/)
     cy.get('#shortcut').type('testhelper');
     cy.get('input[type="submit"]').click();
     cy.reload()
@@ -65,11 +65,11 @@ describe('Helpers', function () {
   })
 
   it('Edits helper', function () {
-    cy.get('a[href="#helpers"]').click()
+    cy.get('a[href="#datasets/helpers"]').click()
     cy.contains('test').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#helpers\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/helpers\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing helper')
     cy.get('#shortcut').invoke('val').should('eq', 'testhelper')
     cy.get('#shortcut').clear();
@@ -81,7 +81,7 @@ describe('Helpers', function () {
   })
 
   it('deletes an helper', function () {
-    cy.get('a[href="#helpers"]').click()
+    cy.get('a[href="#datasets/helpers"]').click()
     cy.contains('testhelperedited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

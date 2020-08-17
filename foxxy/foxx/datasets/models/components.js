@@ -10,6 +10,7 @@ const model = function() {
       { name: "slug" }
     ],
     collection: "components",
+    singular: "component",
     roles: {
       read: ['designer', 'developer', 'admin'],
       write: ['designer', 'developer', 'admin']

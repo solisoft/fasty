@@ -7,15 +7,15 @@ describe('Scripts', function () {
   })
 
   it('Loads script page', function () {
-    cy.get('a[href="#scripts"]').click();
+    cy.get('a[href="#datasets/scripts"]').click();
     cy.get('body').should('contain', 'Listing scripts')
     cy.get('div[data-is="scripts"]').should('contain', 'New script')
   })
 
   it('Creates new script', function () {
-    cy.get('a[href="#scripts"]').click()
+    cy.get('a[href="#datasets/scripts"]').click()
     cy.get('div[data-is="scripts"]').contains('New script').click()
-    cy.url().should('match', /static\/admin\/index.html#scripts\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/scripts\/new/)
     cy.get('#name').type('testscript')
     cy.get('#package').then(elem => {
       elem.val('package.json')
@@ -31,11 +31,11 @@ describe('Scripts', function () {
   })
 
   it('Edits script', function () {
-    cy.get('a[href="#scripts"]').click()
+    cy.get('a[href="#datasets/scripts"]').click()
     cy.contains('test').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#scripts\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/scripts\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing script')
     cy.get('#name').invoke('val').should('eq', 'testscript')
     cy.get('#name').clear();
@@ -47,7 +47,7 @@ describe('Scripts', function () {
   })
 
   it('deletes an script', function () {
-    cy.get('a[href="#scripts"]').click()
+    cy.get('a[href="#datasets/scripts"]').click()
     cy.contains('testscriptedited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

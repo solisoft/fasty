@@ -254,7 +254,7 @@
 
     <ul class="uk-switcher uk-margin">
       <li>
-        <h3>Editing {opts.datatype}</h3>
+        <h3>Editing {object.singular}</h3>
         <virtual if={folders.length > 0}>
           <label class="uk-label">Path</label>
           <form onsubmit={changePath}>
@@ -340,6 +340,7 @@
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
       self.publishable = d.model.publishable
+      self.object = d.model
       self.dataset = d.data
       self.folders = d.folders
       self.fields = d.fields
@@ -379,7 +380,7 @@
 
 <dataset_new>
   <virtual if={can_access}>
-    <h3>Creating {opts.datatype}</h3>
+    <h3>Creating {object.singular}</h3>
     <form onsubmit="{ save_form }" class="uk-form" id="form_new_dataset">
     </form>
   </virtual>
@@ -397,6 +398,7 @@
     }
 
     common.get(url + "/datasets/"+ opts.datatype + "/fields", function(d) {
+      self.object = d.object
       common.get(url + "/auth/whoami", function(me) {
         localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
@@ -442,8 +444,8 @@
   <dataset_folders show={loaded} if={act_as_tree} folder_key={folder_key} slug={opts.datatype} />
   <virtual if={can_access}>
     <div class="uk-float-right">
-      <a if={act_as_tree} href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a>
-      <a if={!act_as_tree} href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a>
+      <a if={act_as_tree} href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New { model.singular }</a>
+      <a if={!act_as_tree} href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New { model.singular }</a>
 
       <a if={ export } onclick="{ export_data }" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a>
     </div>
@@ -533,6 +535,8 @@
       common.get(url + "/datasets/" + opts.datatype + "/page/" + pageIndex + "/" + this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         var model = d.model
+        self.model = d.model
+
         self.act_as_tree = model.act_as_tree
         self.is_api = !!model.is_api
         self.is_script = !!model.is_script

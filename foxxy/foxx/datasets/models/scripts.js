@@ -6,6 +6,7 @@ const model = function() {
         { r: true, c: "1-1", n: "code", t: "code:javascript", j: "joi.string().required()", l: "Javascript" }
     ],
     collection: "scripts",
+    singular: "script",
     is_script: true,
     columns: [{ name: "name" }],
     sort: "SORT doc.name ASC",

@@ -1492,35 +1492,8 @@ $(function () {
     })
   })
 
-  route('/layouts', function() { riot.mount('div#app', 'layouts') })
-  route('/pages', function () { riot.mount('div#app', 'pages') })
-  route('/pages/*', function (folder_key) {
-    riot.mount('div#app', 'pages', { folder_key: folder_key })
-  })
-  route('/partials', function () { riot.mount('div#app', 'partials') })
-  route('/partials/*', function (folder_key) {
-    riot.mount('div#app', 'partials', { folder_key: folder_key })
-  })
-  route('/components', function () { riot.mount('div#app', 'components') })
-  route('/components/*', function (folder_key) {
-    riot.mount('div#app', 'components', { folder_key: folder_key })
-  })
-  route('/spas', function() { riot.mount('div#app', 'spas') })
-  route('/redirections', function() { riot.mount('div#app', 'redirections') })
-  route('/trads', function() { riot.mount('div#app', 'trads') })
   route('/settings', function() { riot.mount('div#app', 'settings') })
-  route('/datatypes', function() { riot.mount('div#app', 'datatypes') })
-  route('/datatypes/*', function (folder_key) {
-    riot.mount('div#app', 'datatypes', { folder_key: folder_key })
-  })
 
-  route('/users', function() { riot.mount('div#app', 'users') })
-  route('/aqls', function() { riot.mount('div#app', 'aqls') })
-  route('/helpers', function() { riot.mount('div#app', 'helpers') })
-  route('/apis', function() { riot.mount('div#app', 'apis') })
-  route('/scripts', function(name) {
-    riot.mount('div#app', 'scripts')
-  })
   /*@{{router}}*/
 
 
@@ -1540,71 +1513,11 @@ $(function () {
 
   route(function(collection, id, action) {
     if(action != undefined) {
-      if(collection == "layouts") {
-        if(action == "edit") { riot.mount('div#app', 'layout_edit', { layout_id: id }) }
-      }
-      if(collection == "pages") {
-        if(action == "edit") { riot.mount('div#app', 'page_edit', { page_id: id }) }
-        if(action == "new") { riot.mount('div#app', 'page_new', { folder_key: id }) }
-      }
-      if(collection == "partials") {
-        if (action == "edit") { riot.mount('div#app', 'partial_edit', { partial_id: id }) }
-        if (action == "new") { riot.mount('div#app', 'partial_new', { folder_key: id }) }
-      }
-      if(collection == "components") {
-        if (action == "edit") { riot.mount('div#app', 'component_edit', { component_id: id }) }
-        if(action == "new") { riot.mount('div#app', 'component_new', { folder_key: id }) }
-      }
-      if(collection == "spas") {
-        if(action == "edit") { riot.mount('div#app', 'spa_edit', { spa_id: id }) }
-      }
-      if(collection == "redirections") {
-        if(action == "edit") { riot.mount('div#app', 'redirection_edit', { redirection_id: id }) }
-      }
-      if(collection == "trads") {
-        if(action == "edit") { riot.mount('div#app', 'trad_edit', { trad_id: id }) }
-      }
-      if(collection == "datatypes") {
-        if (action == "edit") { riot.mount('div#app', 'datatype_edit', { datatype_id: id }) }
-        if (action == "new") { riot.mount('div#app', 'datatype_new', { folder_key: id }) }
-      }
-      if(collection == "users") {
-        if(action == "edit") { riot.mount('div#app', 'user_edit', { user_id: id }) }
-      }
-      if(collection == "aqls") {
-        if(action == "edit") { riot.mount('div#app', 'aql_edit', { aql_id: id }) }
-      }
-      if(collection == "helpers") {
-        if(action == "edit") { riot.mount('div#app', 'helper_edit', { helper_id: id }) }
-      }
-      if(collection == "apis") {
-        if(action == "edit") { riot.mount('div#app', 'api_edit', { api_id: id }) }
-      }
-      if(collection == "scripts") {
-        if(action == "edit") {
-          riot.mount('div#app', 'script_edit', { script_id: id })
-        }
-      }
       /*@{{router_cia}}*/
     }
   })
 
   route(function(collection, action) {
-    if(collection == "layouts" && action == "new") riot.mount('div#app', 'layout_new')
-    if(collection == "pages" && action == "new") riot.mount('div#app', 'page_new')
-    if(collection == "partials" && action == "new") riot.mount('div#app', 'partial_new')
-    if(collection == "components" && action == "new") riot.mount('div#app', 'component_new')
-    if(collection == "spas" && action == "new") riot.mount('div#app', 'spa_new')
-    if(collection == "redirections" && action == "new") riot.mount('div#app', 'redirection_new')
-    if(collection == "trads" && action == "new") riot.mount('div#app', 'trad_new')
-    if(collection == "datatypes" && action == "new") riot.mount('div#app', 'datatype_new')
-    if(collection == "users" && action == "new") riot.mount('div#app', 'user_new')
-    if(collection == "aqls" && action == "new") riot.mount('div#app', 'aql_new')
-    if(collection == "helpers" && action == "new") riot.mount('div#app', 'helper_new')
-    if(collection == "apis" && action == "new") riot.mount('div#app', 'api_new')
-    if(collection == "scripts") {
-      if(action == "new") riot.mount('div#app', 'script_new')
-    }
     /*@{{router_ca}}*/
   })
 
@@ -1791,7 +1704,7 @@ riot.tag2('all_datatypes', '<div class="rightnav uk-card uk-card-default uk-card
     })
 });
 
-riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {opts.datatype}</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == page.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == page.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a if="{publishable}" class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {object.singular}</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == page.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == page.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a if="{publishable}" class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -1845,6 +1758,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
     common.get(url + "/datasets/" + opts.datatype + "/" + opts.dataset_id, function(d) {
       self.publishable = d.model.publishable
+      self.object = d.model
       self.dataset = d.data
       self.folders = d.folders
       self.fields = d.fields
@@ -1882,7 +1796,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
     })
 });
 
-riot.tag2('dataset_new', '<virtual if="{can_access}"> <h3>Creating {opts.datatype}</h3> <form onsubmit="{save_form}" class="uk-form" id="form_new_dataset"> </form> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
+riot.tag2('dataset_new', '<virtual if="{can_access}"> <h3>Creating {object.singular}</h3> <form onsubmit="{save_form}" class="uk-form" id="form_new_dataset"> </form> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -1893,6 +1807,7 @@ riot.tag2('dataset_new', '<virtual if="{can_access}"> <h3>Creating {opts.datatyp
     }.bind(this)
 
     common.get(url + "/datasets/"+ opts.datatype + "/fields", function(d) {
+      self.object = d.object
       common.get(url + "/auth/whoami", function(me) {
         localStorage.setItem('resize_api_key', me.resize_api_key)
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
@@ -1928,7 +1843,7 @@ riot.tag2('dataset_tags', '<span each="{row in data}"> {row.tag} <span class="uk
     })
 });
 
-riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i></a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <dataset_tags if="{show_stats}" datatype="{opts.datatype}" tag="{show_stats_tag}"></dataset_tags> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="160"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a if="{is_api}" onclick="{install}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a if="{is_script}" onclick="{install_script}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination noselect"> <li if="{page + 1 > 1}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
+riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <dataset_tags if="{show_stats}" datatype="{opts.datatype}" tag="{show_stats_tag}"></dataset_tags> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="160"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a if="{is_api}" onclick="{install}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a if="{is_script}" onclick="{install_script}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination noselect"> <li if="{page + 1 > 1}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
     var self        = this
     this.show_stats = false
     this.page       = 0
@@ -1954,6 +1869,8 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
       common.get(url + "/datasets/" + opts.datatype + "/page/" + pageIndex + "/" + this.perpage + querystring, function(d) {
         self.data = d.data[0].data
         var model = d.model
+        self.model = d.model
+
         self.act_as_tree = model.act_as_tree
         self.is_api = !!model.is_api
         self.is_script = !!model.is_script

@@ -12,6 +12,7 @@ const model = function() {
       }
     ],
     collection: "helpers",
+    singular: "helper",
     columns: [{ name: 'shortcut' }],
     sort: "SORT doc.shortcut"
   }

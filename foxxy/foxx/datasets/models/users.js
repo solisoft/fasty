@@ -11,6 +11,7 @@ const model = function() {
       { r: true, c: "1-1", n: "image", t: "image", j: "joi.string()", l: "Avatar" }
     ],
     collection: "users",
+    singular: "user",
     columns: [
       { name: "fn", label: "First Name" },
       { name: "ln", label: "Last Name" },

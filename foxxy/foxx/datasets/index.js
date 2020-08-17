@@ -328,7 +328,7 @@ router.get('/:service/fields', function (req, res) {
   _.each(fields, function (field, i) {
     if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) }
   })
-  res.send({ fields: fields });
+  res.send({ fields: fields, object });
 })
 .header('X-Session-Id')
 .header('foxx-locale')

@@ -9,6 +9,7 @@ const model = function () {
       { r: false, c: "1-2", n: "layout_id", t: "list", j: "joi.string().required()", l: "Layout", d: "FOR doc in layouts RETURN [doc._id, doc.name]" }
     ],
     collection: "redirections",
+    singular: "redirection",
     roles: {
       read: ['developer', 'admin'],
       write: ['developer', 'admin']

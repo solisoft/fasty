@@ -1,6 +1,3 @@
-const db = require('@arangodb').db
-const joi = require('joi')
-require("@arangodb/aql/cache").properties({ mode: "on" })
 const model = function () {
   return {
     model: [
@@ -8,6 +5,8 @@ const model = function () {
       { r: true, c: "1-1", n: "html", t: "code:html", j: "joi.any()", l: "HTML/JS" },
       { r: true, c: "1-1", n: "js", t: "code:javascript", j: "joi.any()", l: "Router (JS)" },
     ],
+    collection: "spas",
+    singular: "spa",
     columns: [
       { name: "name" },
       { name: "slug" }

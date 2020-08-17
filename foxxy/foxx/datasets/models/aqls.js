@@ -9,7 +9,8 @@ const model = function() {
       { name: "slug" }, { name: "aql" }
     ],
     sort: "SORT doc.slug ASC",
-    collection: "aqls"
+    collection: "aqls",
+    singular: "aql"
   }
 }
 module.exports = model

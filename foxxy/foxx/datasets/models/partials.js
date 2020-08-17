@@ -8,6 +8,7 @@ const model = function () {
       { r: true, c: "1-1", n: "html", t: "code:luapage", j: "joi.any()", l: "HTML (etlua)" }
     ],
     collection: "partials",
+    singular: "partial",
     columns: [
       { name: "name" },
       { name: "slug" }

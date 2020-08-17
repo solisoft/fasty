@@ -18,6 +18,7 @@ const model = function () {
 
     ],
     collection: "pages",
+    singular: "page",
     columns: [
       { name: "name", tr: true },
       { name: "slug", tr: true },

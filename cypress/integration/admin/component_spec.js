@@ -7,13 +7,13 @@ describe('Components', function () {
   })
 
   it('Loads components page', function () {
-    cy.get('a[href="#components"]').click();
+    cy.get('a[href="#datasets/components"]').click();
     cy.get('body').should('contain', 'Listing components')
     cy.get('div[data-is="components"]').should('contain', 'New component')
   })
 
   it('Creates new component', function () {
-    cy.get('a[href="#components"]').click()
+    cy.get('a[href="#datasets/components"]').click()
     cy.get('div[data-is="components"]').contains('New component').click()
     cy.url().should('match', /static\/admin\/index.html#components\/\d+\/new/)
     cy.get('#name').type('test component');
@@ -29,7 +29,7 @@ describe('Components', function () {
   })
 
   it('Edits a component', function () {
-    cy.get('a[href="#components"]').click()
+    cy.get('a[href="#datasets/components"]').click()
     cy.contains('test component').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
@@ -51,7 +51,7 @@ describe('Components', function () {
   })
 
   it('deletes a component', function () {
-    cy.get('a[href="#components"]').click()
+    cy.get('a[href="#datasets/components"]').click()
     cy.contains('test component edited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

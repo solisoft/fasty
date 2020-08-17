@@ -7,15 +7,15 @@ describe('API', function () {
   })
 
   it('Loads api page', function () {
-    cy.get('a[href="#apis"]').click();
+    cy.get('a[href="#datasets/apis"]').click();
     cy.get('body').should('contain', 'Listing apis')
     cy.get('div[data-is="apis"]').should('contain', 'New api')
   })
 
   it('Creates new api', function () {
-    cy.get('a[href="#apis"]').click()
+    cy.get('a[href="#datasets/apis"]').click()
     cy.get('div[data-is="apis"]').contains('New api').click()
-    cy.url().should('match', /static\/admin\/index.html#apis\/new/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/apis\/new/)
     cy.get('#name').type('testapi');
     cy.get('#manifest').then(elem => {
       elem.val('manifest.json')
@@ -34,11 +34,11 @@ describe('API', function () {
   })
 
   it('Edits api', function () {
-    cy.get('a[href="#apis"]').click()
+    cy.get('a[href="#datasets/apis"]').click()
     cy.contains('test').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#apis\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/apis\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing api')
     cy.get('#name').invoke('val').should('eq', 'testapi')
     cy.get('#name').clear();
@@ -50,7 +50,7 @@ describe('API', function () {
   })
 
   it('deletes an api', function () {
-    cy.get('a[href="#apis"]').click()
+    cy.get('a[href="#datasets/apis"]').click()
     cy.contains('testapiedited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

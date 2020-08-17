@@ -16,6 +16,7 @@ const model = function() {
 
     ],
     collection: "layouts",
+    singular: "layout",
     columns: [
       { name: "name" },
     ],
