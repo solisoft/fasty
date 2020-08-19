@@ -81,7 +81,7 @@ class FastyServices extends lapis.Application
   -- build HTML content based on structured data provided by the html widget
   [build_html: '/build_html']: respond_to {
     POST: =>
-      define_subdomain(@)
+      load_settings(@)
       dynamic_page(
         "db_#{sub_domain}",
         {
