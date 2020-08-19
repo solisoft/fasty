@@ -3,6 +3,8 @@
 const db = require('@arangodb').db;
 const joi = require('joi');
 const _ = require('lodash');
+const createAuth = require('@arangodb/foxx/auth');
+const auth = createAuth();
 const createRouter = require('@arangodb/foxx/router');
 const sessionsMiddleware = require('@arangodb/foxx/sessions');
 const jwtStorage = require('@arangodb/foxx/sessions/storages/jwt');
@@ -79,6 +81,10 @@ var fieldsToData = function(fields, body, headers) {
         } else {
           if (f.t == "boolean") data[f.n] = true
           else data[f.n] = typeCast(f.t, body[f.n])
+          if(f.t == "password" || f.t == "password_confirmation") {
+            data.authData = auth.create(body[f.n])
+            delete data[f.n]
+          }
         }
       }
     } else {
@@ -102,10 +108,28 @@ module.context.use(function (req, res, next) {
   next();
 });
 
+// -----------------------------------------------------------------------------
+router.put('/:service/:id/change_folder', function (req, res) {
+  const collection = db._collection(req.pathParams.service)
+  var document = collection.document(req.pathParams.id)
+  collection.update(document, { folder_key: req.body.folder_key })
+})
+  .header('foxx-locale')
+  .header('X-Session-Id')
+  .body(joi.object({
+    folder_key: joi.string().required()
+  }).required())
+  .description('Update folder');
+
 ////////////////////////////////////////////////////////////////////////////////
 // GET /datasets/datatypes
 router.get('/datatypes', function (req, res) {
-  res.send(db._query(`FOR doc IN datatypes SORT doc.name RETURN { name: doc.name, slug: doc.slug }`))
+  res.send(db._query(`
+    FOR doc IN datatypes
+    FILTER doc.is_system != true
+    SORT doc.name
+    RETURN { name: doc.name, slug: doc.slug }
+  `))
 })
 .header('X-Session-Id')
 .description('Returns all datatypes');
@@ -151,10 +175,10 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
   }, folder_params)
 
   var aql = `
-  LET count = LENGTH((FOR doc IN @@collection FILTER doc.type == @datatype ${folder} RETURN 1))
+  LET count = LENGTH((FOR doc IN @@collection FILTER doc.is_system != true AND doc.type == @datatype ${folder} RETURN 1))
   LET data = (
     FOR doc IN @@collection
-      FILTER doc.type == @datatype
+      FILTER doc.is_system != true AND doc.type == @datatype
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
       ${folder} ${order} ${includes}
       LIMIT @offset, @perpage
@@ -165,7 +189,7 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
 
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }); }
 
-  res.send({ model: model, data: db._query(aql, bindVars).toArray() });
+  res.send({ model: model, data: db._query(aql, bindVars).toArray(), aql, bindVars });
 })
 .header('X-Session-Id')
 .description('Returns all objects');
@@ -261,11 +285,23 @@ router.get('/:service/search/:term', function (req, res) {
 // GET /datasets/:service/:id
 router.get('/:service/:id', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
+  var folders = db._query(`
+    LET r = (FOR f IN folders FILTER f.object_type == @type AND f.is_root == true RETURN { _key: f._key, _id: f._id, name: f.name })[0]
+    FOR f IN folders FILTER f.is_root != true SORT f.name
+        LET path = (
+            FOR v IN ANY SHORTEST_PATH r._id TO f._id GRAPH "folderGraph"
+            RETURN { _key: v._key, name: v.name }
+        )
+        FILTER LENGTH(path) > 0
+        RETURN { folder: f, path, root: r }
+  `, { type: req.pathParams.service }).toArray()
+
   const collection = db._collection(object.collection || 'datasets')
   let fields = object.model
   _.each(fields, function (field, i) { if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
   res.send({
     fields: fields,
+    folders,
     model: JSON.parse(models()[req.pathParams.service].javascript),
     data: collection.document(req.pathParams.id)
   });
@@ -278,11 +314,11 @@ router.get('/:service/:id', function (req, res) {
 // GET /datasets/:service/sub/:sub_service/:id
 router.get('/:service/sub/:sub_service/:id', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
-  const collection = db._collection(object.collection || 'datasets')
-  let fields = object.sub_models[req.pathParams.sub_service]
-  _.each(fields, function (field, i) { if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
+  let sub_object = object.sub_models[req.pathParams.sub_service]
+  const collection = db._collection(sub_object.collection || 'datasets')
+  _.each(sub_object.fields, function (field, i) { if (field.d && !_.isArray(field.d)) { sub_object.fields[i].d = list(field.d, req.headers['foxx-locale']) } })
   res.send({
-    fields: fields,
+    fields: sub_object.fields,
     model: JSON.parse(models()[req.pathParams.service].javascript),
     data: collection.document(req.pathParams.id)
   });
@@ -298,7 +334,7 @@ router.get('/:service/fields', function (req, res) {
   _.each(fields, function (field, i) {
     if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) }
   })
-  res.send({ fields: fields });
+  res.send({ fields: fields, object });
 })
 .header('X-Session-Id')
 .header('foxx-locale')
@@ -405,13 +441,14 @@ router.post('/:service', function (req, res) {
 // POST /datasets/:service/:service_key/:sub
 router.post('/:service/:service_key/:sub', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
-  const collection = db._collection(object.collection || 'datasets')
+  let sub_object = object.sub_models[req.pathParams.sub]
+  const collection = db._collection(sub_object.collection || 'datasets')
 
   object.revisions = object.revisions || 10
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
-  let fields = object.sub_models[req.pathParams.sub].fields
+  let fields = sub_object.fields
   try {
     var schema = {}
     _.each(fields, function (f) {
@@ -545,10 +582,11 @@ router.post('/:service/:id', function (req, res) {
 // POST /datasets/sub/:service/:sub_service/:id
 router.post('/sub/:service/:sub_service/:id', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
-  const collection = db._collection(object.collection || 'datasets')
+  let sub_object = object.sub_models[req.pathParams.sub_service]
+  const collection = db._collection(sub_object.collection || 'datasets')
 
   object.revisions = object.revisions || 10
-  let fields = object.sub_models[req.pathParams.sub_service].fields
+  let fields = sub_object.fields
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
@@ -666,6 +704,7 @@ router.post('/:id/publish', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // DELETE /datasets/:service/:id
 router.delete('/:service/:id', function (req, res) {
+  console.log("delete")
   let object = JSON.parse(models()[req.pathParams.service].javascript)
   const collection_name = object.collection || 'datasets'
   const collection = db._collection(collection_name)
@@ -675,6 +714,23 @@ router.delete('/:service/:id', function (req, res) {
 })
 .header('X-Session-Id')
 .description('delete an object.');
+
+////////////////////////////////////////////////////////////////////////////////
+// DELETE /datasets/:service/:id
+router.delete('/:service/:sub_service/:id', function (req, res) {
+  console.log("delete sub route")
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  let sub_object = object.sub_models[req.pathParams.sub_service]
+  const collection = db._collection(sub_object.collection || 'datasets')
+
+  collection.remove(req.pathParams.id)
+
+  db.revisions.removeByExample({ object_id: req.pathParams.sub_service + '/' + req.pathParams.id })
+  res.send({success: true });
+})
+.header('X-Session-Id')
+.description('delete a sub object.');
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // PUT /datasets/:service/orders/:from/:to
@@ -760,3 +816,5 @@ router.get('/:service/stats/:tag', function (req, res) {
   .header('foxx-locale')
   .header('X-Session-Id')
   .description('Get tag statistic usages');
+
+  module.context.use('/folders', require('./routes/folders.js'), 'folders');

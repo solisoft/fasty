@@ -8,15 +8,15 @@ describe('Trads', function () {
   })
 
   it('Loads translation page', function () {
-    cy.get('a[href="#trads"]').click();
+    cy.get('a[href="#datasets/trads"]').click();
     cy.get('body').should('contain', 'Listing trads')
-    cy.get('div[data-is="trads"]').should('contain', 'New trad')
+    cy.get('body').should('contain', 'New trad')
   })
 
   it('Creates new translation', function () {
-    cy.get('a[href="#trads"]').click()
-    cy.get('div[data-is="trads"]').contains('New trad').click()
-    cy.url().should('match', /static\/admin\/index.html#trads\/new/)
+    cy.get('a[href="#datasets/trads"]').click()
+    cy.get('body').contains('New trad').click()
+    cy.url().should('match', /static\/admin\/index.html#datasets\/trads\/new/)
     cy.get('#key').type('key1');
     cy.get('#value').type('translation');
     cy.get('input[type="submit"]').click();
@@ -27,11 +27,11 @@ describe('Trads', function () {
   })
 
   it('Edits a translation', function () {
-    cy.get('a[href="#trads"]').click()
+    cy.get('a[href="#datasets/trads"]').click()
     cy.contains('key1').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#trads\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/trads\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing trad')
     cy.get('#key').invoke('val').should('eq', 'key1')
     cy.get('#key').clear();
@@ -43,7 +43,7 @@ describe('Trads', function () {
   })
 
   it('deletes a translation', function () {
-    cy.get('a[href="#trads"]').click()
+    cy.get('a[href="#datasets/trads"]').click()
     cy.contains('key1_edit').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

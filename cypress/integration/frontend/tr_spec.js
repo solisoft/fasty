@@ -11,7 +11,7 @@ describe('Frontend / {{ tr | key }}', function () {
     cy.visit(host + '/en/trads')
     cy.get('body').should('contain', 'Hello World')
 
-    cy.visit(admin_host + '/#trads')
+    cy.visit(admin_host + '/#datasets/trads')
     cy.get('body').should('contain', 'World')
   })
 })

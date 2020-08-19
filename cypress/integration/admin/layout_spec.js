@@ -7,15 +7,15 @@ describe('Layouts', function () {
   })
 
   it('Loads layouts page', function () {
-    cy.get('a[href="#layouts"]').click();
+    cy.get('a[href="#datasets/layouts"]').click();
     cy.get('body').should('contain', 'Listing layouts')
-    cy.get('div[data-is="layouts"]').should('contain', 'New layout')
+    cy.get('body').should('contain', 'New layout')
   })
 
   it('Creates new layout', function () {
-    cy.get('a[href="#layouts"]').click()
-    cy.get('div[data-is="layouts"]').contains('New layout').click()
-    cy.url().should('match', /static\/admin\/index.html#layouts\/new/)
+    cy.get('a[href="#datasets/layouts"]').click()
+    cy.get('body').contains('New layout').click()
+    cy.url().should('match', /static\/admin\/index.html#datasets\/layouts\/new/)
     cy.get('#name').type('test layout');
     cy.get('#html').then(elem => {
       elem.val('<html>sample test layout</html>')
@@ -28,11 +28,11 @@ describe('Layouts', function () {
   })
 
   it('Edits a layout', function () {
-    cy.get('a[href="#layouts"]').click()
+    cy.get('a[href="#datasets/layouts"]').click()
     cy.contains('test layout').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#layouts\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/layouts\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing layout')
     cy.get('#name').invoke('val').should('eq', 'test layout')
     cy.get('#name').clear();
@@ -47,7 +47,7 @@ describe('Layouts', function () {
   })
 
   it('deletes a layout', function () {
-    cy.get('a[href="#layouts"]').click()
+    cy.get('a[href="#datasets/layouts"]').click()
     cy.contains('test layout edited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

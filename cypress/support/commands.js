@@ -23,7 +23,7 @@ Cypress.Commands.add("login", () => {
 })
 
 Cypress.Commands.add("create_page", (slug, html) => {
-  cy.visit(host_admin + '/#pages')
+  cy.visit(host_admin + '/#datasets/pages')
   cy.contains('New page').click()
   cy.get('#name').type(slug);
   cy.get('#slug').type(slug);
@@ -33,7 +33,7 @@ Cypress.Commands.add("create_page", (slug, html) => {
 })
 
 Cypress.Commands.add("create_aql", (slug, aql) => {
-  cy.visit(host_admin + '/#aqls')
+  cy.visit(host_admin + '/#datasets/aqls')
   cy.contains(' New aql').click()
   cy.get('#slug').type(slug);
   cy.get('#aql').then(elem => { elem.val(aql) })
@@ -42,7 +42,7 @@ Cypress.Commands.add("create_aql", (slug, aql) => {
 })
 
 Cypress.Commands.add("create_partial", (slug, html) => {
-  cy.visit(host_admin + '/#partials')
+  cy.visit(host_admin + '/#datasets/partials')
   cy.contains('New partial').click()
   cy.get('#name').type(slug);
   cy.get('#slug').type(slug);
@@ -52,7 +52,7 @@ Cypress.Commands.add("create_partial", (slug, html) => {
 })
 
 Cypress.Commands.add("delete_page", (title) => {
-  cy.visit(host_admin + '/#pages')
+  cy.visit(host_admin + '/#datasets/pages')
   cy.contains(title).parent('tr').within(() => {
     cy.get('i.fa-trash-alt').click()
   })
@@ -63,7 +63,7 @@ Cypress.Commands.add("delete_page", (title) => {
 })
 
 Cypress.Commands.add("delete_partial", (title) => {
-  cy.visit(host_admin + '/#partials')
+  cy.visit(host_admin + '/#datasets/partials')
   cy.contains(title).parent('tr').within(() => {
     cy.get('i.fa-trash-alt').click()
   })

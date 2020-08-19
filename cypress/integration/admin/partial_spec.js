@@ -7,15 +7,15 @@ describe('Partials', function () {
   })
 
   it('Loads partials page', function () {
-    cy.get('a[href="#partials"]').click();
+    cy.get('a[href="#datasets/partials"]').click();
     cy.get('body').should('contain', 'Listing partials')
-    cy.get('div[data-is="partials"]').should('contain', 'New partial')
+    cy.get('body').should('contain', 'New partial')
   })
 
   it('Creates new partial', function () {
-    cy.get('a[href="#partials"]').click()
-    cy.get('div[data-is="partials"]').contains('New partial').click()
-    cy.url().should('match', /static\/admin\/index.html#partials\/\d+\/new/)
+    cy.get('a[href="#datasets/partials"]').click()
+    cy.get('body').contains('New partial').click()
+    cy.url().should('match', /static\/admin\/index.html#datasets\/partials\/new\/\d+/)
     cy.get('#name').type('test partial');
     cy.get('#slug').type('testpartial');
     cy.get('#html').then(elem => {
@@ -29,11 +29,11 @@ describe('Partials', function () {
   })
 
   it('Edits a partial', function () {
-    cy.get('a[href="#partials"]').click()
+    cy.get('a[href="#datasets/partials"]').click()
     cy.contains('test partial').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#partials\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/partials\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing partial')
     cy.get('#name').invoke('val').should('eq', 'test partial')
     cy.get('#name').clear();
