@@ -88,7 +88,7 @@ class FastyServices extends lapis.Application
           item: { html: { json: from_json(@params.json) }},
           layout: { page_builder: @params.page_builder }
         },
-        { lang: @params.lang }, global_data[sub_domain]
+        { lang: @params.lang }, global_data[sub_domain], {}, false
       )
   }
   ------------------------------------------------------------------------------
