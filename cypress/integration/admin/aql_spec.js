@@ -7,15 +7,15 @@ describe('AQL', function () {
   })
 
   it('Loads AQL page', function () {
-    cy.get('a[href="#aqls"]').click();
+    cy.get('a[href="#datasets/aqls"]').click();
     cy.get('body').should('contain', 'Listing aqls')
-    cy.get('div[data-is="aqls"]').should('contain', 'New aql')
+    cy.get('body').should('contain', 'New aql')
   })
 
   it('Creates new aql', function () {
-    cy.get('a[href="#aqls"]').click()
-    cy.get('div[data-is="aqls"]').contains('New aql').click()
-    cy.url().should('match', /static\/admin\/index.html#aqls\/new/)
+    cy.get('a[href="#datasets/aqls"]').click()
+    cy.get('body').contains('New aql').click()
+    cy.url().should('match', /static\/admin\/index.html#datasets\/aqls\/new/)
     cy.get('#slug').type('testaql');
     cy.get('#aql').then(elem => {
       elem.val('aql test function')
@@ -28,11 +28,11 @@ describe('AQL', function () {
   })
 
   it('Edits AQL', function () {
-    cy.get('a[href="#aqls"]').click()
+    cy.get('a[href="#datasets/aqls"]').click()
     cy.contains('test').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#aqls\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/aqls\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing aql')
     cy.get('#slug').invoke('val').should('eq', 'testaql')
     cy.get('#slug').clear();
@@ -47,7 +47,7 @@ describe('AQL', function () {
   })
 
   it('deletes an AQL', function () {
-    cy.get('a[href="#aqls"]').click()
+    cy.get('a[href="#datasets/aqls"]').click()
     cy.contains('testaqledited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })

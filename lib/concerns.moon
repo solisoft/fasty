@@ -354,7 +354,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       output = "Missing translation <em style='color:red'>#{item}</em>"
       unless translations[item]
         aql(
-          db_name, 'INSERT { key: @key, value: { @lang: @key} } IN trads',
+          db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
           { key: item, lang: params.lang }
         )
         output = item

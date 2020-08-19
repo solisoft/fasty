@@ -13,15 +13,15 @@ describe('Users', function () {
   })
 
   it('Loads users page', function () {
-    cy.get('a[href="#users"]').click();
+    cy.get('a[href="#datasets/users"]').click();
     cy.get('body').should('contain', 'Listing users')
-    cy.get('div[data-is="users"]').should('contain', 'New user')
+    cy.get('body').should('contain', 'New user')
   })
 
   it('Creates new user', function () {
-    cy.get('a[href="#users"]').click()
-    cy.get('div[data-is="users"]').contains('New user').click()
-    cy.url().should('match', /static\/admin\/index.html#users\/new/)
+    cy.get('a[href="#datasets/users"]').click()
+    cy.get('body').contains('New user').click()
+    cy.url().should('match', /static\/admin\/index.html#datasets\/users\/new/)
     cy.get('#fn').type('test');
     cy.get('#ln').type('user');
     cy.get('#username').type('testuser@email.com');
@@ -36,11 +36,11 @@ describe('Users', function () {
   })
 
   it('Edits a user', function () {
-    cy.get('a[href="#users"]').click()
+    cy.get('a[href="#datasets/users"]').click()
     cy.contains('test').parent('tr').within(() => {
       cy.get('i.fa-edit').click()
     })
-    cy.url().should('match', /static\/admin\/index.html#users\/\d+\/edit/)
+    cy.url().should('match', /static\/admin\/index.html#datasets\/users\/\d+\/edit/)
     cy.get('body').should('contain', 'Editing user')
     cy.get('#fn').invoke('val').should('eq', 'test')
     cy.get('#fn').clear();
@@ -52,7 +52,7 @@ describe('Users', function () {
   })
 
   it('deletes a user', function () {
-    cy.get('a[href="#users"]').click()
+    cy.get('a[href="#datasets/users"]').click()
     cy.contains('test edited').parent('tr').within(() => {
       cy.get('i.fa-trash-alt').click()
     })
