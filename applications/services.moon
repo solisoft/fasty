@@ -4,6 +4,8 @@ stringy = require 'stringy'
 console = require 'lapis.console'
 
 import aqls from require 'lib.aqls'
+import from_json from require 'lapis.util'
+import dynamic_page from require 'lib.concerns'
 import respond_to from require 'lapis.application'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import install_service, install_script, deploy_site from require 'lib.service'
@@ -74,6 +76,21 @@ class FastyServices extends lapis.Application
     all_domains = nil
     settings[sub_domain] = nil
     'ok'
+  ------------------------------------------------------------------------------
+  -- json 2 html
+  -- build HTML content based on structured data provided by the html widget
+  [build_html: '/build_html']: respond_to {
+    POST: =>
+      define_subdomain(@)
+      dynamic_page(
+        "db_#{sub_domain}",
+        {
+          item: { html: { json: from_json(@params.json) }},
+          layout: { page_builder: @params.page_builder }
+        },
+        { lang: @params.lang }, global_data[sub_domain]
+      )
+  }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
   [console: '/console']: console.make!
