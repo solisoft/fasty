@@ -31,12 +31,13 @@ var save_activity = function(object_id, action, user_key) {
   })
 }
 
-var typeCast = function(type, value) {
+var typeCast = function (type, value) {
   var value = unescape(value)
   if (type == "integer") value = parseInt(value)
   if (type == "float") value = parseFloat(value)
   if (type == "html") value = JSON.parse(value)
   if (type == "datetime") value = value + ":00.000"
+
   return value
 }
 
@@ -94,7 +95,7 @@ var fieldsToData = function(fields, body, headers) {
           body[f.n], function(v) { return typeCast(f.t,v) }
         )
       } else {
-        data[f.n][headers['foxx-locale']] = unescape(body[f.n])
+        data[f.n][headers['foxx-locale']] = typeCast(f.t, body[f.n])
       }
     }
   })
