@@ -2,8 +2,10 @@ sass      = require 'sass'
 lapis     = require 'lapis'
 stringy   = require 'stringy'
 
-import aql from require 'lib.arango'
+import aqls from require 'lib.aqls'
+import from_json from require 'lapis.util'
 import define_content_type from require 'lib.utils'
+import auth_arangodb, aql, list_databases from require 'lib.arango'
 import dynamic_replace, define_subdomain, load_settings from require 'lib.concerns'
 
 jwt = {}

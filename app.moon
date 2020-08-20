@@ -54,6 +54,7 @@ class extends lapis.Application
 
   @include "applications.uploads"
   @include "applications.services"
+  @include "applications.assets"
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   expire_at = () =>
@@ -155,82 +156,3 @@ class extends lapis.Application
     else
       load_settings(@)
       display_page(@)
-  ------------------------------------------------------------------------------
-  [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
-    load_settings(@)
-    data = aql(
-      "db_#{sub_domain}",
-      "FOR doc IN datasets FILTER doc._key == @key RETURN doc.@field",
-      { "key": "#{@params.key}", 'field': @params.field }
-    )[1]
-    content = dynamic_replace("db_#{sub_domain}", data, {}, {}, @params)
-
-    content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
-  ------------------------------------------------------------------------------
-  [js: '/:lang/:layout/js/:rev.js']: =>
-    load_settings(@)
-    js = aql(
-      "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
-      { "key": "#{@params.layout}" }
-    )[1]
-    content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: "application/javascript", content
-    else
-      content_type: "application/javascript", content, headers: { "expires": expire_at! }
-  ------------------------------------------------------------------------------
-  [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
-    load_settings(@)
-    js = aql(
-      "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
-      { "key": "#{@params.layout}" }
-    )[1]
-    content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: "application/javascript", content
-    else
-      content_type: "application/javascript", content, headers: { "expires": expire_at! }
-
-  ------------------------------------------------------------------------------
-  [css: '/:lang/:layout/css/:rev.css']: =>
-    load_settings(@)
-    css = aql(
-      "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.scss",
-      { "key": "#{@params.layout}" }
-    )[1]
-    scss = sass.compile(css, 'compressed')
-    content = dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: "text/css", content
-    else
-      content_type: "text/css", content, headers: { "expires": expire_at! }
-  ------------------------------------------------------------------------------
-  [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
-    load_settings(@)
-    css = aql(
-      "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
-      { "key": "#{@params.layout}" }
-    )[1]
-    content = dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: "text/css", content
-    else
-      content_type: "text/css", content, headers: { "expires": expire_at! }
-  ------------------------------------------------------------------------------
-  [component: '/:lang/:key/component/:rev.tag']: =>
-    load_settings(@)
-    html = ''
-    for i, key in pairs(stringy.split(@params.key, '-'))
-      html ..= aql(
-        "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
-        { "key": "#{key}" }
-      )[1] .. "\n"
-    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content
-    else
-      content, headers: { "expires": expire_at! }
