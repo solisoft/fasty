@@ -20,5 +20,4 @@
         redirections: g_redirections, aqls: g_aqls,
         trads: MERGE(g_trads), helpers: MERGE(g_helpers) }'
   }
-
 }

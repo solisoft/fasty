@@ -22,11 +22,9 @@ settings = {}
 no_db = {}
 sub_domain = ''
 --------------------------------------------------------------------------------
--- define_subdomain
 define_subdomain = () =>
   sub_domain = stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
--- load_settings
 load_settings = () =>
   define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
@@ -39,7 +37,6 @@ load_settings = () =>
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
 --------------------------------------------------------------------------------
--- App
 class extends lapis.Application
 
   handle_error: (err, trace) =>
@@ -156,3 +153,4 @@ class extends lapis.Application
     else
       load_settings(@)
       display_page(@)
+--

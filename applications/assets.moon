@@ -17,13 +17,10 @@ sub_domain = ''
 
 expire_at = () ->
   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
-
 --------------------------------------------------------------------------------
--- define_subdomain
 define_subdomain = () =>
   sub_domain = stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
--- load_settings
 load_settings = () =>
   define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
@@ -123,3 +120,4 @@ class FastyAssets extends lapis.Application
       content
     else
       content, headers: { "expires": expire_at! }
+--

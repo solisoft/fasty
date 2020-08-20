@@ -68,11 +68,9 @@ check_file = (params) ->
   load_original_from_cloud upload.path if upload
   upload
 --------------------------------------------------------------------------------
--- define_subdomain
 define_subdomain = () =>
   sub_domain = stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
--- load_settings
 load_settings = () =>
   define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
@@ -251,3 +249,4 @@ class FastyImages extends lapis.Application
       res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
     else
       'no asset found!', status: 404
+--
