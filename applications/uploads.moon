@@ -18,6 +18,9 @@ settings = {}
 no_db = {}
 sub_domain = ''
 bucket = nil
+
+expire_at = () ->
+  'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
 watermark = (filename) ->
   w = from_json(settings[sub_domain].home).watermark
@@ -197,7 +200,7 @@ class FastyImages extends lapis.Application
       disposition = "inline"
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
     else
       'no asset found!', status: 404
   ------------------------------------------------------------------------------
@@ -221,7 +224,7 @@ class FastyImages extends lapis.Application
       disposition = "inline"
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
     else
       'no asset found!', status: 404
   ------------------------------------------------------------------------------
@@ -246,7 +249,7 @@ class FastyImages extends lapis.Application
       disposition = "inline"
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
     else
       'no asset found!', status: 404
 --

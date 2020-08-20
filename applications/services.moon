@@ -56,7 +56,7 @@ class FastyServices extends lapis.Application
         status: 401, 'Not authorized'
   }
   ------------------------------------------------------------------------------
-  -- deploy site
+  -- deploy site to next stage
   [deploy: '/deploy']: respond_to {
     POST: =>
       load_settings(@)
