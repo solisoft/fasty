@@ -140,6 +140,7 @@ router.get('/:token', function (req, res) {
 router.patch('/:token', function (req, res) {
 
   if (_settings.secret == req.pathParams.token) {
+
     var firstLine = req.body.data.split('\n')[0].trim()
     var isLocked = firstLine.split(' ')[0].indexOf("@lock") >= 0
     var id = firstLine.split(' ')[1]
@@ -160,6 +161,11 @@ router.patch('/:token', function (req, res) {
     } else {
       data[field.trim()] = content
     }
+
+    db.sync_history.save({
+      date: (+new Date()), lang,
+      collection, field, content, id, locked_by: object.locked_by, user: req.body.name
+    })
 
     if (isLocked) {
       if (object.locked_by == null || object.locked_by == req.body.name) {

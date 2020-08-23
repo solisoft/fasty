@@ -362,6 +362,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       if translations[item] and translations[item][params.lang]
         output = translations[item][params.lang]
 
+      if dataset
+        variables = splat_to_table(dataset)
+        output = output\gsub("%$%((.-)%)", variables)
+
     -- {{ external | url }}
     output = http_get(item, {}) if action == 'external'
     -- {{ og_data | name }}
