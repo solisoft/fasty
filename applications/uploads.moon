@@ -18,6 +18,9 @@ settings = {}
 no_db = {}
 sub_domain = ''
 bucket = nil
+
+expire_at = () ->
+  'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
 watermark = (filename) ->
   w = from_json(settings[sub_domain].home).watermark
@@ -68,11 +71,9 @@ check_file = (params) ->
   load_original_from_cloud upload.path if upload
   upload
 --------------------------------------------------------------------------------
--- define_subdomain
 define_subdomain = () =>
   sub_domain = stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
--- load_settings
 load_settings = () =>
   define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
@@ -199,7 +200,7 @@ class FastyImages extends lapis.Application
       disposition = "inline"
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
     else
       'no asset found!', status: 404
   ------------------------------------------------------------------------------
@@ -223,7 +224,7 @@ class FastyImages extends lapis.Application
       disposition = "inline"
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
     else
       'no asset found!', status: 404
   ------------------------------------------------------------------------------
@@ -248,6 +249,7 @@ class FastyImages extends lapis.Application
       disposition = "inline"
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
-      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition }
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
     else
       'no asset found!', status: 404
+--

@@ -2,8 +2,10 @@ sass      = require 'sass'
 lapis     = require 'lapis'
 stringy   = require 'stringy'
 
-import aql from require 'lib.arango'
+import aqls from require 'lib.aqls'
+import from_json from require 'lapis.util'
 import define_content_type from require 'lib.utils'
+import auth_arangodb, aql, list_databases from require 'lib.arango'
 import dynamic_replace, define_subdomain, load_settings from require 'lib.concerns'
 
 jwt = {}
@@ -15,13 +17,10 @@ sub_domain = ''
 
 expire_at = () ->
   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
-
 --------------------------------------------------------------------------------
--- define_subdomain
 define_subdomain = () =>
   sub_domain = stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
--- load_settings
 load_settings = () =>
   define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
@@ -121,3 +120,4 @@ class FastyAssets extends lapis.Application
       content
     else
       content, headers: { "expires": expire_at! }
+--
