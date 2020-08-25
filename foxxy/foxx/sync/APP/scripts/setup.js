@@ -8,6 +8,6 @@ if (!db._collection('sync_history')) {
 
 db._collection('sync_history').ensureIndex({
   type: 'ttl',
-  fields: ['_key'],
+  fields: ['date'],
   expireAfter: 43200
 });
