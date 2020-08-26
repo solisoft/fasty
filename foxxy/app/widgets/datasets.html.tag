@@ -325,7 +325,7 @@
       }, function() {})
     }
 
-    pathname(path) {
+    pathName(path) {
       return _.map(path, function(p) { return p.name }).join(" > ")
     }
 

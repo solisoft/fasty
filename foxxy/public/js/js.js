@@ -1743,7 +1743,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
       }, function() {})
     }.bind(this)
 
-    this.pathname = function(path) {
+    this.pathName = function(path) {
       return _.map(path, function(p) { return p.name }).join(" > ")
     }.bind(this)
 
