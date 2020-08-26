@@ -261,8 +261,8 @@
             <div class="uk-grid uk-grid-small">
               <div class="uk-width-3-4">
                 <select class="uk-select" ref="folder">
-                  <option value={folders[0].root._key} selected={folders[0].root._key == page.folder_key}>Root</option>
-                  <option each={f in folders} value={f.folder._key} selected={f.folder._key == page.folder_key}>{ pathName(f.path) }</option>
+                  <option value={folders[0].root._key} selected={folders[0].root._key == object.folder_key}>Root</option>
+                  <option each={f in folders} value={f.folder._key} selected={f.folder._key == object.folder_key}>{ pathName(f.path) }</option>
                 </select>
               </div>
               <div class="uk-width-1-4">
@@ -323,6 +323,10 @@
           });
         })
       }, function() {})
+    }
+
+    pathname(path) {
+      return _.map(path, function(p) { return p.name }).join(" > ")
     }
 
     publish(e) {
