@@ -256,13 +256,13 @@
       <li>
         <h3>Editing {object.singular}</h3>
         <virtual if={folders.length > 0}>
-          <label class="uk-label">Path</label>
+          <label class="uk-label">Path ({object.folder_key})</label>
           <form onsubmit={changePath}>
             <div class="uk-grid uk-grid-small">
               <div class="uk-width-3-4">
                 <select class="uk-select" ref="folder">
                   <option value={folders[0].root._key} selected={folders[0].root._key == object.folder_key}>Root</option>
-                  <option each={f in folders} value={f.folder._key} selected={f.folder._key == object.folder_key}>{ pathName(f.path) }</option>
+                  <option each={f in folders} value={f.folder._key} selected={f.folder._key == object.folder_key}>[{ f.folder._key }] { pathName(f.path) }</option>
                 </select>
               </div>
               <div class="uk-width-1-4">
