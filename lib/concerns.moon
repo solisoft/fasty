@@ -367,7 +367,11 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         output = output\gsub("%$%((.-)%)", variables)
 
     -- {{ external | url }}
-    output = http_get(item, {}) if action == 'external'
+    output = http_get(item) if action == 'external'
+    -- {{ json | url | field }}
+    if action == 'json'
+      output = from_json(http_get(item))
+      output = output[v] for k, v in pairs(stringy.split(dataset, "."))
     -- {{ og_data | name }}
     if action == 'og_data'
       output = params.og_data[item] if params.og_data
@@ -376,7 +380,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- {{ dataset | slug=demo | js }}
     -- {{ dataset | slug=demo | js | only_url#js }}
     if action == 'dataset'
-      item = stringy.split(item,'=')
+      item = stringy.split(item, '=')
       request = 'FOR item IN datasets FILTER item.@field == @value RETURN item'
       object = aql(db_name, request, { field: item[1], value: item[2] })[1]
       if object
