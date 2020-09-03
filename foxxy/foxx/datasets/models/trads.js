@@ -6,6 +6,7 @@ const model = function() {
     ],
     collection: "trads",
     singular: "trad",
+    sort: "SORT doc.key ASC",
     columns: [
       { name: 'key' },
       { name: 'value', tr: true },
