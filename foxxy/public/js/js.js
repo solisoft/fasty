@@ -1141,7 +1141,7 @@ require.register("js/editor.js", function(exports, require, module) {
               if ($(widget).data('type').indexOf('col') >= 0) {
                 data_widget['content'] = run_export($(widget).parent())
               } else {
-                data_widget['content'] = $(widget).data('html')
+                data_widget['content'] = $(widget).data('html') || $(widget).html()
               }
 
               data_col.push(data_widget)
