@@ -554,12 +554,17 @@
         if(model.columns) self.cols = model.columns
         self.count = d.data[0].count
         self.sortable = !!model.sortable
-        common.get(url + "/auth/whoami", function(me) {
-          localStorage.setItem('resize_api_key', me.resize_api_key)
-          self.loaded = true
-          self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
-          self.update()
-        })
+
+        self.update()
+
+        if(self.can_access == false) {
+          common.get(url + "/auth/whoami", function(me) {
+            localStorage.setItem('resize_api_key', me.resize_api_key)
+            self.loaded = true
+            self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
+            self.update()
+          })
+        }
       })
     }
 
