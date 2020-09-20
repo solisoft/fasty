@@ -3,7 +3,6 @@
 
   $.fn.contentEditor = function (options) {
 
-    console.log(options)
     var object_name = $(this).attr('data-name') || 'solicms'
 
     var self = this
@@ -487,7 +486,6 @@
         $(row).find('> .cms_col').each(function (y, col) {
           var data_col = []
           $(col).find('[data-type]').each(function (z, widget) {
-            console.log("widget", widget)
             if($(widget).data('exported') == undefined) {
               $(widget).data('exported', true)
 
@@ -529,7 +527,7 @@
       activate_events()
       remove_drag_attributes()
 
-      $(self).find('[data-html]').each(function (i, el) { console.log($(el).data('html')); $(el).html($(el).data('html')) })
+      $(self).find('[data-html]').each(function (i, el) { $(el).html($(el).data('html')) })
     }
 
     /*
