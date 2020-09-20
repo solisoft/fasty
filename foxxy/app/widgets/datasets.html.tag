@@ -476,8 +476,8 @@
           <td if={sortable}><i class="fas fa-grip-vertical handle"></i></td>
           <td each={ col in cols } class="{col.class}">
             <virtual if={ col.toggle == true } >
-              <virtual if={ col.tr == true }><a onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual>
-              <virtual if={ col.tr != true }><a onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name) }</a></virtual>
+              <virtual if={ col.tr == true }><a style="color: { col.colors ? col.colors[row[col.name][locale]] : 'white' }"onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual>
+              <virtual if={ col.tr != true }><a style="color: {col.colors ? col.colors[row[col.name]] : 'white' }" onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name) }</a></virtual>
             </virtual>
 
             <virtual if={ col.toggle != true } >

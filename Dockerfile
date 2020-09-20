@@ -4,10 +4,20 @@ RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libncurses5-dev libpcre3-dev libssl-dev gcc perl make curl git-core curl \
     luarocks libsass-dev glib2.0-dev libexpat1-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev
+    # libde265-dev libheif-dev
+#RUN apt-get -qqy install cmake
 
-RUN wget https://github.com/libvips/libvips/releases/download/v8.9.2/vips-8.9.2.tar.gz \
-    && tar -xf vips-8.9.2.tar.gz \
-    && cd vips-8.9.2 \
+#RUN git clone https://github.com/strukturag/libde265.git \
+#    && cd libde265 \
+#    && mkdir build \
+#    && cd build \
+#    && cmake .. && make && make install
+
+ARG VIPS_VERSION=8.10.1
+
+RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
+    && tar -xf vips-${VIPS_VERSION}.tar.gz \
+    && cd vips-${VIPS_VERSION} \
     && ./configure \
     && make && make install && ldconfig
 
@@ -35,7 +45,7 @@ RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
 
 RUN npm install -g yarn forever @riotjs/cli
 
-RUN curl -OL https://download.arangodb.com/arangodb35/DEBIAN/Release.key && \
+RUN curl -OL https://download.arangodb.com/arangodb36/DEBIAN/Release.key && \
     apt-key add - < Release.key && \
     echo 'deb https://download.arangodb.com/arangodb36/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
     apt-get update && \
