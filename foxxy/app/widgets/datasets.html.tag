@@ -472,7 +472,7 @@
         </tr>
       </thead>
       <tbody id="list">
-        <tr each={ row in data } no-reorder>
+        <tr each={ row in data } no-reorder key={row._key}>
           <td if={sortable}><i class="fas fa-grip-vertical handle"></i></td>
           <td each={ col in cols } class="{col.class}">
             <virtual if={ col.toggle == true } >
