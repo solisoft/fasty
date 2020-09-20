@@ -2,6 +2,8 @@
 (function ($) {
 
   $.fn.contentEditor = function (options) {
+
+    console.log(options)
     var object_name = $(this).attr('data-name') || 'solicms'
 
     var self = this
@@ -485,6 +487,7 @@
         $(row).find('> .cms_col').each(function (y, col) {
           var data_col = []
           $(col).find('[data-type]').each(function (z, widget) {
+            console.log("widget", widget)
             if($(widget).data('exported') == undefined) {
               $(widget).data('exported', true)
 
@@ -494,7 +497,7 @@
               if ($(widget).data('type').indexOf('col') >= 0) {
                 data_widget['content'] = run_export($(widget).parent())
               } else {
-                data_widget['content'] = $(widget).html()
+                data_widget['content'] = $(widget).data('html')
               }
 
               data_col.push(data_widget)
@@ -526,7 +529,7 @@
       activate_events()
       remove_drag_attributes()
 
-      $(self).find('[data-html]').each(function (i, el) { $(el).html($(el).data('html')) })
+      $(self).find('[data-html]').each(function (i, el) { console.log($(el).data('html')); $(el).html($(el).data('html')) })
     }
 
     /*
@@ -643,9 +646,7 @@
         $(self).find('.edit-mode .drag').attr('ondrop', 'drop(event)')
         $(self).find('.edit-mode .drag').attr('ondragend', 'drag_end(event)')
 
-
         set_empty_rows()
-
 
         return false
       })
