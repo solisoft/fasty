@@ -706,19 +706,21 @@
     this.on('updated', function() {
       if(self.sortable) {
         var el = document.getElementById('list');
-        var sortable = new Sortable(el, {
-          animation: 150,
-          ghostClass: 'blue-background-class',
-          handle: '.fa-grip-vertical',
-          onSort: function (/**Event*/evt) {
-            var folder_key = "?folder_key=" + self.folder._key
-            if(!self.act_as_tree) folder_key = ''
-            common.put(
-              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
-              function() {}
-            )
-          },
-        });
+        if(el) {
+          var sortable = new Sortable(el, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            handle: '.fa-grip-vertical',
+            onSort: function (/**Event*/evt) {
+              var folder_key = "?folder_key=" + self.folder._key
+              if(!self.act_as_tree) folder_key = ''
+              common.put(
+                url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
+                function() {}
+              )
+            },
+          });
+        }
 
       }
     })
