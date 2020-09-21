@@ -213,7 +213,7 @@ class FastyImages extends lapis.Application
 
     if upload
       height  = ""
-      height  = "--height #{@params.height} --crop attention" if @params.height
+      height  = "--height #{@params.height} --crop all" if @params.height
       dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}.#{ext}"
 
       res = ngx.location.capture("/#{dest}")
