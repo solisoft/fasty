@@ -235,10 +235,14 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ helper | hello_world }}
     if action == 'helper'
       helper = helpers[item]
-      dataset = "##{dataset}" if dataset != ''
-      output = "{{ partial | #{helper.partial} | arango | req##{helper.aql}#{dataset} }}"
-      output = dynamic_replace(db_name, output, global_data, history, params)
-
+      if helper
+        dataset = "##{dataset}" if dataset != ''
+        output = "{{ partial | #{helper.partial} | arango | req##{helper.aql}#{dataset} }}"
+        output = dynamic_replace(db_name, output, global_data, history, params)
+      else
+        print to_json(helpers)
+        print to_json(item)
+        output = "Helper not found !?"
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
