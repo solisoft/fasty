@@ -219,6 +219,9 @@ class FastyImages extends lapis.Application
       res = ngx.location.capture("/#{dest}")
       if res and res.status == 404
         ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
+        if stderr
+          print(to_json(stderr))
+          print(to_json(reason))
         res = ngx.location.capture("/#{dest}")
 
       disposition = "inline"
