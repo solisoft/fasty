@@ -633,9 +633,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "/_db",
-  ".inseytel.com": "https://inseytel.com/_db",
-  "epic20.world": "/_db"
+  ".fasty.ovh": "https://fasty.ovh/_db/",
+  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
+  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
 };
 
 module.exports = Config;
@@ -2025,19 +2025,21 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
     this.on('updated', function() {
       if(self.sortable) {
         var el = document.getElementById('list');
-        var sortable = new Sortable(el, {
-          animation: 150,
-          ghostClass: 'blue-background-class',
-          handle: '.fa-grip-vertical',
-          onSort: function ( evt) {
-            var folder_key = "?folder_key=" + self.folder._key
-            if(!self.act_as_tree) folder_key = ''
-            common.put(
-              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
-              function() {}
-            )
-          },
-        });
+        if(el) {
+          var sortable = new Sortable(el, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            handle: '.fa-grip-vertical',
+            onSort: function ( evt) {
+              var folder_key = "?folder_key=" + self.folder._key
+              if(!self.act_as_tree) folder_key = ''
+              common.put(
+                url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
+                function() {}
+              )
+            },
+          });
+        }
 
       }
     })
