@@ -204,6 +204,8 @@ db._collection('datasets').ensureIndex({ type: 'skiplist', fields: ['type'] });
 
 db._collection('datasets').ensureIndex({ type: 'skiplist', fields: ['is_system'] });
 
+db._collection('trads').ensureIndex({ type: 'skiplist', fields: ['key'], unique: true });
+
 db.datatypes.removeByExample({ is_system: true })
 
 var models = require("../models.js")()
