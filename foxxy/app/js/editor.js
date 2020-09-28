@@ -287,6 +287,7 @@
       window.allow_drop = function (event) {
         event.stopPropagation();
         event.preventDefault();
+
         var el = $(event.target).hasClass('drop') ? $(event.target) : $(event.target).closest('.drag')
         $('.active').removeClass('active')
         el.addClass('active')
@@ -320,7 +321,6 @@
           $(el).parent().hasClass('cms_row')) {
           $(el).after(drop_empty)
         }
-
       })
 
       $(self).find('.edit-mode .page-content > .cms_row').each(function (y, row) {

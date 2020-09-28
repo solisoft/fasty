@@ -768,37 +768,37 @@ require.register("js/editor.js", function(exports, require, module) {
           break
         case 'col2':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col2"><div class="col-6 cms_col"></div><div class="col-6 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col2"><div class="col-6 cms_col"></div><div class="col-6 cms_col"></div></div>'
           after = ''
           break
         case 'col3':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col3"><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col3"><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div></div>'
           after = ''
           break
         case 'col4':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col4"><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col4"><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div></div>'
           after = ''
           break
         case 'col282':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col282"><div class="col-2 cms_col"></div><div class="col-8 cms_col"></div><div class="col-2 cms_col"></div><div class="col-3 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col282"><div class="col-2 cms_col"></div><div class="col-8 cms_col"></div><div class="col-2 cms_col"></div><div class="col-3 cms_col"></div></div>'
           after = ''
           break
         case 'col363':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col363"><div class="col-3 cms_col"></div><div class="col-6 cms_col"></div><div class="col-3 cms_col"></div></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col363"><div class="col-3 cms_col"></div><div class="col-6 cms_col"></div><div class="col-3 cms_col"></div></div></div>'
           after = ''
           break
         case 'col48':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col48"><div class="col-4 cms_col"></div><div class="col-8 cms_col"></div></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col48"><div class="col-4 cms_col"></div><div class="col-8 cms_col"></div></div></div>'
           after = ''
           break
         case 'col84':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col84"><div class="col-8 cms_col"></div><div class="col-4 cms_col"></div></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col84"><div class="col-8 cms_col"></div><div class="col-4 cms_col"></div></div></div>'
           after = ''
           break
       }
@@ -931,6 +931,7 @@ require.register("js/editor.js", function(exports, require, module) {
       window.allow_drop = function (event) {
         event.stopPropagation();
         event.preventDefault();
+
         var el = $(event.target).hasClass('drop') ? $(event.target) : $(event.target).closest('.drag')
         $('.active').removeClass('active')
         el.addClass('active')
@@ -964,7 +965,6 @@ require.register("js/editor.js", function(exports, require, module) {
           $(el).parent().hasClass('cms_row')) {
           $(el).after(drop_empty)
         }
-
       })
 
       $(self).find('.edit-mode .page-content > .cms_row').each(function (y, row) {
@@ -1713,7 +1713,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
     this.changePath = function(e) {
       e.preventDefault()
-      common.put(url + "/datasets/pages/" + opts.page_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+      common.put(url + "/datasets/pages/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
         UIkit.notification({
             message : 'Successfully updated!',
             status  : 'success',
