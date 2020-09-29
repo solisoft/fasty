@@ -92,5 +92,12 @@ class FastyServices extends lapis.Application
       )
   }
   ------------------------------------------------------------------------------
+  -- riotjs compiler
+  [riotjs: '/riotjs']: respond_to {
+    POST: =>
+      load_settings(@)
+      compile_riotjs(sub_domain, @params.name, @params.tag)
+  }
+  ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
   [console: '/console']: console.make!

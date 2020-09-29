@@ -43,14 +43,14 @@ RUN luarocks install cloud_storage
 RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
     chmod +x n && mv n /usr/bin/n && n lts
 
-RUN npm install -g yarn forever @riotjs/cli
-
 RUN curl -OL https://download.arangodb.com/arangodb36/DEBIAN/Release.key && \
     apt-key add - < Release.key && \
     echo 'deb https://download.arangodb.com/arangodb36/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
     apt-get update && \
     apt-get install apt-transport-https && \
     apt-get install arangodb3-client
+
+RUN npm install -g yarn forever @riotjs/cli
 
 WORKDIR /var/www
 

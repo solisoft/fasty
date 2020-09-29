@@ -4,6 +4,13 @@ import map, table_index from require 'lib.utils'
 import from_json, to_json, trim from require 'lapis.util'
 import aql, foxx_upgrade from require 'lib.arango'
 --------------------------------------------------------------------------------
+read_content = (filename)->
+  file = io.open(filename, 'r')
+  io.output(file)
+  content = io.read('*all')
+  io.close(file)
+  content
+--------------------------------------------------------------------------------
 write_content = (filename, content)->
   file = io.open(filename, 'w+')
   io.output(file)
@@ -95,9 +102,14 @@ deploy_site = (sub_domain, settings) ->
     apis = aql(deploy_to[1], 'FOR api IN apis RETURN api')
     for k, item in pairs apis
       install_service(deploy_to[1]\gsub('db_', ''), item.name)
+--------------------------------------------------------------------------------
+compile_riotjs = (sub_domain, name, tag) ->
+  path = "compile_tag/#{sub_domain}/#{name}"
+  os.execute("mkdir -p #{path}")
+  write_content("#{path}/#{name}.riot", tag)
 
-
-
+  command = "riotjs #{path}/{name}.riot --output #{path}/#{name}.js"
+  read_content("#{path}/#{name}.js")
 --------------------------------------------------------------------------------
 -- expose methods
-{ :install_service, :install_script, :deploy_site }
+{ :install_service, :install_script, :deploy_site, :compile_riotjs }
