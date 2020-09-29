@@ -18,7 +18,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 
-console.log("fasty@0.0.26")
+console.log("fasty@0.0.27")
 
 if(!fs.existsSync(dirname + "/.tokens.yml")) {
   console.log("Please configure a .tokens.yml file for tokens".red)
@@ -27,7 +27,7 @@ if(!fs.existsSync(dirname + "/.tokens.yml")) {
 
 var tokens = yaml.safeLoad(fs.readFileSync(dirname + "/.tokens.yml", "utf8"))
 
-var check_json = function(json, folder, fullname, api) {
+var check_json = function(json, folder, fullname, only) {
   _.each(json, function (v, k) {
     var pathname = "fs/" + folder + "/" + k
     if(!fs.existsSync(pathname)) fs.mkdirSync(pathname)
@@ -177,7 +177,7 @@ var check_json = function(json, folder, fullname, api) {
     })
   })
 
-  if(argv.w) {
+  if (argv.w) {
     console.log("Watching folder.", dirname + "/fs/"+folder)
     chokidar.watch(dirname + "/fs/"+ folder, {ignored: /(^|[\/\\])\../}).on("all", (event, path) => {
       if(event == "add") {
@@ -243,10 +243,9 @@ if(argv._.length != 1) {
   webhook = tokens["domains"][argv._[0]].webhook
   var token  = tokens["domains"][argv._[0]].token
   sync   = tokens["domains"][argv._[0]].sync
-
   var folder = argv._[0]
 
-  if(sync) {
+  if(sync && argv.w) {
     const io = require("socket.io-client");
     socket = io(sync.server + ":" + sync.port);
 
@@ -286,6 +285,15 @@ if(argv._.length != 1) {
     request(url, function (_error, _response, body) {
       var data = JSON.parse(body)
       check_json(data, folder, fullname, domain)
+    })
+  }
+
+  if (argv.c && argv.n) {
+    request.post({
+      url: url, form: JSON.stringify({ name: argv.n, type: argv.c })
+    }, function (err, httpResponse, body) {
+        console.log(body)
+        console.log("Please resynchronize your folder!")
     })
   }
 }
