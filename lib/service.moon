@@ -10,7 +10,7 @@ write_content = (filename, content)->
   io.write(content)
   io.close(file)
 --------------------------------------------------------------------------------
-read_zipfile = (filename)->
+read_file = (filename)->
   file = io.open(filename, 'r')
   io.input(file)
   data = io.read('*all')
@@ -18,7 +18,7 @@ read_zipfile = (filename)->
   data
 --------------------------------------------------------------------------------
 install_service = (sub_domain, name)->
-  if name\match('^[%w_%-%d]+$')
+  if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
     path = "install_service/#{sub_domain}/#{name}"
     os.execute("mkdir -p #{path}/APP/routes")
     os.execute("mkdir #{path}/APP/scripts")
@@ -40,13 +40,6 @@ install_service = (sub_domain, name)->
     for k, item in pairs api.routes
       write_content("#{path}/APP/routes/#{item.name}.js", item.javascript)
 
-    for k, item in pairs api.libs
-      write_content("#{path}/APP/libs/#{item.name}.js", item.javascript)
-
-    for k, item in pairs api.scripts
-      write_content("#{path}/APP/scripts/#{item.name}.js", item.javascript)
-
-    for k, item in pairs api.tests
       write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
 
     os.execute("cd install_service/#{sub_domain}/#{name}/APP && export PATH='$PATH:/usr/local/bin' && yarn")
@@ -54,11 +47,11 @@ install_service = (sub_domain, name)->
     os.execute("rm --recursive install_service/#{sub_domain}/#{name}")
 
     foxx_upgrade(
-      "db_#{sub_domain}", name, read_zipfile("install_service/#{sub_domain}/#{name}.zip")
+      "db_#{sub_domain}", name, read_file("install_service/#{sub_domain}/#{name}.zip")
     )
 --------------------------------------------------------------------------------
 install_script = (sub_domain, name) ->
-  if name\match('^[%w_%-%d]+$')
+  if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
     path = "scripts/#{sub_domain}/#{name}"
     os.execute("mkdir -p #{path}")
     request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
@@ -97,5 +90,22 @@ deploy_site = (sub_domain, settings) ->
     for k, item in pairs apis
       install_service(deploy_to[1]\gsub('db_', ''), item.name)
 --------------------------------------------------------------------------------
+compile_riotjs = (sub_domain, name, tag) ->
+  if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
+    path = "compile_tag/#{sub_domain}/#{name}"
+    os.execute("mkdir -p #{path}")
+    write_content("#{path}/#{name}.riot", tag)
+
+    command = "export PATH=\"$PATH;/usr/local/bin\" && riot #{path}/#{name}.riot --output #{path}/#{name}.js"
+    handle = io.popen(command)
+    result = handle\read("*a")
+    handle\close()
+
+    -- remove latest line
+    handle = io.popen("head -n -1 #{path}/#{name}.js")
+    result = handle\read("*a")
+    handle\close()
+    result
+--------------------------------------------------------------------------------
 -- expose methods
-{ :install_service, :install_script, :deploy_site }
+{ :install_service, :install_script, :deploy_site, :compile_riotjs }

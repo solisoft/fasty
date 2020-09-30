@@ -52,7 +52,15 @@ var restart_services = function (collection, id, _settings) {
       }
     })
   } else console.log("Missing base_url in settings")
+
+  if (collection == "components" && h_settings.base_url && object.kind == "riot4") {
+    var response = request.post(h_settings.base_url + "/riotjs", {
+      form: { token: _settings.secret, name: object.slug, tag: object.html }
+    })
+    db.components.update(object, { javascript: response.body })
+  }
 }
+
 // -----------------------------------------------------------------------------
 // GET /sync
 router.get('/:token', function (req, res) {

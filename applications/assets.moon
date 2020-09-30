@@ -120,4 +120,19 @@ class FastyAssets extends lapis.Application
       content
     else
       content, headers: { "expires": expire_at! }
+--  ------------------------------------------------------------------------------
+  [componentjs: '/:lang/:key/component/:rev.js']: =>
+    sub_domain = define_subdomain(@)
+    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+    html = ''
+    for i, key in pairs(stringy.split(@params.key, '-'))
+      html ..= aql(
+        "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.javascript",
+        { "key": "#{key}" }
+      )[1] .. "\n"
+    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content, headers: { "Content-Type": "text/javascript" }
+    else
+      content, headers: { "expires": expire_at!, "Content-Type": "text/javascript" }
 --

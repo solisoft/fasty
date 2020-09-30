@@ -8,6 +8,7 @@ const auth = createAuth();
 const createRouter = require('@arangodb/foxx/router');
 const sessionsMiddleware = require('@arangodb/foxx/sessions');
 const jwtStorage = require('@arangodb/foxx/sessions/storages/jwt');
+const request = require('@arangodb/request');
 require('@arangodb/aql/cache').properties({ mode: 'on' });
 
 const router = createRouter();
@@ -428,6 +429,7 @@ router.post('/:service', function (req, res) {
       data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
       obj_update.search = data.search
     }
+
     collection.update(obj, obj_update)
 
     save_revision(req.session.uid, obj, data, object.revisions)
@@ -568,6 +570,16 @@ router.post('/:service/:id', function (req, res) {
         data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
       }
     })
+
+
+    if(req.pathParams.service == "components" && data.kind == "riot4") {
+      // Compile widget to javascript using riotjs/cli
+      const url = JSON.parse(_settings.home).base_url
+      var response = request.post(url + "/riotjs", {
+        form: { token: _settings.secret, name: data.slug, tag: data.html }
+      })
+      data.javascript = response.body
+    }
 
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
