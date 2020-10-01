@@ -181,9 +181,10 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
   LET data = (
     FOR doc IN @@collection
       FILTER doc.is_system != true AND doc.type == @datatype
-      LIMIT @offset, @perpage
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
       ${folder} ${order} ${includes}
+      LIMIT @offset, @perpage
+      
       RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
   )
   RETURN { count: count, data: data }

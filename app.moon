@@ -86,8 +86,9 @@ class extends lapis.Application
     infos = page_info(db_name, @params.slug, @params.lang)
     infos = { 'page': {}, 'folder': {} } if infos == nil
 
-    @params.splat = "slug/#{@params.splat}" if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
-
+    if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
+      @params.splat = "slug/#{@params.splat}" 
+    
     if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
       splat = splat_to_table(@params.splat) if @params.splat
@@ -144,7 +145,8 @@ class extends lapis.Application
     else
       load_settings(@)
       @params.lang = check_valid_lang(settings[sub_domain].langs, @params.all)
-      unless @session.lang then @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
+      unless @session.lang 
+        @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
       display_page(@)
   ------------------------------------------------------------------------------
   [page: '/:lang/:all/:slug(/*)']: =>
