@@ -121,8 +121,6 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
       json = data.item.html.json
       json = data.item.html[params['lang']].json if data.item.html[params['lang']]
 
-      print(to_json(data))
-      
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
 
