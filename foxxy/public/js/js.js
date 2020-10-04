@@ -1389,6 +1389,7 @@ require.register("js/editor.js", function(exports, require, module) {
         ['strong', 'em', 'del'],
         ['superscript', 'subscript'],
         ['link'],
+        ['foreColor', 'backColor'],
         ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
         ['unorderedList', 'orderedList'],
         ['horizontalRule'],
