@@ -63,7 +63,8 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
   if uselayout == true
     request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
   else request ..= 'RETURN { item }'
-
+  print(request)
+  print(to_json({ slug: slug, lang: lang }))
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   if page
@@ -110,6 +111,10 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
     page_builder = (data.layout and data.layout.page_builder) or 'page'
     page_partial = load_document_by_slug(db_name, page_builder, 'partials')
     global_data.page_partial = page_partial
+
+    json = data.item.html.json
+    json = data.item.html[params['lang']].json if data.item.html[params['lang']]
+
     if uselayout
       html = prepare_headers(data.layout.html, data, params)
 
@@ -117,15 +122,13 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
         html = html\gsub('@raw_yield', escape_pattern(data.item.raw_html[params['lang']]))
       else
         html = html\gsub('@raw_yield', '')
-
-      json = data.item.html.json
-      json = data.item.html[params['lang']].json if data.item.html[params['lang']]
-
+  
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
 
       html = prepare_assets(html, data.layout, params)
-    else html = etlua2html(data.item.html.json, page_partial, params, global_data)
+    else 
+      html = etlua2html(json, page_partial, params, global_data)
 
     html = html\gsub('@yield', '')
     html = html\gsub('@raw_yield', '')
@@ -220,7 +223,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         if dataset == ''
           page_html = dynamic_page(
             db_name,
-            load_page_by_slug(db_name, unescape(item), 'pages', params.lang, false),
+            load_page_by_slug(db_name, unescape(item), params.lang, false),
             params, global_data, history, false
           )
         else
