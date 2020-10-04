@@ -218,7 +218,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         if dataset == ''
           page_html = dynamic_page(
             db_name,
-            load_page_by_slug(db_name, item, 'pages', params.lang, false),
+            load_page_by_slug(db_name, unescape(item), 'pages', params.lang, false),
             params, global_data, history, false
           )
         else
@@ -243,7 +243,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      partial = load_document_by_slug(db_name, item, 'partials', false)
+      partial = load_document_by_slug(db_name, unescape(item), 'partials', false)
       if partial
         db_data = { "page": 1 }
         if dataset == 'arango'

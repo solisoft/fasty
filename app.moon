@@ -11,7 +11,7 @@ import respond_to from require 'lapis.application'
 import check_valid_lang, uuid, define_content_type from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import from_json, to_json from require 'lapis.util'
+import from_json, to_json, unescape from require 'lapis.util'
 import dynamic_replace, dynamic_page, page_info, splat_to_table
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
@@ -68,13 +68,14 @@ class extends lapis.Application
   ----------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
     slug              = @params.slug if slug == nil
+    slug              = unescape(slug)
     @params.lang      = check_valid_lang(settings[sub_domain].langs, @params.lang)
     @session.lang     = @params.lang
     db_name           = "db_#{sub_domain}"
     redirection       = load_redirection(db_name, @params)
     current_page      = load_page_by_slug(db_name, slug, @params.lang)
 
-    page_content_type = define_content_type(@params.slug)
+    page_content_type = define_content_type(slug)
 
     html = ''
 
