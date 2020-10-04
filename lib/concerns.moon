@@ -118,7 +118,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
       else
         html = html\gsub('@raw_yield', '')
 
-      json = data.item.json
+      json = data.item.html.json
       json = data.item.html[params['lang']].json if data.item.html[params['lang']]
 
       print(to_json(json))
