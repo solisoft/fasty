@@ -39,8 +39,12 @@ install_service = (sub_domain, name)->
 
     for k, item in pairs api.routes
       write_content("#{path}/APP/routes/#{item.name}.js", item.javascript)
-
+    for k, item in pairs api.tests
       write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
+    for k, item in pairs api.libs
+      write_content("#{path}/APP/libs/#{item.name}.js", item.javascript)
+    for k, item in pairs api.scripts
+      write_content("#{path}/APP/scripts/#{item.name}.js", item.javascript)
 
     os.execute("cd install_service/#{sub_domain}/#{name}/APP && export PATH='$PATH:/usr/local/bin' && yarn")
     os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
