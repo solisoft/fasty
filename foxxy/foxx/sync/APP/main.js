@@ -52,7 +52,15 @@ var restart_services = function (collection, id, _settings) {
       }
     })
   } else console.log("Missing base_url in settings")
+
+  if (collection == "components" && h_settings.base_url && object.kind == "riot4") {
+    var response = request.post(h_settings.base_url + "/riotjs", {
+      form: { token: _settings.secret, name: object.slug, tag: object.html }
+    })
+    db.components.update(object, { javascript: response.body })
+  }
 }
+
 // -----------------------------------------------------------------------------
 // GET /sync
 router.get('/:token', function (req, res) {
@@ -134,9 +142,8 @@ router.get('/:token', function (req, res) {
 })
   .description("Get Files")
 
-
 // -----------------------------------------------------------------------------
-// PATCH /sync
+// PATCH /:token
 router.patch('/:token', function (req, res) {
 
   if (_settings.secret == req.pathParams.token) {
@@ -205,4 +212,93 @@ router.patch('/:token', function (req, res) {
 }).body(joi.object({
   data: joi.string().required(),
   name: joi.string().required()
+}), 'data')
+
+// -----------------------------------------------------------------------------
+// POST /:token
+router.post('/:token', function (req, res) {
+  console.log("Create a new object")
+  console.log(req.body.type)
+  if (_settings.secret == req.pathParams.token) {
+    var obj = null
+    if (req.body.type == "api") {
+      obj = db.apis.save({
+        name: req.body.name,
+        manifest: JSON.stringify({}),
+        package: JSON.stringify({}),
+        code: "//"
+      })
+
+      db.api_scripts.save({
+        api_id: obj._id,
+        name: "setup",
+        javascript: "//"
+      })
+    }
+
+    if (req.body.type == "page") {
+      obj = db.pages.save({
+        name: req.body.name,
+        slug: req.body.name,
+        layout_id: db.layouts.all()[0]._id // TODO : Need to be settable
+      })
+    }
+
+    if (req.body.type == "component") {
+      obj = db.components.save({
+        name: req.body.name,
+        slug: req.body.name,
+        html: "<!-- Nothing here -->"
+      })
+    }
+
+    if (req.body.type == "spa") {
+      obj = db.components.save({
+        name: req.body.name,
+        js: "//",
+        html: "<!-- Nothing here -->"
+      })
+    }
+
+    if (req.body.type == "partial") {
+      obj = db.partials.save({
+        name: req.body.name,
+        slug: req.body.name,
+        html: "<!-- Nothing here -->"
+      })
+    }
+
+    if (req.body.type == "layout") {
+
+    }
+
+    if (req.body.type == "aql") {
+      obj = db.partials.save({
+        aql: "FOR doc IN datasets RETURN doc",
+        slug: req.body.name,
+        options: ""
+      })
+    }
+
+    if (req.body.type == "helper") {
+
+    }
+
+    if (req.body.type == "script") {
+      obj = db.scripts.save({
+        name: req.body.name,
+        package: "{}",
+        code: "// Node JS app"
+      })
+    }
+    console.log(obj)
+    res.json(obj)
+  } else {
+    res.json({ error: true, reason: 'Bad Token' })
+  }
+}).body(joi.object({
+  type: joi.string().required(),
+  name: joi.string().required(),
+  aql: joi.any(),
+  partial: joi.any()
 }), 'data')

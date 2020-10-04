@@ -235,10 +235,14 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ helper | hello_world }}
     if action == 'helper'
       helper = helpers[item]
-      dataset = "##{dataset}" if dataset != ''
-      output = "{{ partial | #{helper.partial} | arango | req##{helper.aql}#{dataset} }}"
-      output = dynamic_replace(db_name, output, global_data, history, params)
-
+      if helper
+        dataset = "##{dataset}" if dataset != ''
+        output = "{{ partial | #{helper.partial} | arango | req##{helper.aql}#{dataset} }}"
+        output = dynamic_replace(db_name, output, global_data, history, params)
+      else
+        print to_json(helpers)
+        print to_json(item)
+        output = "Helper not found !?"
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
@@ -323,6 +327,33 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
           output ..= '</script>'
 
+    -- {{ riot4 | slug(#slug2...) | <mount> || <url> }}
+    -- e.g. {{ riot4| demo | mount }}
+    -- e.g. {{ riot4 | demo#demo2 }}
+    if action == 'riot4'
+      if history[widget] == nil -- prevent stack level too deep
+        history[widget] = true
+        data = { ids: {}, revisions: {}, names: {} }
+        for i, k in pairs(stringy.split(item, '#'))
+          component = aql(
+            db_name,
+            'FOR doc in components FILTER doc.slug == @slug RETURN { _key: doc._key, _rev: doc._rev, javascript: doc.javascript }',
+            { "slug": k }
+          )[1]
+          table.insert(data.ids, component._key)
+          table.insert(data.revisions, component._rev)
+          table.insert(data.names, k)
+
+        if dataset == 'url'
+          output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
+        if dataset == 'mount'
+          output ..= '<script type="module">'
+          output ..= "import #{k} from '/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js'"
+          output ..= "riot.register('#{k}', #{k})"
+          output ..= "riot.mount('#{k}')"
+          output ..='</script>'
+        if dataset == 'source'
+          output ..= http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
     if action == 'spa'

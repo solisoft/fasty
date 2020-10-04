@@ -646,6 +646,7 @@ require.register("js/editor.js", function(exports, require, module) {
 (function ($) {
 
   $.fn.contentEditor = function (options) {
+
     var object_name = $(this).attr('data-name') || 'solicms'
 
     var self = this
@@ -767,37 +768,37 @@ require.register("js/editor.js", function(exports, require, module) {
           break
         case 'col2':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col2"><div class="col-6 cms_col"></div><div class="col-6 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col2"><div class="col-6 cms_col"></div><div class="col-6 cms_col"></div></div>'
           after = ''
           break
         case 'col3':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col3"><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col3"><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div><div class="col-4 cms_col"></div></div>'
           after = ''
           break
         case 'col4':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col4"><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col4"><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div><div class="col-3 cms_col"></div></div>'
           after = ''
           break
         case 'col282':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col282"><div class="col-2 cms_col"></div><div class="col-8 cms_col"></div><div class="col-2 cms_col"></div><div class="col-3 cms_col"></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col282"><div class="col-2 cms_col"></div><div class="col-8 cms_col"></div><div class="col-2 cms_col"></div><div class="col-3 cms_col"></div></div>'
           after = ''
           break
         case 'col363':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col363"><div class="col-3 cms_col"></div><div class="col-6 cms_col"></div><div class="col-3 cms_col"></div></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col363"><div class="col-3 cms_col"></div><div class="col-6 cms_col"></div><div class="col-3 cms_col"></div></div></div>'
           after = ''
           break
         case 'col48':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col48"><div class="col-4 cms_col"></div><div class="col-8 cms_col"></div></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col48"><div class="col-4 cms_col"></div><div class="col-8 cms_col"></div></div></div>'
           after = ''
           break
         case 'col84':
           before = ''
-          html = '<div class="sg-row cms_row sub_row drag drop" data-type="col84"><div class="col-8 cms_col"></div><div class="col-4 cms_col"></div></div></div>'
+          html = '<div class="sg-row cms_row sub_row drag" data-type="col84"><div class="col-8 cms_col"></div><div class="col-4 cms_col"></div></div></div>'
           after = ''
           break
       }
@@ -930,6 +931,7 @@ require.register("js/editor.js", function(exports, require, module) {
       window.allow_drop = function (event) {
         event.stopPropagation();
         event.preventDefault();
+
         var el = $(event.target).hasClass('drop') ? $(event.target) : $(event.target).closest('.drag')
         $('.active').removeClass('active')
         el.addClass('active')
@@ -963,7 +965,6 @@ require.register("js/editor.js", function(exports, require, module) {
           $(el).parent().hasClass('cms_row')) {
           $(el).after(drop_empty)
         }
-
       })
 
       $(self).find('.edit-mode .page-content > .cms_row').each(function (y, row) {
@@ -1138,7 +1139,7 @@ require.register("js/editor.js", function(exports, require, module) {
               if ($(widget).data('type').indexOf('col') >= 0) {
                 data_widget['content'] = run_export($(widget).parent())
               } else {
-                data_widget['content'] = $(widget).html()
+                data_widget['content'] = $(widget).data('html') || $(widget).html()
               }
 
               data_col.push(data_widget)
@@ -1287,9 +1288,7 @@ require.register("js/editor.js", function(exports, require, module) {
         $(self).find('.edit-mode .drag').attr('ondrop', 'drop(event)')
         $(self).find('.edit-mode .drag').attr('ondragend', 'drag_end(event)')
 
-
         set_empty_rows()
-
 
         return false
       })
@@ -1714,7 +1713,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
     this.changePath = function(e) {
       e.preventDefault()
-      common.put(url + "/datasets/pages/" + opts.page_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+      common.put(url + "/datasets/pages/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
         UIkit.notification({
             message : 'Successfully updated!',
             status  : 'success',
@@ -1847,7 +1846,7 @@ riot.tag2('dataset_tags', '<span each="{row in data}"> {row.tag} <span class="uk
     })
 });
 
-riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <dataset_tags if="{show_stats}" datatype="{opts.datatype}" tag="{show_stats_tag}"></dataset_tags> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="160"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a if="{is_api}" onclick="{install}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a if="{is_script}" onclick="{install_script}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination noselect"> <li if="{page + 1 > 1}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
+riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <dataset_tags if="{show_stats}" datatype="{opts.datatype}" tag="{show_stats_tag}"></dataset_tags> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder key="{row._key}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a riot-style="color: {col.colors ? col.colors[row[col.name][locale]] : \'white\'}" onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a riot-style="color: {col.colors ? col.colors[row[col.name]] : \'white\'}" onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="160"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a if="{is_api}" onclick="{install}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a if="{is_script}" onclick="{install_script}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <ul class="uk-pagination noselect"> <li if="{page + 1 > 1}"><a onclick="{previousPage}"><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li> <li if="{(page + 1) * perpage < count}" class="uk-margin-auto-left"><a onclick="{nextPage}">Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li> </ul> Per Page : {perpage > 100000 ? \'ALL\' : perpage} <a onclick="{setPerPage}" class="uk-label">25</a> <a onclick="{setPerPage}" class="uk-label">50</a> <a onclick="{setPerPage}" class="uk-label">100</a> <a onclick="{setPerPage}" class="uk-label">500</a> <a onclick="{setPerPage}" class="uk-label">1000</a> <a onclick="{setPerPage}" class="uk-label">ALL</a> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
     var self        = this
     this.show_stats = false
     this.page       = 0
@@ -1888,12 +1887,17 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
         if(model.columns) self.cols = model.columns
         self.count = d.data[0].count
         self.sortable = !!model.sortable
-        common.get(url + "/auth/whoami", function(me) {
-          localStorage.setItem('resize_api_key', me.resize_api_key)
-          self.loaded = true
-          self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
-          self.update()
-        })
+
+        self.update()
+
+        if(self.can_access == false) {
+          common.get(url + "/auth/whoami", function(me) {
+            localStorage.setItem('resize_api_key', me.resize_api_key)
+            self.loaded = true
+            self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
+            self.update()
+          })
+        }
       })
     }
 
@@ -2021,19 +2025,21 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
     this.on('updated', function() {
       if(self.sortable) {
         var el = document.getElementById('list');
-        var sortable = new Sortable(el, {
-          animation: 150,
-          ghostClass: 'blue-background-class',
-          handle: '.fa-grip-vertical',
-          onSort: function ( evt) {
-            var folder_key = "?folder_key=" + self.folder._key
-            if(!self.act_as_tree) folder_key = ''
-            common.put(
-              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
-              function() {}
-            )
-          },
-        });
+        if(el) {
+          var sortable = new Sortable(el, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            handle: '.fa-grip-vertical',
+            onSort: function ( evt) {
+              var folder_key = "?folder_key=" + self.folder._key
+              if(!self.act_as_tree) folder_key = ''
+              common.put(
+                url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
+                function() {}
+              )
+            },
+          });
+        }
 
       }
     })

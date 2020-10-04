@@ -296,7 +296,7 @@
 
     changePath(e) {
       e.preventDefault()
-      common.put(url + "/datasets/pages/" + opts.page_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+      common.put(url + "/datasets/pages/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
         UIkit.notification({
             message : 'Successfully updated!',
             status  : 'success',
@@ -472,12 +472,12 @@
         </tr>
       </thead>
       <tbody id="list">
-        <tr each={ row in data } no-reorder>
+        <tr each={ row in data } no-reorder key={row._key}>
           <td if={sortable}><i class="fas fa-grip-vertical handle"></i></td>
           <td each={ col in cols } class="{col.class}">
             <virtual if={ col.toggle == true } >
-              <virtual if={ col.tr == true }><a onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual>
-              <virtual if={ col.tr != true }><a onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name) }</a></virtual>
+              <virtual if={ col.tr == true }><a style="color: { col.colors ? col.colors[row[col.name][locale]] : 'white' }"onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual>
+              <virtual if={ col.tr != true }><a style="color: {col.colors ? col.colors[row[col.name]] : 'white' }" onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name) }</a></virtual>
             </virtual>
 
             <virtual if={ col.toggle != true } >
@@ -554,12 +554,17 @@
         if(model.columns) self.cols = model.columns
         self.count = d.data[0].count
         self.sortable = !!model.sortable
-        common.get(url + "/auth/whoami", function(me) {
-          localStorage.setItem('resize_api_key', me.resize_api_key)
-          self.loaded = true
-          self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
-          self.update()
-        })
+
+        self.update()
+
+        if(self.can_access == false) {
+          common.get(url + "/auth/whoami", function(me) {
+            localStorage.setItem('resize_api_key', me.resize_api_key)
+            self.loaded = true
+            self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
+            self.update()
+          })
+        }
       })
     }
 
@@ -701,19 +706,21 @@
     this.on('updated', function() {
       if(self.sortable) {
         var el = document.getElementById('list');
-        var sortable = new Sortable(el, {
-          animation: 150,
-          ghostClass: 'blue-background-class',
-          handle: '.fa-grip-vertical',
-          onSort: function (/**Event*/evt) {
-            var folder_key = "?folder_key=" + self.folder._key
-            if(!self.act_as_tree) folder_key = ''
-            common.put(
-              url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
-              function() {}
-            )
-          },
-        });
+        if(el) {
+          var sortable = new Sortable(el, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            handle: '.fa-grip-vertical',
+            onSort: function (/**Event*/evt) {
+              var folder_key = "?folder_key=" + self.folder._key
+              if(!self.act_as_tree) folder_key = ''
+              common.put(
+                url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
+                function() {}
+              )
+            },
+          });
+        }
 
       }
     })

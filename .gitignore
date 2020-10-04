@@ -27,3 +27,4 @@ load*.sh
 uploads/
 assets/
 certs/
+compile_tag/

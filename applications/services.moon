@@ -4,11 +4,11 @@ stringy = require 'stringy'
 console = require 'lapis.console'
 
 import aqls from require 'lib.aqls'
-import from_json from require 'lapis.util'
+import from_json, to_json from require 'lapis.util'
 import dynamic_page from require 'lib.concerns'
 import respond_to from require 'lapis.application'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import install_service, install_script, deploy_site from require 'lib.service'
+import install_service, install_script, deploy_site, compile_riotjs from require 'lib.service'
 
 jwt = {}
 global_data = {}
@@ -90,6 +90,13 @@ class FastyServices extends lapis.Application
         },
         { lang: @params.lang }, global_data[sub_domain], {}, false
       )
+  }
+  ------------------------------------------------------------------------------
+  -- riotjs compiler
+  [riotjs: '/riotjs']: respond_to {
+    POST: =>
+      load_settings(@)
+      compile_riotjs(sub_domain, @params.name, @params.tag)
   }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)

@@ -213,12 +213,15 @@ class FastyImages extends lapis.Application
 
     if upload
       height  = ""
-      height  = "--height #{@params.height} --crop attention" if @params.height
+      height  = "--height #{@params.height} --crop none" if @params.height
       dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}.#{ext}"
 
       res = ngx.location.capture("/#{dest}")
       if res and res.status == 404
         ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} #{height} --size down")
+        if stderr
+          print(to_json(stderr))
+          print(to_json(reason))
         res = ngx.location.capture("/#{dest}")
 
       disposition = "inline"
@@ -236,9 +239,6 @@ class FastyImages extends lapis.Application
     upload = check_file @params
 
     if upload
-      height = ""
-      height = "--height #{@params.height} --crop attention" if @params.height
-
       interesting = @params.interesting or 'attention'
       dest = "#{upload.root}/#{upload.uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
       res = ngx.location.capture("/" .. dest)
