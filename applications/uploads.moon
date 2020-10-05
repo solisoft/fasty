@@ -94,7 +94,7 @@ class FastyImages extends lapis.Application
       load_settings(@)
       @params.key = @req.headers['apikey'] if @req.headers['apikey']
       if true -- @params.key == settings[sub_domain].resize_ovh
-        if file = @params.files[""] or @params.files
+        if file = @params["files[]"] or @params.files
           arr = stringy.split(file.filename, ".")
           ext = arr[table.getn(arr)]
 
