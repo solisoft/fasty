@@ -126,7 +126,7 @@ class extends lapis.Application
       load_settings(@)
       @session.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
       if @params.lang and @session.lang ~= @params.lang then
-        redirect_to: '/' .. @session.lang
+        redirect_to: 'https://' .. @req.headers.host .. '/' .. @session.lang
       else
         home          = from_json(settings[sub_domain].home)
         @params.lang  = @session.lang
