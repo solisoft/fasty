@@ -16,6 +16,9 @@
     "mocha-multi-reporters": "^1.1.4"
   },
   "dependencies": {
-    "arangojs": "^6.10.0"
+    "arangojs": "^6.10.0",
+    "fasty-cli": "0.0.27",
+    "foxx-cli": "^2.0.0",
+    "foxxy-app": "file:foxxy"
   }
 }

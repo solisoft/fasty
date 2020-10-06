@@ -19,7 +19,7 @@ sub_domain = ''
 
 --------------------------------------------------------------------------------
 define_subdomain = () =>
-  sub_domain = stringy.split(@req.headers.host, '.')[1]
+  sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
