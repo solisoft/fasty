@@ -1,6 +1,6 @@
 #!/bin/sh
 cd foxxy
-yarn
+npm install
 rm -Rf dist
 LOGGY_STACKS=1 ./node_modules/brunch/bin/brunch b --production
 cd ..

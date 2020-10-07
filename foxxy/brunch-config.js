@@ -33,6 +33,9 @@ module.exports = {
   plugins: {
     htmlPages: {
       compileAssets: true
+    },
+    sass: {
+      modules: true
     }
   },
 
