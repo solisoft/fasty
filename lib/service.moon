@@ -100,7 +100,7 @@ compile_riotjs = (sub_domain, name, tag) ->
     os.execute("mkdir -p #{path}")
     write_content("#{path}/#{name}.riot", tag)
 
-    command = "export PATH=\"$PATH;/usr/local/bin\" && riot #{path}/#{name}.riot --output #{path}/#{name}.js && terser -o #{path}/#{name}.js --compress --mangle #{path}/#{name}.js"
+    command = "export PATH=\"$PATH;/usr/local/bin\" && riot #{path}/#{name}.riot --output #{path}/#{name}.js && terser --compress --mangle -o #{path}/#{name}.js #{path}/#{name}.js"
     handle = io.popen(command)
     result = handle\read("*a")
     handle\close()
