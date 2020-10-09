@@ -105,11 +105,7 @@ compile_riotjs = (sub_domain, name, tag) ->
     result = handle\read("*a")
     handle\close()
 
-    -- remove latest line
-    handle = io.popen("head -n -1 #{path}/#{name}.js")
-    result = handle\read("*a")
-    handle\close()
-    result
+    read_file("#{path}/#{name}.js")
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service, :install_script, :deploy_site, :compile_riotjs }
