@@ -355,7 +355,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
           if dataset == 'mount'
             output ..= '<script type="module">'
-            output ..= table.concat(data.javascript,"\n")
+            output ..= table.concat(data.js,"\n")
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
