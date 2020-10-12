@@ -338,7 +338,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'riot4'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        data = { ids: {}, revisions: {}, names: {} }
+        data = { ids: {}, revisions: {}, names: {}, js: {} }
         for i, k in pairs(stringy.split(item, '#'))
           component = aql(
             db_name,
@@ -348,12 +348,14 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
+          table.insert(data.js, component.javascript)
+
 
           if dataset == 'url'
             output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
           if dataset == 'mount'
             output ..= '<script type="module">'
-            output ..= "import #{k} from '/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js';"
+            output ..= table.concat(data.javascript,"\n")
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
