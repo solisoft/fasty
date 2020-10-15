@@ -117,9 +117,9 @@ class FastyAssets extends lapis.Application
       )[1] .. "\n"
     content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content
+      content, headers: { "Access-Control-Allow-Origin": "*" }
     else
-      content, headers: { "expires": expire_at! }
+      content, headers: { "expires": expire_at!, headers: { "Access-Control-Allow-Origin": "*" } }
 --  ------------------------------------------------------------------------------
   [componentjs: '/:lang/:key/component/:rev.js']: =>
     sub_domain = define_subdomain(@)
