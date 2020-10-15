@@ -119,7 +119,7 @@ class FastyAssets extends lapis.Application
     if @req.headers['x-forwarded-host'] != nil then
       content, headers: { "Access-Control-Allow-Origin": "*" }
     else
-      content, headers: { "expires": expire_at!, headers: { "Access-Control-Allow-Origin": "*" } }
+      content, headers: { "expires": expire_at!, "Access-Control-Allow-Origin": "*" }
 --  ------------------------------------------------------------------------------
   [componentjs: '/:lang/:key/component/:rev.js']: =>
     sub_domain = define_subdomain(@)
