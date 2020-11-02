@@ -34,9 +34,7 @@ module.exports = {
     htmlPages: {
       compileAssets: true
     },
-    sass: {
-      modules: true
-    }
+    
   },
 
   overrides: {

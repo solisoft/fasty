@@ -2274,7 +2274,7 @@ riot.tag2('files', '<div class="sortable_{opts.field}" style="user-select: none;
 });
 });
 
-require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
+require.alias("node-browser-modules/node_modules/process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
   
 
 // Auto-loaded modules from config.npm.globals.
