@@ -498,25 +498,17 @@
         </tr>
       </tbody>
     </table>
-    <ul class="uk-pagination noselect">
-      <li if={ page + 1 > 1 } ><a onclick={ previousPage }><span class="uk-margin-small-right" uk-pagination-previous></span> Previous</a></li>
-      <li if={ (page + 1) * perpage < count} class="uk-margin-auto-left"><a onclick={ nextPage }>Next <span class="uk-margin-small-left" uk-pagination-next></span></a></li>
-    </ul>
-    Per Page : {perpage > 100000 ? 'ALL' : perpage}
-    <a onclick={ setPerPage } class="uk-label">25</a>
-    <a onclick={ setPerPage } class="uk-label">50</a>
-    <a onclick={ setPerPage } class="uk-label">100</a>
-    <a onclick={ setPerPage } class="uk-label">500</a>
-    <a onclick={ setPerPage } class="uk-label">1000</a>
-    <a onclick={ setPerPage } class="uk-label">ALL</a>
+    <div id="moreitems" style="height: 50px;">{loaded ? "" : "Loading ..."}</div>
+
   </virtual>
   <virtual if={!can_access && loaded}>
     Sorry, you can't access this page...
   </virtual>
   <script>
     var self        = this
+    
     this.show_stats = false
-    this.page       = 0
+    this.page       = 1
     this.perpage    = localStorage.getItem("perpage") || per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
@@ -526,6 +518,7 @@
     this.loaded     = false
     this.folder_key = this.opts.folder_key || ''
     this.folder     = {}
+    this.reach_end  = false
     this.act_as_tree = true
 
     this.settings   = {}
@@ -534,10 +527,13 @@
 
     this.loadPage = function(pageIndex) {
       self.loaded = false
+      self.update()
       var querystring = "?folder=" + self.folder._key + "&is_root=" + self.folder.is_root
 
       common.get(url + "/datasets/" + opts.datatype + "/page/" + pageIndex + "/" + this.perpage + querystring, function(d) {
-        self.data = d.data[0].data
+        self.reach_end = d.data[0].data.length == 0
+        _.each(d.data[0].data, function(d) { console.log(d); self.data.push(d) })
+
         var model = d.model
         self.model = d.model
 
@@ -554,13 +550,12 @@
         if(model.columns) self.cols = model.columns
         self.count = d.data[0].count
         self.sortable = !!model.sortable
-
+        self.loaded = true
         self.update()
 
         if(self.can_access == false) {
           common.get(url + "/auth/whoami", function(me) {
             localStorage.setItem('resize_api_key', me.resize_api_key)
-            self.loaded = true
             self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
             self.update()
           })
@@ -613,18 +608,6 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    nextPage(e) {
-      self.page += 1
-      self.loadPage(self.page + 1)
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    previousPage(e) {
-      self.page -= 1
-      self.loadPage(self.page + 1)
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
     destroy_object(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/datasets/" + opts.datatype + "/" + e.item.row._key, function() {
@@ -672,7 +655,6 @@
     install(e) {
       e.preventDefault()
       var url = "/service/" + e.item.row.name
-      console.log(url)
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "service installed")
           UIkit.notification({
@@ -701,6 +683,26 @@
       })
       return false
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    this.isElementInViewport = function(el) {
+      var rect = el.getBoundingClientRect();
+
+      return rect.bottom > 0 &&
+          rect.right > 0 &&
+          rect.left < (window.innerWidth || document.documentElement.clientWidth) /* or $(window).width() */ &&
+          rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300 /* or $(window).height() */;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    this.on('mount', function() {
+      $(window).on('DOMContentLoaded load resize scroll', function(i) {
+        if(!self.reach_end && self.loaded && self.isElementInViewport(document.getElementById("moreitems"))) {
+          self.page += 1
+          self.loadPage(self.page)
+        }
+      })
+    })
 
     ////////////////////////////////////////////////////////////////////////////
     this.on('updated', function() {
