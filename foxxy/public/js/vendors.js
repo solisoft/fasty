@@ -11028,8 +11028,51 @@ return jQuery;
   })();
 });
 
-require.register("node-browser-modules/node_modules/process/browser.js", function(exports, require, module) {
-  require = __makeRelativeRequire(require, {}, "node-browser-modules/node_modules/process");
+require.register("number-is-nan/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "number-is-nan");
+  (function() {
+    'use strict';
+module.exports = Number.isNaN || function (x) {
+	return x !== x;
+};
+  })();
+});
+
+require.register("pretty-bytes/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "pretty-bytes");
+  (function() {
+    'use strict';
+var numberIsNan = require('number-is-nan');
+
+module.exports = function (num) {
+	if (typeof num !== 'number' || numberIsNan(num)) {
+		throw new TypeError('Expected a number, got ' + typeof num);
+	}
+
+	var exponent;
+	var unit;
+	var neg = num < 0;
+	var units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+	if (neg) {
+		num = -num;
+	}
+
+	if (num < 1) {
+		return (neg ? '-' : '') + num + ' B';
+	}
+
+	exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1);
+	num = Number((num / Math.pow(1000, exponent)).toFixed(2));
+	unit = units[exponent];
+
+	return (neg ? '-' : '') + num + ' ' + unit;
+};
+  })();
+});
+
+require.register("process/browser.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "process");
   (function() {
     // shim for using process in browser
 var process = module.exports = {};
@@ -11215,49 +11258,6 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
-  })();
-});
-
-require.register("number-is-nan/index.js", function(exports, require, module) {
-  require = __makeRelativeRequire(require, {}, "number-is-nan");
-  (function() {
-    'use strict';
-module.exports = Number.isNaN || function (x) {
-	return x !== x;
-};
-  })();
-});
-
-require.register("pretty-bytes/index.js", function(exports, require, module) {
-  require = __makeRelativeRequire(require, {}, "pretty-bytes");
-  (function() {
-    'use strict';
-var numberIsNan = require('number-is-nan');
-
-module.exports = function (num) {
-	if (typeof num !== 'number' || numberIsNan(num)) {
-		throw new TypeError('Expected a number, got ' + typeof num);
-	}
-
-	var exponent;
-	var unit;
-	var neg = num < 0;
-	var units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-	if (neg) {
-		num = -num;
-	}
-
-	if (num < 1) {
-		return (neg ? '-' : '') + num + ' B';
-	}
-
-	exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1);
-	num = Number((num / Math.pow(1000, exponent)).toFixed(2));
-	unit = units[exponent];
-
-	return (neg ? '-' : '') + num + ' ' + unit;
-};
   })();
 });
 
@@ -14887,8 +14887,7 @@ require.register("vendors/Sortable.min.js", function(exports, require, module) {
 });
 
 require.alias("jquery/dist/jquery.js", "jquery");
-require.alias("node-browser-modules/node_modules/process/browser.js", "node-browser-modules/node_modules/process");
-require.alias("node-browser-modules/node_modules/process/browser.js", "process");
+require.alias("process/browser.js", "process");
 require.alias("riot/riot.js", "riot");
 require.alias("riot-observable/dist/observable.js", "riot-observable");process = require('process');require.register("___globals___", function(exports, require, module) {
   

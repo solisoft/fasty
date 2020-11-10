@@ -308,7 +308,7 @@
 
     save_form(e) {
       e.preventDefault()
-      common.saveForm("form_dataset", "datasets/" + opts.datatype ,opts.dataset_id)
+      common.saveForm("form_dataset", "datasets/" + opts.datatype, opts.dataset_id)
     }
 
     duplicate(e) {
@@ -475,17 +475,23 @@
         <tr each={ row in data } no-reorder key={row._key}>
           <td if={sortable}><i class="fas fa-grip-vertical handle"></i></td>
           <td each={ col in cols } class="{col.class}">
-            <virtual if={ col.toggle == true } >
-              <virtual if={ col.tr == true }><a style="color: { col.colors ? col.colors[row[col.name][locale]] : 'white' }"onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual>
-              <virtual if={ col.tr != true }><a style="color: {col.colors ? col.colors[row[col.name]] : 'white' }" onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name) }</a></virtual>
+            <virtual if={col.trads == true}>
+              <div each={lang in langs}><a onclick={traduct} data-lang={lang} data-id={row._key} data-value={calc_value(row, col, lang)} class="uk-button uk-button-small">{lang} :</a> <span id="trad_{lang}_{row._key}">{ calc_value(row, col, lang) }</span></div>
             </virtual>
 
-            <virtual if={ col.toggle != true } >
-              <virtual if={ col.type == "image" }>
-                <img src="{calc_value(row, col, locale)} " style="height:25px">
+            <virtual if={col.trads != true}>
+              <virtual if={ col.toggle == true } >
+              <virtual if={ col.tr == true }><a style="color: { col.colors ? col.colors[row[col.name][locale]] : 'white' }" onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual>
+              <virtual if={ col.tr != true }><a style="color: {col.colors ? col.colors[row[col.name]] : 'white' }" onclick={toggleField} data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name) }</a></virtual>
               </virtual>
-              <virtual if={ col.type != "image" }>
-                { calc_value(row, col, locale) }
+
+              <virtual if={ col.toggle != true } >
+                <virtual if={ col.type == "image" }>
+                  <img src="{calc_value(row, col, locale)} " style="height:25px">
+                </virtual>
+                <virtual if={ col.type != "image" }>
+                  { calc_value(row, col, locale) }
+                </virtual>
               </virtual>
             </virtual>
           </td>
@@ -532,7 +538,7 @@
 
       common.get(url + "/datasets/" + opts.datatype + "/page/" + pageIndex + "/" + this.perpage + querystring, function(d) {
         self.reach_end = d.data[0].data.length == 0
-        _.each(d.data[0].data, function(d) { console.log(d); self.data.push(d) })
+        _.each(d.data[0].data, function(d) { self.data.push(d) })
 
         var model = d.model
         self.model = d.model
@@ -551,6 +557,7 @@
         self.count = d.data[0].count
         self.sortable = !!model.sortable
         self.loaded = true
+        self.langs = d.langs
         self.update()
 
         if(self.can_access == false) {
@@ -580,6 +587,23 @@
       if(col.downcase) { value = _.toLower(value) }
       return value
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    traduct(e) {
+      e.preventDefault()
+      var lang = e.item.lang
+      var id = $(e.srcElement).data("id")
+      var traduction = prompt(lang, $(e.srcElement).data("value"))
+      if(traduction) {
+        common.patch(url + "/datasets/" + opts.datatype + "/" + id + "/value/" + lang + "/field", JSON.stringify({ value: traduction }), function(d) {
+          $("#trad_" + lang + "_" + id).text(traduction)
+          $(e.srcElement).data("value", traduction)
+        })
+      }
+      
+      return false
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////
     filter(e) {
@@ -671,7 +695,7 @@
     install_script(e) {
       e.preventDefault()
       var url = "/script/" + e.item.row.name
-      console.log(url)
+      
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "script installed")
           UIkit.notification({

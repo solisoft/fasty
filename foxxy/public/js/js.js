@@ -1726,7 +1726,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
     this.save_form = function(e) {
       e.preventDefault()
-      common.saveForm("form_dataset", "datasets/" + opts.datatype ,opts.dataset_id)
+      common.saveForm("form_dataset", "datasets/" + opts.datatype, opts.dataset_id)
     }.bind(this)
 
     this.duplicate = function(e) {
@@ -1847,7 +1847,7 @@ riot.tag2('dataset_tags', '<span each="{row in data}"> {row.tag} <span class="uk
     })
 });
 
-riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <dataset_tags if="{show_stats}" datatype="{opts.datatype}" tag="{show_stats_tag}"></dataset_tags> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder key="{row._key}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a riot-style="color: {col.colors ? col.colors[row[col.name][locale]] : \'white\'}" onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a riot-style="color: {col.colors ? col.colors[row[col.name]] : \'white\'}" onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </td> <td class="uk-text-center" width="160"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a if="{is_api}" onclick="{install}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a if="{is_script}" onclick="{install_script}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <div id="moreitems" style="height: 50px;">{loaded ? ⁗⁗ : ⁗Loading ...⁗}</div> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
+riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folder_key="{folder_key}" slug="{opts.datatype}"></dataset_folders> <virtual if="{can_access}"> <div class="uk-float-right"> <a if="{act_as_tree}" href="#datasets/{opts.datatype}/new/{folder_key}" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{!act_as_tree}" href="#datasets/{opts.datatype}/new" class="uk-button uk-button-small uk-button-default"><i class="fas fa-plus"></i> New {model.singular}</a> <a if="{export}" onclick="{export_data}" class="uk-button uk-button-small uk-button-primary"><i class="fas fa-file-export"></i> Export CSV</a> </div> <h3>Listing {opts.datatype}</h3> <form onsubmit="{filter}" class="uk-margin-top"> <div class="uk-inline uk-width-1-1"> <span class="uk-form-icon" uk-icon="icon: search"></span> <input type="text" ref="term" id="term" class="uk-input" autocomplete="off"> </div> </form> <dataset_tags if="{show_stats}" datatype="{opts.datatype}" tag="{show_stats_tag}"></dataset_tags> <table class="uk-table uk-table-striped"> <thead> <tr> <th if="{sortable}" width="20"></th> <th each="{col in cols}" class="{col.class}">{col.name == undefined ? col : col.label === undefined ? col.name : col.label}</th> <th width="70"></th> </tr> </thead> <tbody id="list"> <tr each="{row in data}" no-reorder key="{row._key}"> <td if="{sortable}"><i class="fas fa-grip-vertical handle"></i></td> <td each="{col in cols}" class="{col.class}"> <virtual if="{col.trads == true}"> <div each="{lang in langs}"><a onclick="{traduct}" data-lang="{lang}" data-id="{row._key}" data-value="{calc_value(row, col, lang)}" class="uk-button uk-button-small">{lang} :</a> <span id="trad_{lang}_{row._key}">{calc_value(row, col, lang)}</span></div> </virtual> <virtual if="{col.trads != true}"> <virtual if="{col.toggle == true}"> <virtual if="{col.tr == true}"><a riot-style="color: {col.colors ? col.colors[row[col.name][locale]] : \'white\'}" onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name][locale]] : _.get(row,col.name)[locale]}</a></virtual> <virtual if="{col.tr != true}"><a riot-style="color: {col.colors ? col.colors[row[col.name]] : \'white\'}" onclick="{toggleField}" data-key="{row._key}">{col.values ? col.values[row[col.name]] : _.get(row,col.name)}</a></virtual> </virtual> <virtual if="{col.toggle != true}"> <virtual if="{col.type == ⁗image⁗}"> <img riot-src="{calc_value(row, col, locale)} " style="height:25px"> </virtual> <virtual if="{col.type != ⁗image⁗}"> {calc_value(row, col, locale)} </virtual> </virtual> </virtual> </td> <td class="uk-text-center" width="160"> <a onclick="{edit}" class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a> <a if="{is_api}" onclick="{install}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a if="{is_script}" onclick="{install_script}" class="uk-button uk-button-success uk-button-small"><i class="fas fa-upload"></i></a> <a onclick="{destroy_object}" class="uk-button uk-button-danger uk-button-small"><i class="fas fa-trash-alt"></i></a> </td> </tr> </tbody> </table> <div id="moreitems" style="height: 50px;">{loaded ? ⁗⁗ : ⁗Loading ...⁗}</div> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
     var self        = this
 
     this.show_stats = false
@@ -1875,7 +1875,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
 
       common.get(url + "/datasets/" + opts.datatype + "/page/" + pageIndex + "/" + this.perpage + querystring, function(d) {
         self.reach_end = d.data[0].data.length == 0
-        _.each(d.data[0].data, function(d) { console.log(d); self.data.push(d) })
+        _.each(d.data[0].data, function(d) { self.data.push(d) })
 
         var model = d.model
         self.model = d.model
@@ -1894,6 +1894,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
         self.count = d.data[0].count
         self.sortable = !!model.sortable
         self.loaded = true
+        self.langs = d.langs
         self.update()
 
         if(self.can_access == false) {
@@ -1920,6 +1921,21 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
       if(col.uppercase) { value = _.toUpper(value) }
       if(col.downcase) { value = _.toLower(value) }
       return value
+    }.bind(this)
+
+    this.traduct = function(e) {
+      e.preventDefault()
+      var lang = e.item.lang
+      var id = $(e.srcElement).data("id")
+      var traduction = prompt(lang, $(e.srcElement).data("value"))
+      if(traduction) {
+        common.patch(url + "/datasets/" + opts.datatype + "/" + id + "/value/" + lang + "/field", JSON.stringify({ value: traduction }), function(d) {
+          $("#trad_" + lang + "_" + id).text(traduction)
+          $(e.srcElement).data("value", traduction)
+        })
+      }
+
+      return false
     }.bind(this)
 
     this.filter = function(e) {
@@ -2003,7 +2019,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
     this.install_script = function(e) {
       e.preventDefault()
       var url = "/script/" + e.item.row.name
-      console.log(url)
+
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "script installed")
           UIkit.notification({
@@ -2274,7 +2290,7 @@ riot.tag2('files', '<div class="sortable_{opts.field}" style="user-select: none;
 });
 });
 
-require.alias("node-browser-modules/node_modules/process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
+require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
   
 
 // Auto-loaded modules from config.npm.globals.
