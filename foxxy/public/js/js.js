@@ -1551,14 +1551,14 @@ riot.tag2('dataset_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in p
     }
 
     this.addFolder = function(e) {
-      var name = prompt("Folder's name");
+      var name = prompt("Folder's name")
       common.post(url + "/datasets/folders/" + opts.slug, JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
         loadFolder(self.folder._key)
       })
     }.bind(this)
 
     this.renameFolder = function(e) {
-      var name = prompt("Update Folder's name");
+      var name = prompt("Update Folder's name")
       common.patch(url + "/datasets/folders/" + opts.slug, JSON.stringify({ name: name, id: self.folder._key }), function(d) {
         self.path = d.path
         self.update()
@@ -1575,7 +1575,7 @@ riot.tag2('dataset_folders', '<div> <ul class="uk-breadcrumb"> <li each="{f in p
         })
       }, function () {
         console.log('Rejected.')
-      });
+      })
     }.bind(this)
 
     loadFolder(this.folder_key)
@@ -1634,7 +1634,7 @@ riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk
 
     this.on('updated', function() {
       if(self.sortable) {
-        var el = document.getElementById('sublist');
+        var el = document.getElementById('sublist')
         if(el)
           var sortable = new Sortable(el, {
             animation: 150,
@@ -1646,7 +1646,7 @@ riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk
                 function() {}
               )
             },
-          });
+          })
       }
     })
 });
@@ -1662,7 +1662,7 @@ riot.tag2('dataset_crud_edit', '<a href="#" class="uk-button uk-button-link" onc
       common.saveForm(opts.id+'_crud_'+opts.singular, "datasets/sub/"+opts.parent_name+"/"+ opts.id+"/"+opts.element_id, "")
     }.bind(this)
 
-    var self = this;
+    var self = this
     common.get(url + "/datasets/" + opts.parent_name + "/sub/" + opts.id + "/" + opts.element_id, function(d) {
       self.subdata = d.data
 
@@ -1704,7 +1704,7 @@ riot.tag2('all_datatypes', '<div class="rightnav uk-card uk-card-default uk-card
     })
 });
 
-riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {object.singular}</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == dataset.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == dataset.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a if="{publishable}" class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual> <script>', '', '', function(opts) {
+riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="#">datasets</a></li> <li each="{i, k in sub_models}"><a href="#">{k}</a></li> </ul> <ul class="uk-switcher uk-margin"> <li> <h3>Editing {object.singular}</h3> <virtual if="{folders.length > 0}"> <label class="uk-label">Path</label> <form onsubmit="{changePath}"> <div class="uk-grid uk-grid-small"> <div class="uk-width-3-4"> <select class="uk-select" ref="folder"> <option riot-value="{folders[0].root._key}" selected="{folders[0].root._key == dataset.folder_key}">Root</option> <option each="{f in folders}" riot-value="{f.folder._key}" selected="{f.folder._key == dataset.folder_key}">{pathName(f.path)}</option> </select> </div> <div class="uk-width-1-4"> <a onclick="{changePath}" class="uk-button uk-button-primary">Change</a> </div> </div> </form> </virtual> <form onsubmit="{save_form}" class="uk-form" id="form_dataset"> </form> <a if="{publishable}" class="uk-button uk-button-primary" onclick="{publish}">Publish</a> <a class="uk-button uk-button-secondary" onclick="{duplicate}">Duplicate</a> </li> <li each="{i, k in sub_models}"> <div id="{k}" class="crud"></div> </li> </ul> </virtual> <virtual if="{!can_access && loaded}"> Sorry, you can\'t access this page... </virtual>', '', '', function(opts) {
     var self = this
     self.can_access = false
     self.loaded = false
@@ -1716,11 +1716,11 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
       e.preventDefault()
       common.put(url + "/datasets/pages/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
         UIkit.notification({
-            message : 'Successfully updated!',
-            status  : 'success',
-            timeout : 1000,
-            pos     : 'bottom-right'
-          });
+          message : 'Successfully updated!',
+          status  : 'success',
+          timeout : 1000,
+          pos     : 'bottom-right'
+        })
       })
     }.bind(this)
 
@@ -1738,7 +1738,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
         })
       }, function() {})
     }.bind(this)
@@ -1755,7 +1755,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
         })
       })
     }.bind(this)
@@ -1775,21 +1775,21 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
-        if(self.can_access)
-          var back_url = 'datasets/' + opts.datatype
-          if(act_as_tree && self.dataset.folder_key) { back_url += '/' + self.dataset.folder_key }
-          common.buildForm(self.dataset, self.fields, '#form_dataset', back_url, function() {
-            $(".crud").each(function(i, c) {
-              var id = $(c).attr("id")
-              riot.mount("#" + id, "dataset_crud_index", { model: id,
-                fields: self.sub_models[id].fields,
-                key: self.sub_models[id].key,
-                singular: self.sub_models[id].singular,
-                columns: self.sub_models[id].columns,
-                parent_id: opts.dataset_id,
-                parent_name: opts.datatype })
-            })
+        var back_url = ""
+        if(self.can_access) back_url = 'datasets/' + opts.datatype
+        if(act_as_tree && self.dataset.folder_key) { back_url += '/' + self.dataset.folder_key }
+        common.buildForm(self.dataset, self.fields, '#form_dataset', back_url, function() {
+          $(".crud").each(function(i, c) {
+            var id = $(c).attr("id")
+            riot.mount("#" + id, "dataset_crud_index", { model: id,
+              fields: self.sub_models[id].fields,
+              key: self.sub_models[id].key,
+              singular: self.sub_models[id].singular,
+              columns: self.sub_models[id].columns,
+              parent_id: opts.dataset_id,
+              parent_name: opts.datatype })
           })
+        })
       })
     })
 
@@ -1827,7 +1827,7 @@ riot.tag2('dataset_new', '<virtual if="{can_access}"> <h3>Creating {object.singu
             back_url += '/' + opts.folder_key
           }
 
-          common.buildForm(obj, fields, '#form_new_dataset', back_url);
+          common.buildForm(obj, fields, '#form_new_dataset', back_url)
         }
       })
     })
@@ -1939,7 +1939,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
     }.bind(this)
 
     this.filter = function(e) {
-      e.preventDefault();
+      e.preventDefault()
       if(self.refs.term.value != "") {
         $(".uk-form-icon i").attr("class", "uk-icon-spin uk-icon-spinner")
         common.get(url + "/datasets/"+ opts.datatype +"/search/"+self.refs.term.value, function(d) {
@@ -2002,7 +2002,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
       })
       return false
     }.bind(this)
@@ -2018,23 +2018,22 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
       })
       return false
     }.bind(this)
 
     this.isElementInViewport = function(el) {
       if(el) {
-        var rect = el.getBoundingClientRect();
+        var rect = el.getBoundingClientRect()
 
-      return rect.bottom > 0 &&
+        return rect.bottom > 0 &&
           rect.right > 0 &&
           rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
           rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300
       } else {
         return false
       }
-
     }
 
     this.on('mount', function() {
@@ -2048,7 +2047,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
 
     this.on('updated', function() {
       if(self.sortable) {
-        var el = document.getElementById('list');
+        var el = document.getElementById('list')
         if(el) {
           var sortable = new Sortable(el, {
             animation: 150,
@@ -2061,10 +2060,9 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
                 url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
                 function() {}
               )
-            },
-          });
+            }
+          })
         }
-
       }
     })
 });

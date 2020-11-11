@@ -30,14 +30,14 @@
     }
 
     addFolder(e) {
-      var name = prompt("Folder's name");
+      var name = prompt("Folder's name")
       common.post(url + "/datasets/folders/" + opts.slug, JSON.stringify({ name: name, parent_id: self.folder._key }), function(d) {
         loadFolder(self.folder._key)
       })
     }
 
     renameFolder(e) {
-      var name = prompt("Update Folder's name");
+      var name = prompt("Update Folder's name")
       common.patch(url + "/datasets/folders/" + opts.slug, JSON.stringify({ name: name, id: self.folder._key }), function(d) {
         self.path = d.path
         self.update()
@@ -54,7 +54,7 @@
         })
       }, function () {
         console.log('Rejected.')
-      });
+      })
     }
 
     loadFolder(this.folder_key)
@@ -151,7 +151,7 @@
     ////////////////////////////////////////////////////////////////////////////
     this.on('updated', function() {
       if(self.sortable) {
-        var el = document.getElementById('sublist');
+        var el = document.getElementById('sublist')
         if(el)
           var sortable = new Sortable(el, {
             animation: 150,
@@ -163,7 +163,7 @@
                 function() {}
               )
             },
-          });
+          })
       }
     })
   </script>
@@ -185,7 +185,7 @@
       common.saveForm(opts.id+'_crud_'+opts.singular, "datasets/sub/"+opts.parent_name+"/"+ opts.id+"/"+opts.element_id, "")
     }
 
-    var self = this;
+    var self = this
     common.get(url + "/datasets/" + opts.parent_name + "/sub/" + opts.id + "/" + opts.element_id, function(d) {
       self.subdata = d.data
 
@@ -298,11 +298,11 @@
       e.preventDefault()
       common.put(url + "/datasets/pages/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
         UIkit.notification({
-            message : 'Successfully updated!',
-            status  : 'success',
-            timeout : 1000,
-            pos     : 'bottom-right'
-          });
+          message : 'Successfully updated!',
+          status  : 'success',
+          timeout : 1000,
+          pos     : 'bottom-right'
+        })
       })
     }
 
@@ -320,7 +320,7 @@
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
         })
       }, function() {})
     }
@@ -337,7 +337,7 @@
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
         })
       })
     }
@@ -357,21 +357,21 @@
         self.can_access = d.fields.roles === undefined || _.includes(d.fields.roles.write, me.role)
         self.loaded = true
         self.update()
-        if(self.can_access)
-          var back_url = 'datasets/' + opts.datatype
-          if(act_as_tree && self.dataset.folder_key) { back_url += '/' + self.dataset.folder_key }
-          common.buildForm(self.dataset, self.fields, '#form_dataset', back_url, function() {
-            $(".crud").each(function(i, c) {
-              var id = $(c).attr("id")
-              riot.mount("#" + id, "dataset_crud_index", { model: id,
-                fields: self.sub_models[id].fields,
-                key: self.sub_models[id].key,
-                singular: self.sub_models[id].singular,
-                columns: self.sub_models[id].columns,
-                parent_id: opts.dataset_id,
-                parent_name: opts.datatype })
-            })
+        var back_url = ""
+        if(self.can_access) back_url = 'datasets/' + opts.datatype
+        if(act_as_tree && self.dataset.folder_key) { back_url += '/' + self.dataset.folder_key }
+        common.buildForm(self.dataset, self.fields, '#form_dataset', back_url, function() {
+          $(".crud").each(function(i, c) {
+            var id = $(c).attr("id")
+            riot.mount("#" + id, "dataset_crud_index", { model: id,
+              fields: self.sub_models[id].fields,
+              key: self.sub_models[id].key,
+              singular: self.sub_models[id].singular,
+              columns: self.sub_models[id].columns,
+              parent_id: opts.dataset_id,
+              parent_name: opts.datatype })
           })
+        })
       })
     })
 
@@ -380,6 +380,7 @@
       $(".select_mlist").select2()
       $(".select_tag").select2({ tags: true })
     })
+  </script>
 </dataset_edit>
 
 <dataset_new>
@@ -418,7 +419,7 @@
             back_url += '/' + opts.folder_key
           }
 
-          common.buildForm(obj, fields, '#form_new_dataset', back_url);
+          common.buildForm(obj, fields, '#form_new_dataset', back_url)
         }
       })
     })
@@ -604,10 +605,9 @@
       return false
     }
 
-
     ////////////////////////////////////////////////////////////////////////////
     filter(e) {
-      e.preventDefault();
+      e.preventDefault()
       if(self.refs.term.value != "") {
         $(".uk-form-icon i").attr("class", "uk-icon-spin uk-icon-spinner")
         common.get(url + "/datasets/"+ opts.datatype +"/search/"+self.refs.term.value, function(d) {
@@ -676,7 +676,7 @@
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
       })
       return false
     }
@@ -693,7 +693,7 @@
             status  : 'success',
             timeout : 1000,
             pos     : 'bottom-right'
-          });
+          })
       })
       return false
     }
@@ -701,16 +701,15 @@
     ////////////////////////////////////////////////////////////////////////////
     this.isElementInViewport = function(el) {
       if(el) {
-        var rect = el.getBoundingClientRect();
+        var rect = el.getBoundingClientRect()
 
-      return rect.bottom > 0 &&
+        return rect.bottom > 0 &&
           rect.right > 0 &&
           rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
           rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300  
       } else {
         return false
       }
-      
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -726,7 +725,7 @@
     ////////////////////////////////////////////////////////////////////////////
     this.on('updated', function() {
       if(self.sortable) {
-        var el = document.getElementById('list');
+        var el = document.getElementById('list')
         if(el) {
           var sortable = new Sortable(el, {
             animation: 150,
@@ -739,10 +738,9 @@
                 url + 'datasets/'+ opts.datatype +'/orders/' + evt.oldIndex + "/" + evt.newIndex + folder_key, {},
                 function() {}
               )
-            },
-          });
+            }
+          })
         }
-
       }
     })
   </script>
