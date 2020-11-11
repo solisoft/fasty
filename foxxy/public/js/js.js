@@ -2024,12 +2024,17 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
     }.bind(this)
 
     this.isElementInViewport = function(el) {
-      var rect = el.getBoundingClientRect();
+      if(el) {
+        var rect = el.getBoundingClientRect();
 
       return rect.bottom > 0 &&
           rect.right > 0 &&
-          rect.left < (window.innerWidth || document.documentElement.clientWidth)   &&
-          rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300  ;
+          rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
+          rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300
+      } else {
+        return false
+      }
+
     }
 
     this.on('mount', function() {
