@@ -385,6 +385,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         options = {}
         options = from_json(aql_request.options) if aql_request.options
         aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql), options)
+        output = "&nbsp;"
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}
