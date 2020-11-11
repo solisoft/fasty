@@ -472,7 +472,7 @@
         </tr>
       </thead>
       <tbody id="list">
-        <tr each={ row in data } no-reorder key={row._key}>
+        <tr each={ row in data } id="row_{row._key}" no-reorder key={row._key}>
           <td if={sortable}><i class="fas fa-grip-vertical handle"></i></td>
           <td each={ col in cols } class="{col.class}">
             <virtual if={col.trads == true}>
@@ -515,7 +515,7 @@
     
     this.show_stats = false
     this.page       = 1
-    this.perpage    = localStorage.getItem("perpage") || per_page
+    this.perpage    = per_page
     this.locale     = window.localStorage.getItem('foxx-locale')
     this.data       = []
     this.export     = false
@@ -635,7 +635,7 @@
     destroy_object(e) {
       UIkit.modal.confirm("Are you sure?").then(function() {
         common.delete(url + "/datasets/" + opts.datatype + "/" + e.item.row._key, function() {
-          self.loadPage(self.page + 1)
+          $("#row_" + e.item.row._key).remove()
         })
       }, function() {})
     }
@@ -648,16 +648,6 @@
           e.target.innerText = data.data
         }
       })
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    setPerPage(e) {
-      e.preventDefault()
-      var perpage = parseInt(e.srcElement.innerText)
-      if(e.srcElement.innerText == 'ALL') perpage = 1000000000;
-      this.perpage = perpage
-      localStorage.setItem("perpage", perpage)
-      this.loadPage(1)
     }
 
     ////////////////////////////////////////////////////////////////////////////
