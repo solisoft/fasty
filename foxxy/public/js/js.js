@@ -1895,7 +1895,6 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
         self.sortable = !!model.sortable
         self.loaded = true
         self.langs = d.langs
-        self.update()
 
         if(self.can_access == false) {
           common.get(url + "/auth/whoami", function(me) {
@@ -1903,6 +1902,8 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
             self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
             self.update()
           })
+        } else {
+          self.update()
         }
       })
     }
