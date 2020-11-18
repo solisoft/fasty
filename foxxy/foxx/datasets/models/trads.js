@@ -9,7 +9,7 @@ const model = function() {
     sort: "SORT doc.key ASC",
     columns: [
       { name: 'key' },
-      { name: 'value', tr: true },
+      { name: 'value', tr: true, trads: true },
     ],
     roles: {
       read: ['editor', 'developer', 'admin'],

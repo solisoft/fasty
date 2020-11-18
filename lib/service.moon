@@ -39,8 +39,12 @@ install_service = (sub_domain, name)->
 
     for k, item in pairs api.routes
       write_content("#{path}/APP/routes/#{item.name}.js", item.javascript)
-
+    for k, item in pairs api.tests
       write_content("#{path}/APP/tests/#{item.name}.js", item.javascript)
+    for k, item in pairs api.libs
+      write_content("#{path}/APP/libs/#{item.name}.js", item.javascript)
+    for k, item in pairs api.scripts
+      write_content("#{path}/APP/scripts/#{item.name}.js", item.javascript)
 
     os.execute("cd install_service/#{sub_domain}/#{name}/APP && export PATH='$PATH:/usr/local/bin' && yarn")
     os.execute("cd install_service/#{sub_domain} && zip -rq #{name}.zip #{name}/")
@@ -96,16 +100,12 @@ compile_riotjs = (sub_domain, name, tag) ->
     os.execute("mkdir -p #{path}")
     write_content("#{path}/#{name}.riot", tag)
 
-    command = "export PATH=\"$PATH;/usr/local/bin\" && riot #{path}/#{name}.riot --output #{path}/#{name}.js"
+    command = "export PATH=\"$PATH;/usr/local/bin\" && riot --format umd #{path}/#{name}.riot --output #{path}/#{name}.js && terser --compress --mangle -o #{path}/#{name}.js #{path}/#{name}.js"
     handle = io.popen(command)
     result = handle\read("*a")
     handle\close()
 
-    -- remove latest line
-    handle = io.popen("head -n -1 #{path}/#{name}.js")
-    result = handle\read("*a")
-    handle\close()
-    result
+    read_file("#{path}/#{name}.js")
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service, :install_script, :deploy_site, :compile_riotjs }

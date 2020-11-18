@@ -33,7 +33,8 @@ module.exports = {
   plugins: {
     htmlPages: {
       compileAssets: true
-    }
+    },
+    
   },
 
   overrides: {

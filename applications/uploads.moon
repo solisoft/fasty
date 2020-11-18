@@ -72,7 +72,7 @@ check_file = (params) ->
   upload
 --------------------------------------------------------------------------------
 define_subdomain = () =>
-  sub_domain = stringy.split(@req.headers.host, '.')[1]
+  sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
@@ -94,7 +94,7 @@ class FastyImages extends lapis.Application
       load_settings(@)
       @params.key = @req.headers['apikey'] if @req.headers['apikey']
       if true -- @params.key == settings[sub_domain].resize_ovh
-        if file = @params.files[""] or @params.files
+        if file = @params["files[]"] or @params.files
           arr = stringy.split(file.filename, ".")
           ext = arr[table.getn(arr)]
 
@@ -112,7 +112,7 @@ class FastyImages extends lapis.Application
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
-              google_url = "https://storage.googleapis.com/#{bucket}#{filename}" if status == 200
+              google_url = "https://storage.googleapis.com/#{bucket}/#{path}/#{filename}" if status == 200
 
           upload = {
             "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. filename,

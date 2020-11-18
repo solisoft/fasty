@@ -50,7 +50,7 @@ RUN curl -OL https://download.arangodb.com/arangodb36/DEBIAN/Release.key && \
     apt-get install apt-transport-https && \
     apt-get install arangodb3-client
 
-RUN npm install -g yarn forever @riotjs/cli
+RUN npm install -g yarn forever @riotjs/cli terser
 
 WORKDIR /var/www
 

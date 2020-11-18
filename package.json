@@ -10,12 +10,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "cypress": "^4.4.0",
+    "cypress": "^4.12.1",
     "mocha": "^4.0.1",
     "mocha-junit-reporter": "^1.13.0",
     "mocha-multi-reporters": "^1.1.4"
-  },
-  "dependencies": {
-    "arangojs": "^6.10.0"
   }
 }

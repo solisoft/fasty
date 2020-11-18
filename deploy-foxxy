@@ -1,8 +1,8 @@
 #!/bin/sh
 cd foxxy
-yarn
+npm install
 rm -Rf dist
-LOGGY_STACKS=1 brunch b --production
+LOGGY_STACKS=1 ./node_modules/brunch/bin/brunch b --production
 cd ..
 git add .
 git commit -am "Build Foxxy App"

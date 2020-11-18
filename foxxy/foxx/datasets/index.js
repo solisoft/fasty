@@ -84,7 +84,9 @@ var fieldsToData = function(fields, body, headers) {
           if (f.t == "boolean") data[f.n] = true
           else data[f.n] = typeCast(f.t, body[f.n])
           if(f.t == "password" || f.t == "password_confirmation") {
-            data.authData = auth.create(body[f.n])
+            if(body[f.n] != "") {
+              data.authData = auth.create(body[f.n])
+            }
             delete data[f.n]
           }
         }
@@ -192,7 +194,13 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
 
   if (aql.indexOf('@lang') > 0) { Object.assign(bindVars, { lang: locale }); }
 
-  res.send({ model: model, data: db._query(aql, bindVars).toArray(), aql, bindVars });
+  var langs = _.map(db.settings.firstExample().langs.split(","), function(l) { return _.trim(l) })
+
+  res.send({ 
+    model: model, 
+    data: db._query(aql, bindVars).toArray(), 
+    aql, bindVars, langs
+  });
 })
 .header('X-Session-Id')
 .description('Returns all objects');
@@ -653,6 +661,31 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
 .header('foxx-locale')
 .header('X-Session-Id')
 .description('Update an object.');
+
+////////////////////////////////////////////////////////////////////////////////
+// PATCH /datasets/:service/:id/:field/field
+router.patch('/:service/:id/:field/:lang/field', function (req, res) {
+  let object = JSON.parse(models()[req.pathParams.service].javascript)
+  const collection = db._collection(object.collection || 'datasets')
+
+  var item = collection.document(req.pathParams.id)
+  let column = _.first(_.filter(object.columns, function(el) { return el.name == req.pathParams.field}))
+  if (item) {
+    
+    item[req.pathParams.field][req.pathParams.lang] = req.body.value
+    collection.update(item, item)
+    
+    res.send({ success: true })
+  } else {
+    res.send({ success: false })
+  }
+})
+.body(joi.object({
+  value: joi.any().required()
+}))
+.header('foxx-locale')
+.header('X-Session-Id')
+.description('Update a field.');
 
 ////////////////////////////////////////////////////////////////////////////////
 // PATCH /datasets/:service/:id/:field/toggle

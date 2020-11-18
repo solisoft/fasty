@@ -63,7 +63,8 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
   if uselayout == true
     request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
   else request ..= 'RETURN { item }'
-
+  print(request)
+  print(to_json({ slug: slug, lang: lang }))
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   if page
@@ -110,6 +111,10 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
     page_builder = (data.layout and data.layout.page_builder) or 'page'
     page_partial = load_document_by_slug(db_name, page_builder, 'partials')
     global_data.page_partial = page_partial
+
+    json = data.item.html.json
+    json = data.item.html[params['lang']].json if data.item.html[params['lang']]
+
     if uselayout
       html = prepare_headers(data.layout.html, data, params)
 
@@ -117,13 +122,13 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
         html = html\gsub('@raw_yield', escape_pattern(data.item.raw_html[params['lang']]))
       else
         html = html\gsub('@raw_yield', '')
-
-      json = data.item.html[params['lang']].json
+  
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
 
       html = prepare_assets(html, data.layout, params)
-    else html = etlua2html(data.item.html.json, page_partial, params, global_data)
+    else 
+      html = etlua2html(json, page_partial, params, global_data)
 
     html = html\gsub('@yield', '')
     html = html\gsub('@raw_yield', '')
@@ -218,7 +223,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         if dataset == ''
           page_html = dynamic_page(
             db_name,
-            load_page_by_slug(db_name, item, 'pages', params.lang, false),
+            load_page_by_slug(db_name, unescape(item), params.lang, false),
             params, global_data, history, false
           )
         else
@@ -247,7 +252,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      partial = load_document_by_slug(db_name, item, 'partials', false)
+      partial = load_document_by_slug(db_name, unescape(item), 'partials', false)
       if partial
         db_data = { "page": 1 }
         if dataset == 'arango'
@@ -333,7 +338,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'riot4'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        data = { ids: {}, revisions: {}, names: {} }
+        data = { ids: {}, revisions: {}, names: {}, js: {} }
         for i, k in pairs(stringy.split(item, '#'))
           component = aql(
             db_name,
@@ -343,17 +348,19 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
+          table.insert(data.js, component.javascript)
 
-        if dataset == 'url'
-          output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
-        if dataset == 'mount'
-          output ..= '<script type="module">'
-          output ..= "import #{k} from '/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js'"
-          output ..= "riot.register('#{k}', #{k})"
-          output ..= "riot.mount('#{k}')"
-          output ..='</script>'
-        if dataset == 'source'
-          output ..= http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
+
+          if dataset == 'url'
+            output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
+          if dataset == 'mount'
+            output ..= '<script type="module">'
+            output ..= table.concat(data.js,"\n")
+            output ..= "riot.register('#{k}', #{k});"
+            output ..= "riot.mount('#{k}')"
+            output ..='</script>'
+          if dataset == 'source'
+            output ..= http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
     if action == 'spa'
@@ -378,6 +385,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         options = {}
         options = from_json(aql_request.options) if aql_request.options
         aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql), options)
+        output = "&nbsp;"
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}

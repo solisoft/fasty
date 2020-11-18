@@ -19,7 +19,7 @@ expire_at = () ->
   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
 define_subdomain = () =>
-  sub_domain = stringy.split(@req.headers.host, '.')[1]
+  sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
@@ -117,9 +117,9 @@ class FastyAssets extends lapis.Application
       )[1] .. "\n"
     content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content
+      content, headers: { "Access-Control-Allow-Origin": "*" }
     else
-      content, headers: { "expires": expire_at! }
+      content, headers: { "expires": expire_at!, "Access-Control-Allow-Origin": "*" }
 --  ------------------------------------------------------------------------------
   [componentjs: '/:lang/:key/component/:rev.js']: =>
     sub_domain = define_subdomain(@)
