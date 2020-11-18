@@ -122,12 +122,12 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
         html = html\gsub('@raw_yield', escape_pattern(data.item.raw_html[params['lang']]))
       else
         html = html\gsub('@raw_yield', '')
-  
+
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
 
       html = prepare_assets(html, data.layout, params)
-    else 
+    else
       html = etlua2html(json, page_partial, params, global_data)
 
     html = html\gsub('@yield', '')
@@ -349,7 +349,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
           table.insert(data.js, component.javascript)
-
 
           if dataset == 'url'
             output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
