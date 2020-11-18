@@ -296,7 +296,7 @@
 
     changePath(e) {
       e.preventDefault()
-      common.put(url + "/datasets/pages/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+      common.put(url + "/datasets/"+ opts.datatype +"/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
         UIkit.notification({
           message : 'Successfully updated!',
           status  : 'success',
