@@ -186,7 +186,7 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
       LET image = (FOR u IN uploads FILTER u.object_id == doc._id SORT u.pos LIMIT 1 RETURN u)[0]
       ${folder} ${order} ${includes}
       LIMIT @offset, @perpage
-      
+
       RETURN MERGE(KEEP(doc, @fields), { image: image ${include_merge} })
   )
   RETURN { count: count, data: data }
@@ -196,9 +196,9 @@ router.get('/:service/page/:page/:perpage', function (req, res) {
 
   var langs = _.map(db.settings.firstExample().langs.split(","), function(l) { return _.trim(l) })
 
-  res.send({ 
-    model: model, 
-    data: db._query(aql, bindVars).toArray(), 
+  res.send({
+    model: model,
+    data: db._query(aql, bindVars).toArray(),
     aql, bindVars, langs
   });
 })
@@ -671,10 +671,10 @@ router.patch('/:service/:id/:field/:lang/field', function (req, res) {
   var item = collection.document(req.pathParams.id)
   let column = _.first(_.filter(object.columns, function(el) { return el.name == req.pathParams.field}))
   if (item) {
-    
+
     item[req.pathParams.field][req.pathParams.lang] = req.body.value
     collection.update(item, item)
-    
+
     res.send({ success: true })
   } else {
     res.send({ success: false })
