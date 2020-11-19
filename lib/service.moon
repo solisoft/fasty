@@ -116,7 +116,7 @@ compile_tailwindcss = (sub_domain, layout_id) ->
     settings = from_json(aql(sub_domain, 'FOR s IN settings RETURN s.home')[1].home)
     tailwindfile = settings.tailwind_config
     poscssfile = settings.postcss_config
-    if tailwindfile && poscssfile
+    if tailwindfile and poscssfile
       path = "compile_tailwind/#{sub_domain}/#{name}"
       os.execute("mkdir -p #{path}")
       write_content("#{path}/#{name}.css", scss = sass.compile(layout.css, 'compressed'))
