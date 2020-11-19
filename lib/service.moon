@@ -1,8 +1,10 @@
 http    = require 'lapis.nginx.http'
 stringy = require 'stringy'
+sass    = require 'sass'
+
 import map, table_index from require 'lib.utils'
 import from_json, to_json, trim from require 'lapis.util'
-import aql, foxx_upgrade from require 'lib.arango'
+import aql, document_get, foxx_upgrade from require 'lib.arango'
 --------------------------------------------------------------------------------
 write_content = (filename, content)->
   file = io.open(filename, 'w+')
@@ -106,6 +108,46 @@ compile_riotjs = (sub_domain, name, tag) ->
     handle\close()
 
     read_file("#{path}/#{name}.js")
+--------------------------------------------------------------------------------
+compile_tailwindcss = (sub_domain, layout_id) ->
+  sub_domain = 'db_' .. sub_domain
+  layout = document_get(sub_domain, layout_id)
+  if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
+    settings = from_json(aql(sub_domain, 'FOR s IN settings RETURN s.home')[1].home)
+    tailwindfile = settings.tailwind_config
+    poscssfile = settings.postcss_config
+    if tailwindfile && poscssfile
+      path = "compile_tailwind/#{sub_domain}/#{name}"
+      os.execute("mkdir -p #{path}")
+      write_content("#{path}/#{name}.css", scss = sass.compile(layout.css, 'compressed'))
+      write_content("#{path}/tailwind.config.js", tailwindfile)
+      write_content("#{path}/postcss.config.js", poscssfile)
+
+      -- Layouts
+      layouts = aql(sub_domain, 'FOR doc IN layouts RETURN { html: doc.html }')
+      for k, item in pairs apis
+        write_content("#{path}/layout_{k}.html", item.html)
+      -- Pages
+      pages = aql(sub_domain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')
+      for k, item in pairs pages
+        write_content("#{path}/page_{k}.html", item.raw_html .. item.html)
+      -- Components
+      components = aql(sub_domain, 'FOR doc IN components RETURN { html: doc.html }')
+      for k, item in pairs components
+        write_content("#{path}/component_{k}.html", item.html)
+      -- Partials
+      partials = aql(sub_domain, 'FOR doc IN partials RETURN { html: doc.html }')
+      for k, item in pairs partials
+        write_content("#{path}/partial_{k}.html", item.html)
+
+      command = ""
+      handle = io.popen(command)
+      result = handle\read("*a")
+      handle\close()
+
+      read_file("#{path}/#{name}_compiled.css")
+    else
+      ""
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service, :install_script, :deploy_site, :compile_riotjs }

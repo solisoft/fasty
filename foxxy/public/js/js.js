@@ -633,9 +633,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
-  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
+  ".fasty.ovh": "/_db",
+  ".inseytel.com": "https://inseytel.com/_db",
+  "epic20.world": "/_db"
 };
 
 module.exports = Config;
@@ -1714,7 +1714,7 @@ riot.tag2('dataset_edit', '<virtual if="{can_access}"> <ul uk-tab> <li><a href="
 
     this.changePath = function(e) {
       e.preventDefault()
-      common.put(url + "/datasets/pages/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
+      common.put(url + "/datasets/"+ opts.datatype +"/" + opts.dataset_id + "/change_folder", JSON.stringify({ folder_key: self.refs.folder.value}), function(d) {
         UIkit.notification({
           message : 'Successfully updated!',
           status  : 'success',

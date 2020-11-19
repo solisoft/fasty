@@ -1,11 +1,11 @@
 etlua   = require 'etlua'
 stringy = require 'stringy'
-import aql, document_get from require 'lib.arango'
-import table_deep_merge, to_timestamp from require 'lib.utils'
 import http_get from require 'lib.http_client'
+import web_sanitize from require 'web_sanitize'
+import aql, document_get from require 'lib.arango'
 import encode_with_secret from require 'lapis.util.encoding'
 import from_json, to_json, trim, unescape from require 'lapis.util'
-import web_sanitize from require "web_sanitize"
+import table_deep_merge, to_timestamp, get_nested from require 'lib.utils'
 --------------------------------------------------------------------------------
 splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
@@ -412,8 +412,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       output = output[v] for k, v in pairs(stringy.split(dataset, "."))
     -- {{ og_data | name }}
     if action == 'og_data'
-      output = params.og_data[item] if params.og_data
-
+      output = get_nested(params.og_data, item) if params.og_data
     -- {{ dataset | key | field | <args> }}
     -- {{ dataset | slug=demo | js }}
     -- {{ dataset | slug=demo | js | only_url#js }}
