@@ -119,7 +119,7 @@ compile_tailwindcss = (sub_domain, layout_id) ->
     if tailwindfile and poscssfile
       path = "compile_tailwind/#{sub_domain}/#{name}"
       os.execute("mkdir -p #{path}")
-      write_content("#{path}/#{name}.css", scss = sass.compile(layout.css, 'compressed'))
+      write_content("#{path}/#{name}.css", sass.compile(layout.css, 'compressed'))
       write_content("#{path}/tailwind.config.js", tailwindfile)
       write_content("#{path}/postcss.config.js", poscssfile)
 
