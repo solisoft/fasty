@@ -79,6 +79,12 @@ class extends lapis.Application
 
     html = ''
 
+    infos = page_info(db_name, @params.slug, @params.lang)
+    infos = { 'page': {}, 'folder': {} } if infos == nil
+
+    if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
+      @params.splat = "slug/#{@params.splat}"
+
     if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
       splat = splat_to_table(@params.splat) if @params.splat
@@ -89,12 +95,6 @@ class extends lapis.Application
       html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
     else
       html = redirection
-
-    infos = page_info(db_name, @params.slug, @params.lang)
-    infos = { 'page': {}, 'folder': {} } if infos == nil
-
-    if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
-      @params.splat = "slug/#{@params.splat}"
 
     html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
