@@ -350,6 +350,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
           if dataset == 'url'
             output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
+          if dataset == 'tag'
+            output ..= '<script type="module">'
+            output ..= table.concat(data.js,"\n")
+            output ..='</script>'
           if dataset == 'mount'
             output ..= '<script type="module">'
             output ..= table.concat(data.js,"\n")
