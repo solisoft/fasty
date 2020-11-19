@@ -1642,7 +1642,7 @@ riot.tag2('dataset_crud_index', '<a href="#" class="uk-button uk-button-small uk
             handle: '.fa-grip-vertical',
             onSort: function ( evt) {
               common.put(
-                url + 'datasets/'+ opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+                url + 'datasets/'+ opts.parent_name + '/' + opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
                 function() {}
               )
             },

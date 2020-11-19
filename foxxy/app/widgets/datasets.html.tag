@@ -159,7 +159,7 @@
             handle: '.fa-grip-vertical',
             onSort: function (/**Event*/evt) {
               common.put(
-                url + 'datasets/'+ opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
+                url + 'datasets/'+ opts.parent_name + '/' + opts.id +'/orders/' + evt.oldIndex + "/" + evt.newIndex, {},
                 function() {}
               )
             },
@@ -513,7 +513,7 @@
   </virtual>
   <script>
     var self        = this
-    
+
     this.show_stats = false
     this.page       = 1
     this.perpage    = per_page
@@ -559,7 +559,7 @@
         self.sortable = !!model.sortable
         self.loaded = true
         self.langs = d.langs
-        
+
         if(self.can_access == false) {
           common.get(url + "/auth/whoami", function(me) {
             localStorage.setItem('resize_api_key', me.resize_api_key)
@@ -602,7 +602,7 @@
           $(e.srcElement).data("value", traduction)
         })
       }
-      
+
       return false
     }
 
@@ -686,7 +686,7 @@
     install_script(e) {
       e.preventDefault()
       var url = "/script/" + e.item.row.name
-      
+
       $.post(url, { token: self.settings.token }, function(data) {
         if(data == "script installed")
           UIkit.notification({
@@ -707,7 +707,7 @@
         return rect.bottom > 0 &&
           rect.right > 0 &&
           rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
-          rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300  
+          rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300
       } else {
         return false
       }

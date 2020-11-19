@@ -842,6 +842,58 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   .description('Swap 2 items');
 
 ////////////////////////////////////////////////////////////////////////////////
+// PUT /datasets/:service/orders/:from/:to
+router.put('/:service/:sub_service/orders/:from/:to', function (req, res) {
+  const collection_name = 'datasets'
+  const collection = db._collection(collection_name)
+  const from = parseInt(req.pathParams.from)
+  const to = parseInt(req.pathParams.to)
+
+  var doc = db._query(
+    `FOR doc IN @@collection FILTER doc.type == @type SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
+    _.merge({ "type": req.pathParams.sub_service, pos: parseInt(req.pathParams.from), "@collection": collection_name }, folder_params)
+  ).toArray()[0]
+
+  if (from < to) {
+    db._query(
+      `FOR doc IN @@collection
+
+      FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
+        UPDATE({ _key: doc._key, order: doc.order - 1 }) IN @@collection`,
+      _.merge({ "type": req.pathParams.sub_service, from, to, key: doc._key, "@collection": collection_name }, folder_params)
+    )
+  } else {
+    db._query(
+      `FOR doc IN @@collection
+
+        FILTER doc.type == @type AND doc.order <= @from and doc.order >= @to and doc._key != @key
+        UPDATE({ _key: doc._key, order: doc.order + 1 }) IN @@collection`,
+      _.merge({ "type": req.pathParams.sub_service, from, to, key: doc._key, "@collection": collection_name }, folder_params)
+    )
+  }
+
+  collection.update(doc._key, { order: to })
+
+  let docs = db._query(
+    `FOR doc IN @@collection
+      FILTER doc.type == @type SORT doc.order RETURN doc`, _.merge({
+        type: req.pathParams.sub_service,
+        "@collection": collection_name
+      }, folder_params)).toArray()
+
+  let i = 0;
+  _.each(docs, function(doc) {
+    collection.update(doc._key, { order: i });
+    i++;
+  })
+
+  res.send({ success: true });
+})
+  .header('foxx-locale')
+  .header('X-Session-Id')
+  .description('Sub Items : Swap 2 items');
+
+////////////////////////////////////////////////////////////////////////////////
 // GET /datasets/:service/stats/:tag
 router.get('/:service/stats/:tag', function (req, res) {
   let object = JSON.parse(models()[req.pathParams.service].javascript)
