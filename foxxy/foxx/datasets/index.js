@@ -848,7 +848,7 @@ router.put('/:service/:sub_service/orders/:from/:to', function (req, res) {
   const collection = db._collection(collection_name)
   const from = parseInt(req.pathParams.from)
   const to = parseInt(req.pathParams.to)
-
+  const folder_params = {}
   var doc = db._query(
     `FOR doc IN @@collection FILTER doc.type == @type SORT doc.order ASC LIMIT @pos, 1 RETURN doc`,
     _.merge({ "type": req.pathParams.sub_service, pos: parseInt(req.pathParams.from), "@collection": collection_name }, folder_params)
