@@ -63,8 +63,6 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
   if uselayout == true
     request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
   else request ..= 'RETURN { item }'
-  print(request)
-  print(to_json({ slug: slug, lang: lang }))
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   if page
