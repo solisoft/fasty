@@ -62,4 +62,4 @@ define_content_type = (slug) ->
 --------------------------------------------------------------------------------
 -- expose methods
 { :table_merge, :table_deep_merge, :table_index, :check_valid_lang, :map,
-  :to_timestamp, :uuid, :define_content_type, :last_element }
+  :to_timestamp, :uuid, :define_content_type, :last_element, :get_nested }
