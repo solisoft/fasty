@@ -6,6 +6,8 @@ const model = function() {
         r: false, c: "1-2", n: "page_builder", t: "list", j: "joi.string().required()", l: "Page Builder",
         d: "FOR doc in partials FILTER doc.builder == true RETURN [doc.slug, doc.name]"
       },
+      { r: true, c: "1-1", n: "twcss", t: "boolean", j: "joi.number().integer()", l: "tailwindcss?" },
+      
       { r: true, c: "1-1", n: "html", t: "code:html", j: "joi.any()", l: "HTML" },
       { tab: "CSS" },
       { r: true, c: "1-1", n: "i_css", t: "code:scss", j: "joi.any()", l: "Vendors CSS" },

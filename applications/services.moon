@@ -8,7 +8,7 @@ import from_json, to_json from require 'lapis.util'
 import dynamic_page from require 'lib.concerns'
 import respond_to from require 'lapis.application'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import install_service, install_script, deploy_site, compile_riotjs from require 'lib.service'
+import install_service, install_script, deploy_site, compile_riotjs, compile_tailwindcss from require 'lib.service'
 
 jwt = {}
 global_data = {}
@@ -97,6 +97,13 @@ class FastyServices extends lapis.Application
     POST: =>
       load_settings(@)
       compile_riotjs(sub_domain, @params.name, @params.tag)
+  }
+  ------------------------------------------------------------------------------
+  -- tailwindcss compiler
+  [tailwindcss: '/tailwindcss']: respond_to {
+    POST: =>
+      load_settings(@)
+      compile_tailwindcss(sub_domain, @params.id)
   }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)

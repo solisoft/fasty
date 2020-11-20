@@ -590,6 +590,17 @@ router.post('/:service/:id', function (req, res) {
       data.javascript = response.body
     }
 
+    if(req.pathParams.service == "layouts" && data.twcss == true) {
+      const url = JSON.parse(db.settings.firstExample({}).home).base_url
+      console.log(url + "/tailwindcss")
+      console.log(data)
+      var response = request.post(url + "/tailwindcss", {
+        form: { token: _settings.secret, id: req.pathParams.id }
+      })
+      data.compiled_css = response.body
+
+    }
+
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
     save_activity(doc._id, 'updated', req.session.uid)

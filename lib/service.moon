@@ -110,44 +110,79 @@ compile_riotjs = (sub_domain, name, tag) ->
     read_file("#{path}/#{name}.js")
 --------------------------------------------------------------------------------
 compile_tailwindcss = (sub_domain, layout_id) ->
-  sub_domain = 'db_' .. sub_domain
-  layout = document_get(sub_domain, layout_id)
-  if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
-    settings = from_json(aql(sub_domain, 'FOR s IN settings RETURN s.home')[1].home)
-    tailwindfile = settings.tailwind_config
-    poscssfile = settings.postcss_config
-    if tailwindfile and poscssfile
-      path = "compile_tailwind/#{sub_domain}/#{name}"
-      os.execute("mkdir -p #{path}")
-      write_content("#{path}/#{name}.css", sass.compile(layout.css, 'compressed'))
-      write_content("#{path}/tailwind.config.js", tailwindfile)
-      write_content("#{path}/postcss.config.js", poscssfile)
+  subdomain = 'db_' .. sub_domain
+  layout = document_get(subdomain, "layouts/" .. layout_id)
+  settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')[1]
+  home_settings = from_json(settings.home)
+  tailwindfile = home_settings.tailwind_config
+  langs = stringy.split(settings.langs, ",")
+  
+  print("----------------")
+  print(tailwindfile)
+  if tailwindfile
+    path = "compile_tailwind/#{subdomain}/#{layout_id}"
+    os.execute("mkdir -p #{path}")
 
-      -- Layouts
-      layouts = aql(sub_domain, 'FOR doc IN layouts RETURN { html: doc.html }')
-      for k, item in pairs apis
-        write_content("#{path}/layout_{k}.html", item.html)
-      -- Pages
-      pages = aql(sub_domain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')
-      for k, item in pairs pages
-        write_content("#{path}/page_{k}.html", item.raw_html .. item.html)
-      -- Components
-      components = aql(sub_domain, 'FOR doc IN components RETURN { html: doc.html }')
-      for k, item in pairs components
-        write_content("#{path}/component_{k}.html", item.html)
-      -- Partials
-      partials = aql(sub_domain, 'FOR doc IN partials RETURN { html: doc.html }')
-      for k, item in pairs partials
-        write_content("#{path}/partial_{k}.html", item.html)
+    package_json = {
+      "name": "test", "version": "1.0.0", "description": "",
+      "main": "index.js", "scripts": {},
+      "author": "", "license": "ISC",
+      "devDependencies": {
+        "autoprefixer": "^10.0.2",
+        "postcss": "^8.1.8",
+        "tailwindcss": "^2.0.1"
+      }
+    }
 
-      command = ""
-      handle = io.popen(command)
-      result = handle\read("*a")
-      handle\close()
+    write_content("#{path}/package.json", to_json(package_json))
+    
+    command = "cp -Rf ./node_modules_twcss #{path}/node_modules"
+    handle = io.popen(command)
+    result = handle\read("*a")
+    handle\close()
+    
+    write_content("#{path}/#{layout_id}.css", sass.compile(layout.scss, 'compressed'))
+    write_content("#{path}/tailwind.config.js", "module.exports = {  purge: ['./*.html'],  darkMode: false, theme: {    extend: {},  },  variants: {},  plugins: []}")
+    
+    -- Layouts
+    layouts = aql(subdomain, 'FOR doc IN layouts RETURN { html: doc.html }')
+    for k, item in pairs layouts
+      write_content("#{path}/layout_#{k}.html", item.html)
+    -- Pages
+    pages = aql(subdomain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')
+    --for k, item in pairs pages
+    --  for k2, lang in pairs langs
+    --    lang = stringy.strip(lang)
+    --    html = ""
+    --    html = html .. item.raw_html[lang] if type(item.raw_html[lang]) =~ "userdata"
+    --    html = html .. to_json(item.html[lang]) if item.html[lang]
+        
+    --    write_content("#{path}/page_#{k}.html", html)
+    -- Components
+    components = aql(subdomain, 'FOR doc IN components RETURN { html: doc.html }')
+    for k, item in pairs components
+      write_content("#{path}/component_#{k}.html", item.html)
+    -- Partials
+    partials = aql(subdomain, 'FOR doc IN partials RETURN { html: doc.html }')
+    for k, item in pairs partials
+      write_content("#{path}/partial_#{k}.html", item.html)
 
-      read_file("#{path}/#{name}_compiled.css")
-    else
-      ""
+    command = "export PATH=\"$PATH;/usr/local/bin\" && node --version"
+    handle = io.popen(command)
+    result = handle\read("*a")
+    handle\close()
+    print(result)
+    
+
+    command = "export PATH=\"$PATH;/usr/local/bin\" && NODE_ENV=production npx tailwindcss build #{path}/#{layout_id}.css -o #{path}/#{layout_id}_compiled.css"
+    handle = io.popen(command)
+    result = handle\read("*a")
+    handle\close()
+
+    data = read_file("#{path}/#{layout_id}_compiled.css")
+    os.execute("rm -Rf #{path}")
+    data
+    
 --------------------------------------------------------------------------------
 -- expose methods
-{ :install_service, :install_script, :deploy_site, :compile_riotjs }
+{ :install_service, :install_script, :deploy_site, :compile_riotjs, :compile_tailwindcss }
