@@ -75,12 +75,19 @@ class extends lapis.Application
     redirection       = load_redirection(db_name, @params)
     current_page      = load_page_by_slug(db_name, slug, @params.lang)
 
-    page_content_type = define_content_type(slug)
-
-    html = ''
+    used_lang         = @params.lang
 
     infos = page_info(db_name, @params.slug, @params.lang)
     infos = { 'page': {}, 'folder': {} } if infos == nil
+
+    if current_page == nil then
+      used_lang = stringy.split(settings[sub_domain].langs, ",")[1]
+      infos = page_info(db_name, @params.slug, used_lang)
+      current_page = load_page_by_slug(db_name, slug, used_lang)
+
+    page_content_type = define_content_type(slug)
+
+    html = ''
 
     if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
       @params.splat = "slug/#{@params.splat}"
@@ -92,7 +99,10 @@ class extends lapis.Application
       @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
 
     if redirection == nil then
+      params_lang = @params.lang
+      @params.lang = used_lang
       html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
+      @params.lang = params_lang
     else
       html = redirection
 

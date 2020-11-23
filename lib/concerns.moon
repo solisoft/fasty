@@ -391,7 +391,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}
     if action == 'tr'
-      output = "Missing translation <em style='color:red'>#{item}</em>"
+      output = ""
       unless translations[item]
         aql(
           db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
@@ -399,13 +399,15 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         )
         output = item
 
-      if translations[item] and translations[item][params.lang]
-        output = translations[item][params.lang]
+      default_lang = stringy.split(global_data.settings[1].langs, ",")[1]
+      if translations[item]
+        output = translations[item][params.lang] or translations[item][default_lang] or ""
 
       if dataset
         variables = splat_to_table(dataset)
         output = output\gsub("%$%((.-)%)", variables)
 
+      output = "Missing translation <em style='color:red'>#{item}</em>" if output == ''
     -- {{ external | url }}
     output = http_get(item) if action == 'external'
     -- {{ json | url | field }}
