@@ -348,17 +348,17 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           table.insert(data.names, k)
           table.insert(data.js, component.javascript)
 
+          if dataset == 'mount'
+            output ..= '<script type="module">'
+            output ..= component.javascript
+            output ..= "riot.register('#{k}', #{k});"
+            output ..= "riot.mount('#{k}')"
+            output ..='</script>'
         if dataset == 'url'
           output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
         if dataset == 'tag'
           output ..= '<script type="module">'
           output ..= table.concat(data.js,"\n")
-          output ..='</script>'
-        if dataset == 'mount'
-          output ..= '<script type="module">'
-          output ..= table.concat(data.js,"\n")
-          output ..= "riot.register('#{k}', #{k});"
-          output ..= "riot.mount('#{k}')"
           output ..='</script>'
         if dataset == 'source'
           output ..= http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
