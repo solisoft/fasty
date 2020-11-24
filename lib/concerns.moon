@@ -372,9 +372,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           'FOR doc in spas FILTER doc.slug == @slug RETURN doc',
           { 'slug': item }
         )[1]
-        output = spa.html
-        output ..="<script>#{spa.js}</script>"
-        output = dynamic_replace(db_name, output, global_data, history, params)
+        if spa
+          output = spa.html
+          output ..="<script>#{spa.js}</script>"
+          output = dynamic_replace(db_name, output, global_data, history, params)
 
     -- {{ aql | slug }} -- Run an AQL request
     -- e.g. {{ aql | activate_account }}
