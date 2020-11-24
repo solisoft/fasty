@@ -337,12 +337,14 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
         data = { ids: {}, revisions: {}, names: {}, js: {} }
+        output = ''
         for i, k in pairs(stringy.split(item, '#'))
           component = aql(
             db_name,
             'FOR doc in components FILTER doc.slug == @slug RETURN { _key: doc._key, _rev: doc._rev, javascript: doc.javascript }',
             { "slug": k }
           )[1]
+
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
@@ -354,14 +356,15 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
+
         if dataset == 'url'
           output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
         if dataset == 'tag'
-          output ..= '<script type="module">'
+          output = '<script type="module">'
           output ..= table.concat(data.js,"\n")
           output ..='</script>'
         if dataset == 'source'
-          output ..= http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
+          output = http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
     if action == 'spa'
