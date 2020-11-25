@@ -97,7 +97,6 @@ class FastyServices extends lapis.Application
     POST: =>
       load_settings(@)
       js_tag = compile_riotjs(sub_domain, @params.name, @params.tag)
-      dynamic_replace("db_#{sub_domain}", js_tag, global_data[sub_domain], {}, @params)
   }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)

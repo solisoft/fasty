@@ -365,6 +365,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           output ..='</script>'
         if dataset == 'source'
           output = http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
+          output = dynamic_replace(db_name, output, global_data[sub_domain], history, params)
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
     if action == 'spa'
