@@ -352,7 +352,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
           if dataset == 'mount'
             output ..= '<script type="module">'
-            output ..= component.javascript
+            output ..= dynamic_replace(db_name, component.javascript, global_data[sub_domain], history, params)
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
@@ -379,7 +379,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         if spa
           output = spa.html
           output ..="<script>#{spa.js}</script>"
-          output = dynamic_replace(db_name, output, global_data, history, params)
+          output = dynamic_replace(db_name, output, global_data, {}, params)
 
     -- {{ aql | slug }} -- Run an AQL request
     -- e.g. {{ aql | activate_account }}
