@@ -4,9 +4,9 @@ stringy = require 'stringy'
 console = require 'lapis.console'
 
 import aqls from require 'lib.aqls'
-import from_json, to_json from require 'lapis.util'
-import dynamic_page from require 'lib.concerns'
 import respond_to from require 'lapis.application'
+import from_json, to_json from require 'lapis.util'
+import dynamic_page, dynamic_replace from require 'lib.concerns'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import install_service, install_script, deploy_site, compile_riotjs from require 'lib.service'
 
@@ -96,7 +96,8 @@ class FastyServices extends lapis.Application
   [riotjs: '/riotjs']: respond_to {
     POST: =>
       load_settings(@)
-      compile_riotjs(sub_domain, @params.name, @params.tag)
+      js_tag = compile_riotjs(sub_domain, @params.name, @params.tag)
+      dynamic_replace("db_#{sub_domain}", js_tag, global_data[sub_domain], {}, @params)
   }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
