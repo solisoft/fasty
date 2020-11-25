@@ -49,7 +49,8 @@ etlua2html = (json, partial, params, global_data) ->
   success, data = pcall(
     template, {
       'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
-      'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
+      'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp,
+      'settings': global_data.settings[1]
     }
   )
   data
