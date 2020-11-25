@@ -96,7 +96,7 @@ class FastyServices extends lapis.Application
   [riotjs: '/riotjs']: respond_to {
     POST: =>
       load_settings(@)
-      js_tag = compile_riotjs(sub_domain, @params.name, @params.tag)
+      compile_riotjs(sub_domain, @params.name, @params.tag)
   }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
