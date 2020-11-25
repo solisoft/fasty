@@ -352,7 +352,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
           if dataset == 'mount'
             output ..= '<script type="module">'
-            output ..= component.javascript
+            output ..= dynamic_replace(db_name, component.javascript, global_data[sub_domain], history, params)
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
