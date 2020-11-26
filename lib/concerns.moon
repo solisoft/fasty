@@ -359,7 +359,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
             output ..='</script>'
 
           if dataset == 'source'
-            output = dynamic_replace(db_name, component.javascript, global_data, history, params)
+            output ..= dynamic_replace(db_name, component.javascript, global_data, history, params)
 
         if dataset == 'url'
           output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
