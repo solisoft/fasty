@@ -78,7 +78,6 @@ class extends lapis.Application
     used_lang         = @params.lang
 
     infos = page_info(db_name, @params.slug, @params.lang)
-    infos = { 'page': {}, 'folder': {} } if infos == nil
 
     if current_page == nil then
       used_lang = stringy.split(settings[sub_domain].langs, ",")[1]
@@ -91,6 +90,8 @@ class extends lapis.Application
 
     if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
       @params.splat = "slug/#{@params.splat}"
+
+    infos = { 'page': {}, 'folder': {} } if infos == nil
 
     if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
