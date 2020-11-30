@@ -21,7 +21,7 @@ RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/v
     && ./configure \
     && make && make install && ldconfig
 
-ARG OPENRESTY_VERSION=1.17.8.2
+ARG OPENRESTY_VERSION=1.19.3.1
 
 RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar xf openresty-${OPENRESTY_VERSION}.tar.gz \
@@ -50,7 +50,7 @@ RUN curl -OL https://download.arangodb.com/arangodb36/DEBIAN/Release.key && \
     apt-get install apt-transport-https && \
     apt-get install arangodb3-client
 
-RUN npm install -g yarn forever @riotjs/cli terser tailwindcss postcss autoprefixer
+RUN npm install -g yarn forever @riotjs/cli terser
 
 WORKDIR /var/www
 
