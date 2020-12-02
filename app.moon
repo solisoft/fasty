@@ -130,14 +130,21 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   [root: '/(:lang)']: =>
     define_subdomain(@)
-
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
-      if @params.lang then @session.lang = @params.lang
       load_settings(@)
-      @session.lang = check_valid_lang(settings[sub_domain].langs, @params.lang)
-      if @params.lang and @session.lang ~= @params.lang then
-        redirect_to: 'https://' .. @req.headers.host .. '/' .. @session.lang
+      lang = @params.lang or stringy.split(settings[sub_domain].langs, ',')[1]
+      @session.lang = check_valid_lang(settings[sub_domain].langs, lang)
+
+      if @params.lang and @params.lang ~= @session.lang
+        @params.all   = "-"
+        @params.slug  = @params.lang
+        @params.lang  = @session.lang
+
+      @session.lang = check_valid_lang(settings[sub_domain].langs, lang)
+      print(to_json(@params))
+      if @params.slug
+        display_page(@)
       else
         home          = from_json(settings[sub_domain].home)
         @params.lang  = @session.lang
