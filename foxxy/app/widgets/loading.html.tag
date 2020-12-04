@@ -63,6 +63,9 @@
     common.get(url + "/settings", function(settings) {
       self.settings = settings.data
       self.langs = self.settings.langs.split(",")
+      if(!_.includes(self.langs, window.localStorage.getItem('foxx-locale'))) {
+        window.localStorage.setItem('foxx-locale', locale)
+      }
       self.update()
     })
 
