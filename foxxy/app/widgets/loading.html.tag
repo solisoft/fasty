@@ -64,7 +64,7 @@
       self.settings = settings.data
       self.langs = self.settings.langs.split(",")
       if(!_.includes(self.langs, window.localStorage.getItem('foxx-locale'))) {
-        window.localStorage.setItem('foxx-locale', locale)
+        window.localStorage.setItem('foxx-locale', self.langs[0])
       }
       self.update()
     })
