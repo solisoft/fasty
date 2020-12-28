@@ -633,9 +633,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
-  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
+  ".fasty.ovh": "/_db",
+  ".inseytel.com": "https://inseytel.com/_db",
+  "epic20.world": "/_db"
 };
 
 module.exports = Config;
@@ -2092,7 +2092,7 @@ riot.tag2('rightnav', '<ul class="uk-navbar-nav"> <li><a onclick="{deploy}" if="
       self.settings = settings.data
       self.langs = self.settings.langs.split(",")
       if(!_.includes(self.langs, window.localStorage.getItem('foxx-locale'))) {
-        window.localStorage.setItem('foxx-locale', locale)
+        window.localStorage.setItem('foxx-locale', self.langs[0])
       }
       self.update()
     })
