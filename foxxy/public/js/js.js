@@ -633,9 +633,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "/_db",
-  ".inseytel.com": "https://inseytel.com/_db",
-  "epic20.world": "/_db"
+  ".fasty.ovh": "https://fasty.ovh/_db/",
+  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
+  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
 };
 
 module.exports = Config;
@@ -736,7 +736,7 @@ require.register("js/editor.js", function(exports, require, module) {
           break;
         case 'img':
           before = '<div class="sg-row cms_row" data-type="img"><div class="col-12 cms_col">'
-          html = '<div data-type="img" class="drag drop" data-editable="true"><img src="https://via.placeholder.com/1200x600" alt=""></div>'
+          html = '<div data-type="img" class="drag drop" data-editable="true"><img src="https://fasty.ovh/asset/o/06650e1c-2579-463b-94fd-fc09655d3cd1?_from=Y21z" alt=""></div>'
           after = '</div></div>'
           break;
         case 'text':
