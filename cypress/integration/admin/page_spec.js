@@ -1,5 +1,5 @@
 
-var host = 'http://test.localhost:8080/static/admin/'
+var host = 'http://test.127.0.0.1.xip.io:8080/static/admin/'
 describe('Pages', function () {
 
   beforeEach(function () {
