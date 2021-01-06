@@ -70,6 +70,42 @@ var save_revision = function (uid, object, data, max) {
   `, { id: object._id, max: max })
 }
 
+var build_search = function(object, data, lang) {
+  var search_arr = []
+  _.each(object.search, function(s) {
+    if (_.isString(s)) {
+      if (_.isPlainObject(data[s])) {
+        search_arr.push(data[s][lang])
+      } else {
+        search_arr.push(data[s])
+      }
+    }
+
+    if (_.isPlainObject(s)) {
+      var bindVars = { id: doc._id }
+      if (s.aql.indexOf("@lang")) bindVars.lang = lang
+      var search_item = db._query(s.aql, bindVars).toArray()[0]
+      search_arr.push(search_item)
+    }
+  })
+
+  return search_arr.join(" ").toLowerCase()
+}
+
+var build_slug = function(key, object, data, lang) {
+  var slug = _.map(object.slug, function(field_name) {
+    var value = ""
+    if (_.isPlainObject(data[field_name])) {
+      value = data[field_name][lang]
+    } else {
+      value = data[field_name]
+    }
+    return field_name == '_key' ? key : value
+  })
+  
+  return _.kebabCase(slug)
+}
+
 var fieldsToData = function(fields, body, headers) {
   var data = {}
   _.each(fields, function(f) {
@@ -378,29 +414,24 @@ router.post('/:service', function (req, res) {
   if (errors.length == 0) {
     var data = fieldsToData(fields, body, req.headers)
     data.type = req.pathParams.service
+    
     if (object.act_as_tree) data['folder_key'] = body.folder_key
-    var search_arr = []
-
+    
     if (object.search) {
-      _.each(object.search, function(s) {
-        if (_.isString(s)) {
-          if (_.isPlainObject(data[s])) {
-            search_arr.push(data[s][req.headers['foxx-locale']])
-          } else {
-            search_arr.push(data[s])
-          }
-        }
-      })
       data.search = {}
-      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
+      data.search[req.headers['foxx-locale']] = build_search(object, data, req.headers['foxx-locale'])
     }
+
     if (object.timestamps === true) { data.created_at = +new Date() }
+    
     var filter_by_folder = ''
     var folder_params = {}
+    
     if (object.act_as_tree) {
       filter_by_folder = 'FILTER doc.folder_key == @folder'
       folder_params.folder = body.folder_key
     }
+    
     data.order = db._query(`
       LET docs = (FOR doc IN @@collection FILTER doc.type == @type ${filter_by_folder} RETURN 1)
       RETURN LENGTH(docs)
@@ -410,33 +441,11 @@ router.post('/:service', function (req, res) {
 
     let obj_update = {}
     if (object.slug) {
-      var slug = _.map(object.slug, function(field_name) {
-        var value = ""
-        if (_.isPlainObject(data[field_name])) {
-          value = data[field_name][req.headers['foxx-locale']]
-        } else {
-          value = data[field_name]
-        }
-        return field_name == '_key' ? obj._key : value
-      })
+      var slug = build_slug(obj._key, object, data, req.headers['foxx-locale'])
 
       if(data.slug == '' || data.slug == undefined ) {
-        slug = _.kebabCase(slug)
         obj_update.slug = slug
       }
-    }
-
-    _.each(object.search, function(s) {
-      if (_.isPlainObject(s)) {
-        var bindVars = { id: obj._id }
-        if(s.aql.indexOf("@lang")) bindVars.lang = req.headers['foxx-locale']
-        search_arr.push(db._query(s.aql, bindVars).toArray()[0])
-      }
-    })
-
-    if (object.search) {
-      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
-      obj_update.search = data.search
     }
 
     collection.update(obj, obj_update)
@@ -494,17 +503,9 @@ router.post('/:service/:service_key/:sub', function (req, res) {
     data.parent_id = req.pathParams.service_key
     obj = collection.save(data, { waitForSync: true })
     if (object.slug) {
-      var slug = _.map(object.slug, function(field_name) {
-        var value = ""
-        if (_.isPlainObject(data[field_name])) {
-          value = data[field_name][req.headers['foxx-locale']]
-        } else {
-          value = data[field_name]
-        }
-        return field_name == '_key' ? obj._key : value
-      })
-      if(data.slug == '') {
-        slug = _.kebabCase(slug)
+      var slug = build_slug(obj._key, object, data, req.headers['foxx-locale'])
+
+      if(data.slug == '' || data.slug == undefined) {
         collection.update(obj, { slug: slug })
       }
     }
@@ -540,47 +541,20 @@ router.post('/:service/:id', function (req, res) {
   if (errors.length == 0) {
     var doc = collection.document(req.pathParams.id)
     var data = fieldsToData(fields, body, req.headers)
-    var search_arr = []
-    data.search = {}
-
+    
     if (object.search) {
-      _.each(object.search, function (s) {
-        if (_.isString(s)) {
-          if (_.isPlainObject(data[s])) {
-            search_arr.push(data[s][req.headers['foxx-locale']])
-          } else {
-            search_arr.push(data[s])
-          }
-        }
-      })
-      data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
+      data.search = {}
+      data.search[req.headers['foxx-locale']] = data.search[req.headers['foxx-locale']] = build_search(object, data, req.headers['foxx-locale'])
     }
+
     if (object.timestamps === true) { data.updated_at = +new Date() }
+    
     if (object.slug) {
-      var slug = _.map(object.slug, function(field_name) {
-        var value = ""
-        if (_.isPlainObject(data[field_name])) {
-          value = data[field_name][req.headers['foxx-locale']]
-        } else {
-          value = data[field_name]
-        }
-        return field_name == '_key' ? doc._key : value
-      })
-      if (data.slug == '' || data.slug == undefined) {
-        data.slug = _.kebabCase(slug)
-      }
+      var slug = build_slug(doc._key, object, data, req.headers['foxx-locale'])
+
+      if (data.slug == '' || data.slug == undefined) data.slug = slug
     }
-    _.each(object.search, function(s) {
-      if (_.isPlainObject(s)) {
-        var bindVars = { id: doc._id }
-        if (s.aql.indexOf("@lang")) bindVars.lang = req.headers['foxx-locale']
-        var search_item = db._query(s.aql, bindVars).toArray()[0]
-        search_arr.push(search_item)
-        data.search[req.headers['foxx-locale']] = search_arr.join(" ").toLowerCase()
-      }
-    })
-
-
+    
     if(req.pathParams.service == "components" && data.kind == "riot4") {
       // Compile widget to javascript using riotjs/cli
       const url = JSON.parse(db.settings.firstExample({}).home).base_url
@@ -598,7 +572,6 @@ router.post('/:service/:id', function (req, res) {
         form: { token: _settings.secret, id: req.pathParams.id }
       })
       data.compiled_css = response.body
-
     }
 
     obj = collection.update(doc, data)
@@ -652,16 +625,7 @@ router.post('/sub/:service/:sub_service/:id', function (req, res) {
     }
     if (object.timestamps === true) { data.updated_at = +new Date() }
     if (object.slug) {
-      var slug = _.map(object.slug, function(field_name) {
-        var value = ""
-        if (_.isPlainObject(data[field_name])) {
-          value = data[field_name][req.headers['foxx-locale']]
-        } else {
-          value = data[field_name]
-        }
-        return field_name == '_key' ? doc._key : value
-      })
-      data['slug'] = _.kebabCase(slug)
+      data['slug'] = build_slug(doc._key, object, data, req.headers['foxx-locale'])
     }
     obj = collection.update(doc, data)
     save_revision(req.session.uid, doc, data, object.revisions)
@@ -815,9 +779,9 @@ router.put('/:service/orders/:from/:to', function (req, res) {
   if (from < to) {
     db._query(
       `FOR doc IN @@collection
-      ${filter_by_folder}
-      FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
-        UPDATE({ _key: doc._key, order: doc.order - 1 }) IN @@collection`,
+        ${filter_by_folder}
+        FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
+          UPDATE({ _key: doc._key, order: doc.order - 1 }) IN @@collection`,
       _.merge({ "type": req.pathParams.service, from, to, key: doc._key, "@collection": collection_name }, folder_params)
     )
   } else {
@@ -868,15 +832,13 @@ router.put('/:service/:sub_service/orders/:from/:to', function (req, res) {
   if (from < to) {
     db._query(
       `FOR doc IN @@collection
-
-      FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
-        UPDATE({ _key: doc._key, order: doc.order - 1 }) IN @@collection`,
+        FILTER doc.type == @type AND doc.order <= @to AND doc.order >= @from and doc._key != @key
+          UPDATE({ _key: doc._key, order: doc.order - 1 }) IN @@collection`,
       _.merge({ "type": req.pathParams.sub_service, from, to, key: doc._key, "@collection": collection_name }, folder_params)
     )
   } else {
     db._query(
       `FOR doc IN @@collection
-
         FILTER doc.type == @type AND doc.order <= @from and doc.order >= @to and doc._key != @key
         UPDATE({ _key: doc._key, order: doc.order + 1 }) IN @@collection`,
       _.merge({ "type": req.pathParams.sub_service, from, to, key: doc._key, "@collection": collection_name }, folder_params)
@@ -913,12 +875,12 @@ router.get('/:service/stats/:tag', function (req, res) {
   var results = db._query(`
     FOR d IN @@collection
     FILTER d.type == @service
-    FILTER d[@tag] != NULL
-    FOR t IN d[@tag]
-        COLLECT tag = t WITH COUNT into size
-        FILTER tag != NULL
-        SORT size DESC
-        RETURN { tag, size }
+      FILTER d[@tag] != NULL
+      FOR t IN d[@tag]
+          COLLECT tag = t WITH COUNT into size
+          FILTER tag != NULL
+          SORT size DESC
+          RETURN { tag, size }
   `, { tag: req.pathParams.tag, service: req.pathParams.service, "@collection": collection_name })
 
   res.send(results);
