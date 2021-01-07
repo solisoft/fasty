@@ -110,7 +110,7 @@ compile_riotjs = (sub_domain, name, tag) ->
 
     read_file("#{path}/#{name}.js")
 --------------------------------------------------------------------------------
-compile_tailwindcss = (sub_domain, layout_id) ->
+compile_tailwindcss = (sub_domain, layout_id, field) ->
   subdomain = 'db_' .. sub_domain
   layout = document_get(subdomain, "layouts/" .. layout_id)
   settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')[1]
@@ -120,7 +120,7 @@ compile_tailwindcss = (sub_domain, layout_id) ->
   path = "compile_tailwind/#{subdomain}/#{layout_id}"
   os.execute("mkdir -p #{path}")
   
-  write_content("#{path}/#{layout_id}.css", sass.compile(layout.scss, 'compressed'))
+  write_content("#{path}/#{layout_id}.css", sass.compile(layout[field], 'compressed'))
   write_content("#{path}/tailwind.config.js", "module.exports = {  purge: ['./*.html'],  darkMode: false, theme: {    extend: {},  },  variants: {},  plugins: []}")
   
   -- Layouts
@@ -134,10 +134,11 @@ compile_tailwindcss = (sub_domain, layout_id) ->
     for k2, lang in pairs langs
       lang = stringy.strip(lang)
       html = ""
-      -- html = html .. item.raw_html[lang] if item.raw_html and type(item.raw_html[lang]) == "string"
-      -- html = html .. to_json(item.html[lang]) if item.html and type(item.html[lang]) == "string"
-      
-      -- write_content("#{path}/page_#{k}.html", html)
+      if type(item["raw_html"]) == "table" and item["raw_html"][lang]
+      	html = html .. item["raw_html"][lang]
+      if type(item["html"]) == "table" and item["html"][lang] and item["html"][lang].html
+          html = html .. item["html"][lang].html
+      write_content("#{path}/page_#{k}_#{lang}.html", html)
   
   -- Components
   components = aql(subdomain, 'FOR doc IN components RETURN { html: doc.html }')
@@ -155,7 +156,7 @@ compile_tailwindcss = (sub_domain, layout_id) ->
   handle\close()
 
   data = read_file("#{path}/#{layout_id}_compiled.css")
-  -- os.execute("rm -Rf #{path}")
+  os.execute("rm -Rf #{path}")
   
   data
     

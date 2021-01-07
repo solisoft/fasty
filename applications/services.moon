@@ -103,7 +103,7 @@ class FastyServices extends lapis.Application
   [tailwindcss: '/tailwindcss']: respond_to {
     POST: =>
       load_settings(@)
-      compile_tailwindcss(sub_domain, @params.id)
+      compile_tailwindcss(sub_domain, @params.id, @params.field)
   }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)
