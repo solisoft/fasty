@@ -6,7 +6,7 @@ executors:
   fasty:
     docker:
       - image: solisoft/fasty
-      - image: arangodb/arangodb:3.7.2.1
+      - image: arangodb/arangodb:latest
         environment:
           ARANGO_ROOT_PASSWORD: password
         command: [--server.endpoint=http+tcp://0.0.0.0:8529 --server.password password]
@@ -35,7 +35,7 @@ jobs:
       - run:
           name: 'Prepare database'
           command: |
-            echo 'db._createDatabase("db_test");' | arangosh --server.endpoint=http+tcp://0.0.0.0:8529 --server.password password
+            echo 'db._createDatabase("db_test");' | arangosh --server.endpoint=http+tcp://127.0.0.1:8529 --server.password password
             cd foxxy/
             foxxy upgrade settings --server fasty --database db_test
             foxxy upgrade --server fasty --database db_test

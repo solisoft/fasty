@@ -49,7 +49,8 @@ etlua2html = (json, partial, params, global_data) ->
   success, data = pcall(
     template, {
       'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
-      'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp
+      'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp,
+      'settings': from_json(global_data.settings[1].home)
     }
   )
   data
@@ -337,31 +338,36 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
         data = { ids: {}, revisions: {}, names: {}, js: {} }
+        output = ''
         for i, k in pairs(stringy.split(item, '#'))
           component = aql(
             db_name,
             'FOR doc in components FILTER doc.slug == @slug RETURN { _key: doc._key, _rev: doc._rev, javascript: doc.javascript }',
             { "slug": k }
           )[1]
+
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
           table.insert(data.js, component.javascript)
 
-          if dataset == 'url'
-            output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
-          if dataset == 'tag'
-            output ..= '<script type="module">'
-            output ..= table.concat(data.js,"\n")
-            output ..='</script>'
           if dataset == 'mount'
             output ..= '<script type="module">'
-            output ..= table.concat(data.js,"\n")
+            output ..= dynamic_replace(db_name, component.javascript, global_data, history, params)
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
+
           if dataset == 'source'
-            output ..= http_get(app_settings.base_url .. "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js")
+            output ..= dynamic_replace(db_name, component.javascript, global_data, history, params)
+
+        if dataset == 'url'
+          output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
+        if dataset == 'tag'
+          output = '<script type="module">'
+          output ..= table.concat(data.js,"\n")
+          output ..='</script>'
+
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
     if action == 'spa'
@@ -372,9 +378,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           'FOR doc in spas FILTER doc.slug == @slug RETURN doc',
           { 'slug': item }
         )[1]
-        output = spa.html
-        output ..="<script>#{spa.js}</script>"
-        output = dynamic_replace(db_name, output, global_data, history, params)
+        if spa
+          output = spa.html
+          output ..="<script>#{spa.js}</script>"
+          output = dynamic_replace(db_name, output, global_data, {}, params)
 
     -- {{ aql | slug }} -- Run an AQL request
     -- e.g. {{ aql | activate_account }}
@@ -391,7 +398,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}
     if action == 'tr'
-      output = "Missing translation <em style='color:red'>#{item}</em>"
+      output = ""
       unless translations[item]
         aql(
           db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
@@ -399,13 +406,15 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         )
         output = item
 
-      if translations[item] and translations[item][params.lang]
-        output = translations[item][params.lang]
+      default_lang = stringy.split(global_data.settings[1].langs, ",")[1]
+      if translations[item]
+        output = translations[item][params.lang] or translations[item][default_lang] or ""
 
       if dataset
         variables = splat_to_table(dataset)
         output = output\gsub("%$%((.-)%)", variables)
 
+      output = "Missing translation <em style='color:red'>#{item}</em>" if output == ''
     -- {{ external | url }}
     output = http_get(item) if action == 'external'
     -- {{ json | url | field }}

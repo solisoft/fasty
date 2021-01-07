@@ -78,8 +78,9 @@ deploy_site = (sub_domain, settings) ->
 
   if deploy_to[2] == sub_domain_settings.secret
     os.execute("mkdir -p #{path}")
-    command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection trads --collection folder_path --collection folders --collection scripts --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint} --output-directory #{path} --overwrite true"
+    command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection sripts --collection pages --collection folder_path --collection folders --collection scripts --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint} --output-directory #{path} --overwrite true"
     command ..= " --collection datasets" if home['deploy_datasets']
+    command ..= " --collection trads" if home['deploy_trads']
 
     os.execute(command)
 
@@ -114,74 +115,49 @@ compile_tailwindcss = (sub_domain, layout_id) ->
   layout = document_get(subdomain, "layouts/" .. layout_id)
   settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')[1]
   home_settings = from_json(settings.home)
-  tailwindfile = home_settings.tailwind_config
   langs = stringy.split(settings.langs, ",")
   
-  print("----------------")
-  print(tailwindfile)
-  if tailwindfile
-    path = "compile_tailwind/#{subdomain}/#{layout_id}"
-    os.execute("mkdir -p #{path}")
+  path = "compile_tailwind/#{subdomain}/#{layout_id}"
+  os.execute("mkdir -p #{path}")
+  
+  write_content("#{path}/#{layout_id}.css", sass.compile(layout.scss, 'compressed'))
+  write_content("#{path}/tailwind.config.js", "module.exports = {  purge: ['./*.html'],  darkMode: false, theme: {    extend: {},  },  variants: {},  plugins: []}")
+  
+  -- Layouts
+  layouts = aql(subdomain, 'FOR doc IN layouts RETURN { html: doc.html }')
+  for k, item in pairs layouts
+    write_content("#{path}/layout_#{k}.html", item.html)
+  
+  -- Pages
+  pages = aql(subdomain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')
+  for k, item in pairs pages
+    for k2, lang in pairs langs
+      lang = stringy.strip(lang)
+      html = ""
+      -- html = html .. item.raw_html[lang] if item.raw_html and type(item.raw_html[lang]) == "string"
+      -- html = html .. to_json(item.html[lang]) if item.html and type(item.html[lang]) == "string"
+      
+      -- write_content("#{path}/page_#{k}.html", html)
+  
+  -- Components
+  components = aql(subdomain, 'FOR doc IN components RETURN { html: doc.html }')
+  for k, item in pairs components
+    write_content("#{path}/component_#{k}.html", item.html)
+  
+  -- Partials
+  partials = aql(subdomain, 'FOR doc IN partials RETURN { html: doc.html }')
+  for k, item in pairs partials
+    write_content("#{path}/partial_#{k}.html", item.html)
 
-    package_json = {
-      "name": "test", "version": "1.0.0", "description": "",
-      "main": "index.js", "scripts": {},
-      "author": "", "license": "ISC",
-      "devDependencies": {
-        "autoprefixer": "^10.0.2",
-        "postcss": "^8.1.8",
-        "tailwindcss": "^2.0.1"
-      }
-    }
+  command = "cd #{path} && export PATH=\"$PATH;/usr/local/bin\" && NODE_ENV=production tailwindcss build #{layout_id}.css -o #{layout_id}_compiled.css"
+  handle = io.popen(command)
+  result = handle\read("*a")
+  handle\close()
 
-    write_content("#{path}/package.json", to_json(package_json))
-    
-    command = "cp -Rf ./node_modules_twcss #{path}/node_modules"
-    handle = io.popen(command)
-    result = handle\read("*a")
-    handle\close()
-    
-    write_content("#{path}/#{layout_id}.css", sass.compile(layout.scss, 'compressed'))
-    write_content("#{path}/tailwind.config.js", "module.exports = {  purge: ['./*.html'],  darkMode: false, theme: {    extend: {},  },  variants: {},  plugins: []}")
-    
-    -- Layouts
-    layouts = aql(subdomain, 'FOR doc IN layouts RETURN { html: doc.html }')
-    for k, item in pairs layouts
-      write_content("#{path}/layout_#{k}.html", item.html)
-    -- Pages
-    pages = aql(subdomain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')
-    --for k, item in pairs pages
-    --  for k2, lang in pairs langs
-    --    lang = stringy.strip(lang)
-    --    html = ""
-    --    html = html .. item.raw_html[lang] if type(item.raw_html[lang]) =~ "userdata"
-    --    html = html .. to_json(item.html[lang]) if item.html[lang]
-        
-    --    write_content("#{path}/page_#{k}.html", html)
-    -- Components
-    components = aql(subdomain, 'FOR doc IN components RETURN { html: doc.html }')
-    for k, item in pairs components
-      write_content("#{path}/component_#{k}.html", item.html)
-    -- Partials
-    partials = aql(subdomain, 'FOR doc IN partials RETURN { html: doc.html }')
-    for k, item in pairs partials
-      write_content("#{path}/partial_#{k}.html", item.html)
-
-    command = "export PATH=\"$PATH;/usr/local/bin\" && node --version"
-    handle = io.popen(command)
-    result = handle\read("*a")
-    handle\close()
-    print(result)
-    
-
-    command = "export PATH=\"$PATH;/usr/local/bin\" && NODE_ENV=production npx tailwindcss build #{path}/#{layout_id}.css -o #{path}/#{layout_id}_compiled.css"
-    handle = io.popen(command)
-    result = handle\read("*a")
-    handle\close()
-
-    data = read_file("#{path}/#{layout_id}_compiled.css")
-    os.execute("rm -Rf #{path}")
-    data
+  data = read_file("#{path}/#{layout_id}_compiled.css")
+  -- os.execute("rm -Rf #{path}")
+  
+  data
     
 --------------------------------------------------------------------------------
 -- expose methods

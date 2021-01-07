@@ -4,9 +4,9 @@ stringy = require 'stringy'
 console = require 'lapis.console'
 
 import aqls from require 'lib.aqls'
-import from_json, to_json from require 'lapis.util'
-import dynamic_page from require 'lib.concerns'
 import respond_to from require 'lapis.application'
+import from_json, to_json from require 'lapis.util'
+import dynamic_page, dynamic_replace from require 'lib.concerns'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import install_service, install_script, deploy_site, compile_riotjs, compile_tailwindcss from require 'lib.service'
 

@@ -533,9 +533,11 @@ router.post('/:service/:id', function (req, res) {
     var schema = {}
     _.each(fields, function (f) {
       let validate = f.ju ? f.ju : f.j
-      schema[f.n] = _.isString(validate) ? eval(validate) : validate
+      if(validate)
+        schema[f.n] = _.isString(validate) ? eval(validate) : validate
     })
-    errors = joi.validate(body, schema, { abortEarly: false }).error.details
+    var validation = joi.validate(body, schema, { abortEarly: false }) 
+    if(validation.error) errors = validation.error.details
   }
   catch(e) { console.log("err", e) }
   if (errors.length == 0) {
@@ -566,11 +568,12 @@ router.post('/:service/:id', function (req, res) {
 
     if(req.pathParams.service == "layouts" && data.twcss == true) {
       const url = JSON.parse(db.settings.firstExample({}).home).base_url
-      console.log(url + "/tailwindcss")
-      console.log(data)
+      console.log(url)
       var response = request.post(url + "/tailwindcss", {
         form: { token: _settings.secret, id: req.pathParams.id }
       })
+
+      console.log("response", response.body)
       data.compiled_css = response.body
     }
 
