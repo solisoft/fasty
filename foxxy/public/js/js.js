@@ -1394,6 +1394,7 @@ require.register("js/editor.js", function(exports, require, module) {
         ['foreColor', 'backColor'],
         ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
         ['unorderedList', 'orderedList'],
+        ['table'],
         ['horizontalRule'],
         ['removeformat'],
         ['fullscreen']
