@@ -475,5 +475,8 @@ section.editor-cms, section.edit-mode {
 .datepickers-container {
   z-index: 1000000 !important; }
 
+.trumbowyg-dropdown {
+  width: 202px; }
+
 
 /*# sourceMappingURL=css.css.map*/
