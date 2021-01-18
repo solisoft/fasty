@@ -133,7 +133,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
   if home_settings.tailwindcss_config
     config_file = aql(
       subdomain,
-      'FOR page IN pages FILTER page.slug == @slug RETURN page.raw_html',
+      'FOR page IN partials FILTER page.slug == @slug RETURN page.html',
       { slug: home_settings.tailwindcss_config }
     )[1]
 
