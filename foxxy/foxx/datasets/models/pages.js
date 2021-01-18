@@ -7,7 +7,6 @@ const model = function () {
       { r: true, c: "1-1", n: "raw_html", t: "code:html", j: "joi.any()", l: "HTML", tr: true },
       { r: true, c: "1-1", n: "html", t: "html", j: "joi.any()", l: "Content", tr: true },
       { r: true, c: "1-1", n: "description", t: "text", j: "joi.any()", l: "Description", tr: true },
-
       { r: true, c: "1-1", n: "og_title", t: "string", j: "joi.any()", l: "og:title", tr: true },
       { r: true, c: "1-1", n: "og_img", t: "string", j: "joi.any()", l: "og:img", tr: true },
       { r: true, c: "1-1", n: "og_type", t: "string", j: "joi.any()", l: "og:type", tr: true },

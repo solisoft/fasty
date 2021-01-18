@@ -58,7 +58,6 @@ define_content_type = (slug) ->
   page_content_type = mimes_types[ext\lower!]
   page_content_type = "text/html" if page_content_type == nil
   page_content_type
-
 --------------------------------------------------------------------------------
 -- expose methods
 { :table_merge, :table_deep_merge, :table_index, :check_valid_lang, :map,
