@@ -59,8 +59,6 @@ class extends lapis.Application
   ----------------------------------------------------------------------------
   display_error_page = (status=500, headers={}) =>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
-    print("error_page")
-    print(error_page)
     if error_page ~= nil then
       display_page(@, error_page, 404)
     else

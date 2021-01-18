@@ -13,7 +13,6 @@ const model = function() {
       { tab: "JS" },
       { r: true, c: "1-1", n: "i_js", t: "code:javascript", j: "joi.any()", l: "Vendors JS" },
       { r: true, c: "1-1", n: "javascript", t: "code:javascript", j: "joi.any()", l: "JS", endtab: true }
-
     ],
     collection: "layouts",
     singular: "layout",
@@ -23,7 +22,7 @@ const model = function() {
     roles: {
       read: ['designer', 'developer', 'admin'],
       write: ['designer', 'developer', 'admin']
-    },
+    }
   }
 }
 module.exports = model

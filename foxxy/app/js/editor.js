@@ -748,6 +748,7 @@
         ['foreColor', 'backColor'],
         ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
         ['unorderedList', 'orderedList'],
+        ['table'],
         ['horizontalRule'],
         ['removeformat'],
         ['fullscreen']

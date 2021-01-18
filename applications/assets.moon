@@ -80,13 +80,16 @@ class FastyAssets extends lapis.Application
   [css: '/:lang/:layout/css/:rev.css']: =>
     sub_domain = define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
-    css = aql(
+    layout = aql(
       "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.scss",
+      "
+        FOR doc in layouts FILTER doc._key == @key 
+          RETURN { scss: doc.scss, compiled_css: doc.compiled_css }
+      ",
       { "key": "#{@params.layout}" }
     )[1]
-    scss = sass.compile(css, 'compressed')
-    content = dynamic_replace("db_#{sub_domain}", scss, {}, {}, @params)
+    css = layout.compiled_css or sass.compile(layout.scss, 'compressed')
+    content = dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content_type: "text/css", content
     else

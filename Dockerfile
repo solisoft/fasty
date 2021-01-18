@@ -42,7 +42,7 @@ RUN curl -OL https://download.arangodb.com/arangodb37/DEBIAN/Release.key && \
     apt-get install apt-transport-https && \
     apt-get install arangodb3-client
 
-RUN npm install -g yarn forever @riotjs/cli terser
+RUN npm install -g yarn forever @riotjs/cli terser tailwindcss autoprefixer postcss
 
 WORKDIR /var/www
 
