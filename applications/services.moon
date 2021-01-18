@@ -96,14 +96,16 @@ class FastyServices extends lapis.Application
   [riotjs: '/riotjs']: respond_to {
     POST: =>
       load_settings(@)
-      compile_riotjs(sub_domain, @params.name, @params.tag)
+      if @params.token == settings[sub_domain].secret
+        compile_riotjs(sub_domain, @params.name, @params.tag)
   }
   ------------------------------------------------------------------------------
   -- tailwindcss compiler
   [tailwindcss: '/tailwindcss']: respond_to {
     POST: =>
       load_settings(@)
-      compile_tailwindcss(sub_domain, @params.id, @params.field)
+      if @params.token == settings[sub_domain].secret
+        compile_tailwindcss(sub_domain, @params.id, @params.field)
   }
   ------------------------------------------------------------------------------
   -- console (kinda irb console in dev mode)

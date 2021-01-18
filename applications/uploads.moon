@@ -93,7 +93,7 @@ class FastyImages extends lapis.Application
     POST: =>
       load_settings(@)
       @params.key = @req.headers['apikey'] if @req.headers['apikey']
-      if true -- @params.key == settings[sub_domain].resize_ovh
+      if true -- if @params.key == settings[sub_domain].secret
         if file = @params["files[]"] or @params.files
           arr = stringy.split(file.filename, ".")
           ext = arr[table.getn(arr)]
@@ -137,7 +137,7 @@ class FastyImages extends lapis.Application
     POST: =>
       load_settings(@)
 
-      if true -- @params.key == settings[sub_domain].resize_ovh
+      if true -- if @params.key == settings[sub_domain].secret
         if url_src = @params.image
           arr = stringy.split(url_src, "/")
           file = arr[table.getn(arr)]
