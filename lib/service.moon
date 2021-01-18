@@ -171,7 +171,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
   handle\close()
 
   data = read_file("#{path}/#{layout_id}_compiled.css")
-  -- os.execute("rm -Rf #{path}")
+  os.execute("rm -Rf #{path}")
 
   data
 
