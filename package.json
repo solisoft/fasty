@@ -16,7 +16,6 @@
     "mocha-multi-reporters": "^1.1.4"
   },
   "dependencies": {
-    "autoprefixer": "^10.0.2",
-    "tailwindcss": "^2.0.1"
+    "arangojs": "^7.2.0"
   }
 }

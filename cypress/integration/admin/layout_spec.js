@@ -41,6 +41,7 @@ describe('Layouts', function () {
       elem.val('<html>sample test layout edited</html>')
     })
     cy.get('input[type="submit"]').click();
+    cy.reload()
     cy.get('a.uk-button').contains('Back').click()
     cy.get('body').should('contain', 'Listing layouts')
     cy.get('td').should('contain', 'test layout edited')
