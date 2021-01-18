@@ -102,7 +102,7 @@ var build_slug = function(key, object, data, lang) {
     }
     return field_name == '_key' ? key : value
   })
-  
+
   return _.kebabCase(slug)
 }
 
@@ -414,24 +414,24 @@ router.post('/:service', function (req, res) {
   if (errors.length == 0) {
     var data = fieldsToData(fields, body, req.headers)
     data.type = req.pathParams.service
-    
+
     if (object.act_as_tree) data['folder_key'] = body.folder_key
-    
+
     if (object.search) {
       data.search = {}
       data.search[req.headers['foxx-locale']] = build_search(object, data, req.headers['foxx-locale'])
     }
 
     if (object.timestamps === true) { data.created_at = +new Date() }
-    
+
     var filter_by_folder = ''
     var folder_params = {}
-    
+
     if (object.act_as_tree) {
       filter_by_folder = 'FILTER doc.folder_key == @folder'
       folder_params.folder = body.folder_key
     }
-    
+
     data.order = db._query(`
       LET docs = (FOR doc IN @@collection FILTER doc.type == @type ${filter_by_folder} RETURN 1)
       RETURN LENGTH(docs)
@@ -528,9 +528,9 @@ router.post('/:service/:id', function (req, res) {
   const body = JSON.parse(req.body.toString())
   var obj = null
   var errors = []
-  
+
   if (!_.isArray(fields)) fields = fields.model
-  
+
   try {
     var schema = {}
     _.each(fields, function (f) {
@@ -538,7 +538,7 @@ router.post('/:service/:id', function (req, res) {
       if(validate)
         schema[f.n] = _.isString(validate) ? eval(validate) : validate
     })
-    var validation = joi.validate(body, schema, { abortEarly: false }) 
+    var validation = joi.validate(body, schema, { abortEarly: false })
     if(validation.error) errors = validation.error.details
   }
   catch(e) { console.log("err", e) }
@@ -546,20 +546,20 @@ router.post('/:service/:id', function (req, res) {
   if (errors.length == 0) {
     var doc = collection.document(req.pathParams.id)
     var data = fieldsToData(fields, body, req.headers)
-    
+
     if (object.search) {
       data.search = {}
       data.search[req.headers['foxx-locale']] = data.search[req.headers['foxx-locale']] = build_search(object, data, req.headers['foxx-locale'])
     }
 
     if (object.timestamps === true) { data.updated_at = +new Date() }
-    
+
     if (object.slug) {
       var slug = build_slug(doc._key, object, data, req.headers['foxx-locale'])
 
       if (data.slug == '' || data.slug == undefined) data.slug = slug
     }
-    
+
     if(req.pathParams.service == "components" && data.kind == "riot4") {
       // Compile widget to javascript using riotjs/cli
       const url = JSON.parse(db.settings.firstExample({}).home).base_url
@@ -569,7 +569,7 @@ router.post('/:service/:id', function (req, res) {
       data.javascript = response.body
     }
 
-    if(req.pathParams.service == "layouts" && data.twcss == true) {
+    if(req.pathParams.service == "layouts") {
       if(doc.scss.indexOf("@tailwind") >= 0) {
         const url = JSON.parse(db.settings.firstExample({}).home).base_url
         var response = request.post(url + "/tailwindcss", {

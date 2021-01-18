@@ -116,18 +116,33 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
   settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')[1]
   home_settings = from_json(settings.home)
   langs = stringy.split(settings.langs, ",")
-  
+
   path = "compile_tailwind/#{subdomain}/#{layout_id}"
   os.execute("mkdir -p #{path}")
-  
+
   write_content("#{path}/#{layout_id}.css", sass.compile(layout[field], 'compressed'))
-  write_content("#{path}/tailwind.config.js", "module.exports = {  purge: ['./*.html'],  darkMode: false, theme: {    extend: {},  },  variants: {},  plugins: []}")
-  
+
+  config_file = "module.exports = {
+    purge: ['./*.html'],
+    darkMode: false,
+    theme: { extend: {} },
+    variants: {},
+    plugins: []
+  }"
+
+  if home_settings.tailwindcss_config
+    config_file = aql(
+      subdomain,
+      'FOR page IN pages FILTER page.slug == @slug RETURN page.raw_html',
+      { slug: home_settings.tailwindcss_config }
+    )[1]
+
+  write_content("#{path}/tailwind.config.js", config_file) if config_file
   -- Layouts
   layouts = aql(subdomain, 'FOR doc IN layouts RETURN { html: doc.html }')
   for k, item in pairs layouts
     write_content("#{path}/layout_#{k}.html", item.html)
-  
+
   -- Pages
   pages = aql(subdomain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')
   for k, item in pairs pages
@@ -139,12 +154,12 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
       if type(item["html"]) == "table" and item["html"][lang] and item["html"][lang].html
           html = html .. item["html"][lang].html
       write_content("#{path}/page_#{k}_#{lang}.html", html)
-  
+
   -- Components
   components = aql(subdomain, 'FOR doc IN components RETURN { html: doc.html }')
   for k, item in pairs components
     write_content("#{path}/component_#{k}.html", item.html)
-  
+
   -- Partials
   partials = aql(subdomain, 'FOR doc IN partials RETURN { html: doc.html }')
   for k, item in pairs partials
@@ -157,9 +172,9 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
 
   data = read_file("#{path}/#{layout_id}_compiled.css")
   os.execute("rm -Rf #{path}")
-  
+
   data
-    
+
 --------------------------------------------------------------------------------
 -- expose methods
 { :install_service, :install_script, :deploy_site, :compile_riotjs, :compile_tailwindcss }
