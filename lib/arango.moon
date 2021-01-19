@@ -1,8 +1,6 @@
 import table_merge, table_deep_merge from require 'lib.utils'
 import from_json, to_json from require 'lapis.util'
 
-config = require('lapis.config').get!
-
 jwt       = ''
 db_config = {}
 --------------------------------------------------------------------------------
@@ -10,15 +8,14 @@ http_request = (url, method, body, headers) ->
   http.simple { url: url, method: method, body: body, headers: headers }
 --------------------------------------------------------------------------------
 list_databases = () ->
-  db_config = require('lapis.config').get("db_#{config._name}")
   body, status_code, headers = http_request(
     db_config.url .. '_api/user/' .. db_config.login .. '/database', 'GET',
     {}, { Authorization: "bearer #{jwt}" }
   )
   from_json(body)['result']
 --------------------------------------------------------------------------------
-auth_arangodb = (db_name)->
-  db_config = require('lapis.config').get("db_#{config._name}")
+auth_arangodb = (db_name, cfg)->
+  db_config = cfg
   body, status_code, headers = http_request(
     db_config.url .. '_open/auth', 'POST',
     to_json({ username: db_config.login, password: db_config.pass })

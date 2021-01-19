@@ -5,6 +5,8 @@ stringy   = require 'stringy'
 config    = require('lapis.config').get!
 shell     = require 'resty.shell'
 encoding  = require "lapis.util.encoding"
+config    = require('lapis.config').get!
+db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
 import respond_to from require 'lapis.application'
@@ -21,13 +23,14 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+
 --------------------------------------------------------------------------------
 define_subdomain = () =>
   sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
-  jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
+  jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true

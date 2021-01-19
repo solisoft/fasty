@@ -4,6 +4,8 @@ stringy   = require "stringy"
 google    = require "cloud_storage.google"
 http      = require "lapis.nginx.http"
 encoding  = require "lapis.util.encoding"
+config    = require('lapis.config').get!
+db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require "lib.aqls"
 import uuid, define_content_type from require "lib.utils"
@@ -76,7 +78,7 @@ define_subdomain = () =>
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
-  jwt[sub_domain] = auth_arangodb(sub_domain) if jwt[sub_domain] == nil or all_domains == nil
+  jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true
