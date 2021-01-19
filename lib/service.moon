@@ -122,6 +122,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
 
   write_content("#{path}/#{layout_id}.css", sass.compile(layout[field], 'compressed'))
 
+  -- default config file
   config_file = "module.exports = {
     purge: ['./*.html'],
     darkMode: false,
@@ -130,6 +131,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
     plugins: []
   }"
 
+  -- check if we have defined a config file
   if home_settings.tailwindcss_config
     config_file = aql(
       subdomain,
