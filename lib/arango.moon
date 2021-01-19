@@ -33,6 +33,7 @@ raw_aql = (db_name, stm)->
   has_more  = res['hasMore']
 
   if res['error'] then
+    print(status_code)
     print(to_json(stm))
     print(body)
 
