@@ -421,9 +421,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'json'
       output = from_json(http_get(item))
       output = output[v] for k, v in pairs(stringy.split(dataset, "."))
-    -- {{ og_data | name }}
+    -- {{ og_data | name | <default> }}
     if action == 'og_data'
       output = get_nested(params.og_data, item) if params.og_data
+      output = dataset if dataset and output == "" or output == nil
     -- {{ dataset | key | field | <args> }}
     -- {{ dataset | slug=demo | js }}
     -- {{ dataset | slug=demo | js | only_url#js }}
