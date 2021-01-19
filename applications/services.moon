@@ -4,6 +4,7 @@ stringy = require 'stringy'
 console = require 'lapis.console'
 
 import aqls from require 'lib.aqls'
+import validate from require "lapis.validate"
 import respond_to from require 'lapis.application'
 import from_json, to_json from require 'lapis.util'
 import dynamic_page, dynamic_replace from require 'lib.concerns'
@@ -96,7 +97,10 @@ class FastyServices extends lapis.Application
   [riotjs: '/riotjs']: respond_to {
     POST: =>
       load_settings(@)
-      if @params.token == settings[sub_domain].secret
+      is_valid = validate(
+        { "name": @params.name }, {{ "name", matches_pattern: "^[%w%-_]+$" }}
+      )
+      if is_valid == nil and @params.token == settings[sub_domain].secret
         compile_riotjs(sub_domain, @params.name, @params.tag)
   }
   ------------------------------------------------------------------------------
@@ -104,7 +108,14 @@ class FastyServices extends lapis.Application
   [tailwindcss: '/tailwindcss']: respond_to {
     POST: =>
       load_settings(@)
-      if @params.token == settings[sub_domain].secret
+      is_valid = validate(
+        { "id": @params.id, "field": @params.field },
+        {
+          { "id", matches_pattern: "^[%d]+$" },
+          { "field", matches_pattern: "^[%w%-_]+$" }
+        }
+      )
+      if is_valid == nil and @params.token == settings[sub_domain].secret
         compile_tailwindcss(sub_domain, @params.id, @params.field)
   }
   ------------------------------------------------------------------------------
