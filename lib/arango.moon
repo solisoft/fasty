@@ -86,24 +86,24 @@ transaction = (db_name, params)->
   )
   from_json(body)
 --------------------------------------------------------------------------------
-begin_stream_transaction = (db_name, params)->
+-- stream_transaction(db_name, "POST", "begin", { some: params })  -- Begin
+-- stream_transaction(db_name, "PUT", 1234)  -- Commit
+-- stream_transaction(db_name, "DELETE", 1234)  -- Abort
+stream_transaction = (db_name, method, id, params={})->
   body, status_code, headers = http_request(
-    "#{db_config.url}/_db/#{db_name}/_api/transaction/begin", "POST",
+    "#{db_config.url}/_db/#{db_name}/_api/transaction/#{id}", method,
     to_json(params), { Authorization: "bearer #{jwt}" }
   )
   from_json(body)
 --------------------------------------------------------------------------------
-abort_stream_transaction = (db_name, id)->
+-- create_index(
+--    db_name, "ttl",
+--    { "type" : "ttl", "expireAfter" : 3600, "fields" : [ "createdAt" ] }
+-- )
+create_index = (db_name, type, params)->
   body, status_code, headers = http_request(
-    "#{db_config.url}/_db/#{db_name}/_api/transaction/#{id}", "DELETE",
-    {}, { Authorization: "bearer #{jwt}" }
-  )
-  from_json(body)
---------------------------------------------------------------------------------
-commit_stream_transaction = (db_name, id)->
-  body, status_code, headers = http_request(
-    "#{db_config.url}/_db/#{db_name}/_api/transaction/#{id}", "PUT",
-    {}, { Authorization: "bearer #{jwt}" }
+    "#{db_config.url}/_db/#{db_name}/_api/index##{type}", "POST",
+    to_json(params), { Authorization: "bearer #{jwt}" }
   )
   from_json(body)
 --------------------------------------------------------------------------------
