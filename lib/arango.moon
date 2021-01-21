@@ -1,5 +1,9 @@
+cjson = require "cjson.safe"
+
 import table_merge, table_deep_merge from require 'lib.utils'
-import from_json, to_json from require 'lapis.util'
+
+from_json = (str) -> cjson.decode(str)
+to_json   = (obj) -> cjson.encode(obj)
 
 jwt       = ''
 db_config = {}
@@ -77,10 +81,31 @@ document_delete = (db_name, handle)-> without_params(db_name, 'DELETE', handle)
 --------------------------------------------------------------------------------
 transaction = (db_name, params)->
   body, status_code, headers = http_request(
-    "#{db_config.url}/_db/#{db_name}/_api/transaction", method,
+    "#{db_config.url}/_db/#{db_name}/_api/transaction", "POST",
     to_json(params), { Authorization: "bearer #{jwt}" }
   )
-  body
+  from_json(body)
+--------------------------------------------------------------------------------
+begin_stream_transaction = (db_name, params)->
+  body, status_code, headers = http_request(
+    "#{db_config.url}/_db/#{db_name}/_api/transaction/begin", "POST",
+    to_json(params), { Authorization: "bearer #{jwt}" }
+  )
+  from_json(body)
+--------------------------------------------------------------------------------
+abort_stream_transaction = (db_name, id)->
+  body, status_code, headers = http_request(
+    "#{db_config.url}/_db/#{db_name}/_api/transaction/#{id}", "DELETE",
+    {}, { Authorization: "bearer #{jwt}" }
+  )
+  from_json(body)
+--------------------------------------------------------------------------------
+commit_stream_transaction = (db_name, id)->
+  body, status_code, headers = http_request(
+    "#{db_config.url}/_db/#{db_name}/_api/transaction/#{id}", "PUT",
+    {}, { Authorization: "bearer #{jwt}" }
+  )
+  from_json(body)
 --------------------------------------------------------------------------------
 foxx_services = (db_name)->
   body, status_code, headers = http_request(
