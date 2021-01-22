@@ -5,6 +5,7 @@ logs/*.pid
 node_modules
 .DS_Store
 static/uploads/
+static/assets/
 *_temp
 foxxy/yarn-error.log
 foxxy/specs/pictures/

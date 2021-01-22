@@ -26,7 +26,6 @@ services:
       - 8080:8080
     volumes:
       - ./:/var/www
-      - assets:/var/www/static/assets
     depends_on:
       - arangodb
       - foxxy
@@ -44,7 +43,6 @@ services:
       - 9090:80
     volumes:
       - ./:/var/www
-      - assets:/var/www/static/assets
     depends_on:
       - arangodb
     links:
@@ -85,7 +83,6 @@ volumes:
   arangodb-app:
   node_modules:
   node_modules_resize:
-  assets:
 
 networks:
   frontend:
