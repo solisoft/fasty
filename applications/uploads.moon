@@ -6,7 +6,7 @@ http      = require 'lapis.nginx.http'
 encoding  = require 'lapis.util.encoding'
 config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
-jwt       = require 'rest.jwt'
+jwt       = require 'resty.jwt'
 
 import aqls from require 'lib.aqls'
 import uuid, define_content_type from require 'lib.utils'
