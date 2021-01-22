@@ -71,7 +71,7 @@ deploy_site = (sub_domain, settings) ->
   db_config = require('lapis.config').get("db_#{config._name}")
   path = "dump/#{sub_domain[1]}/"
   home = from_json(settings.home)
-  deploy_to = stringy.split(settings.deploy_secret, "#")
+  deploy_to = stringy.split(settings.deploy_secret, '#')
 
   request = 'FOR s IN settings LIMIT 1 RETURN s'
   sub_domain_settings = aql(deploy_to[1], request)[1]
@@ -105,7 +105,7 @@ compile_riotjs = (sub_domain, name, tag) ->
 
     command = "export PATH=\"$PATH;/usr/local/bin\" && riot --format umd #{path}/#{name}.riot --output #{path}/#{name}.js && terser --compress --mangle -o #{path}/#{name}.js #{path}/#{name}.js"
     handle = io.popen(command)
-    result = handle\read("*a")
+    result = handle\read('*a')
     handle\close()
 
     read_file("#{path}/#{name}.js")
@@ -115,7 +115,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
   layout = document_get(subdomain, "layouts/" .. layout_id)
   settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')[1]
   home_settings = from_json(settings.home)
-  langs = stringy.split(settings.langs, ",")
+  langs = stringy.split(settings.langs, ',')
 
   path = "compile_tailwind/#{subdomain}/#{layout_id}"
   os.execute("mkdir -p #{path}")
@@ -151,10 +151,10 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
     for k2, lang in pairs langs
       lang = stringy.strip(lang)
       html = ""
-      if type(item["raw_html"]) == "table" and item["raw_html"][lang]
-      	html = html .. item["raw_html"][lang]
-      if type(item["html"]) == "table" and item["html"][lang] and item["html"][lang].html
-          html = html .. item["html"][lang].html
+      if type(item['raw_html']) == 'table' and item['raw_html'][lang]
+      	html = html .. item['raw_html'][lang]
+      if type(item['html']) == "table" and item['html'][lang] and item['html'][lang].html
+          html = html .. item['html'][lang].html
       write_content("#{path}/page_#{k}_#{lang}.html", html)
 
   -- Components
@@ -169,7 +169,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
 
   command = "cd #{path} && export PATH=\"$PATH;/usr/local/bin\" && NODE_ENV=production tailwindcss build #{layout_id}.css -o #{layout_id}_compiled.css"
   handle = io.popen(command)
-  result = handle\read("*a")
+  result = handle\read('*a')
   handle\close()
 
   data = read_file("#{path}/#{layout_id}_compiled.css")

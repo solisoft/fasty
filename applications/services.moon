@@ -1,4 +1,4 @@
-lapis     = require "lapis"
+lapis     = require 'lapis'
 shell     = require 'resty.shell'
 stringy   = require 'stringy'
 console   = require 'lapis.console'
@@ -6,7 +6,7 @@ config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
-import validate from require "lapis.validate"
+import validate from require 'lapis.validate'
 import respond_to from require 'lapis.application'
 import from_json, to_json from require 'lapis.util'
 import dynamic_page, dynamic_replace from require 'lib.concerns'
@@ -100,7 +100,7 @@ class FastyServices extends lapis.Application
     POST: =>
       load_settings(@)
       is_valid = validate(
-        { "name": @params.name }, {{ "name", matches_pattern: "^[%w%-_]+$" }}
+        { 'name': @params.name }, {{ 'name', matches_pattern: '^[%w%-_]+$' }}
       )
       if is_valid == nil and @params.token == settings[sub_domain].secret
         compile_riotjs(sub_domain, @params.name, @params.tag)
@@ -111,10 +111,10 @@ class FastyServices extends lapis.Application
     POST: =>
       load_settings(@)
       is_valid = validate(
-        { "id": @params.id, "field": @params.field },
+        { 'id': @params.id, 'field': @params.field },
         {
-          { "id", matches_pattern: "^[%d]+$" },
-          { "field", matches_pattern: "^[%w%-_]+$" }
+          { 'id', matches_pattern: '^[%d]+$' },
+          { 'field', matches_pattern: '^[%w%-_]+$' }
         }
       )
       if is_valid == nil and @params.token == settings[sub_domain].secret

@@ -4,7 +4,7 @@ lapis     = require 'lapis'
 stringy   = require 'stringy'
 config    = require('lapis.config').get!
 shell     = require 'resty.shell'
-encoding  = require "lapis.util.encoding"
+encoding  = require 'lapis.util.encoding'
 config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
 
@@ -43,18 +43,18 @@ load_settings = () =>
 class extends lapis.Application
 
   handle_error: (err, trace) =>
-    if config._name == "production" then
+    if config._name == 'production' then
       print(to_json(err) .. to_json(trace))
       @err = err
       display_error_page(@, 500)
     else
       super err, trace
 
-  @enable "etlua"
+  @enable 'etlua'
 
-  @include "applications.uploads"
-  @include "applications.services"
-  @include "applications.assets"
+  @include 'applications.uploads'
+  @include 'applications.services'
+  @include 'applications.assets'
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   expire_at = () =>
@@ -81,7 +81,7 @@ class extends lapis.Application
     infos = page_info(db_name, @params.slug, @params.lang)
 
     if current_page == nil then
-      used_lang = stringy.split(settings[sub_domain].langs, ",")[1]
+      used_lang = stringy.split(settings[sub_domain].langs, ',')[1]
       infos = page_info(db_name, @params.slug, used_lang)
       current_page = load_page_by_slug(db_name, slug, used_lang)
 
@@ -89,7 +89,7 @@ class extends lapis.Application
 
     html = ''
 
-    if @params.splat and table.getn(stringy.split(@params.splat, "/")) % 2 == 1
+    if @params.splat and table.getn(stringy.split(@params.splat, '/')) % 2 == 1
       @params.splat = "slug/#{@params.splat}"
 
     infos = { 'page': {}, 'folder': {} } if infos == nil
@@ -138,7 +138,7 @@ class extends lapis.Application
       @session.lang = check_valid_lang(settings[sub_domain].langs, lang)
 
       if @params.lang and @params.lang ~= @session.lang
-        @params.all   = "-"
+        @params.all   = '-'
         @params.slug  = @params.lang
         @params.lang  = @session.lang
 
@@ -153,7 +153,7 @@ class extends lapis.Application
         @params.slug  = home['slug']
         @params.splat = home['splat'] if home['splat']
 
-        if type(home['root_redirection']) == "string"
+        if type(home['root_redirection']) == 'string'
           redirect_to: home['root_redirection']
         else
           display_page(@)

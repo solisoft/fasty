@@ -6,10 +6,9 @@ db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
 import from_json from require 'lapis.util'
+import dynamic_replace from require 'lib.concerns'
 import define_content_type from require 'lib.utils'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import dynamic_replace, define_subdomain, load_settings from require 'lib.concerns'
-
 
 jwt = {}
 global_data = {}
@@ -57,13 +56,13 @@ class FastyAssets extends lapis.Application
     js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
-      { "key": "#{@params.layout}" }
+      { 'key': "#{@params.layout}" }
     )[1]
     content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content_type: "application/javascript", content
+      content_type: 'application/javascript', content
     else
-      content_type: "application/javascript", content, headers: { "expires": expire_at! }
+      content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
     sub_domain = define_subdomain(@)
@@ -71,13 +70,13 @@ class FastyAssets extends lapis.Application
     js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
-      { "key": "#{@params.layout}" }
+      { 'key': "#{@params.layout}" }
     )[1]
     content = dynamic_replace("db_#{sub_domain}", js, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content_type: "application/javascript", content
+      content_type: 'application/javascript', content
     else
-      content_type: "application/javascript", content, headers: { "expires": expire_at! }
+      content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
 
   ------------------------------------------------------------------------------
   [css: '/:lang/:layout/css/:rev.css']: =>
@@ -89,16 +88,16 @@ class FastyAssets extends lapis.Application
         FOR doc in layouts FILTER doc._key == @key
           RETURN { scss: doc.scss, compiled_css: doc.compiled_css }
       ",
-      { "key": "#{@params.layout}" }
+      { 'key': "#{@params.layout}" }
     )[1]
     css = layout.compiled_css
-    css = sass.compile(layout.scss, 'compressed') if type(css) == "userdata"
+    css = sass.compile(layout.scss, 'compressed') if type(css) == 'userdata'
 
     content = dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content_type: "text/css", content
+      content_type: 'text/css', content
     else
-      content_type: "text/css", content, headers: { "expires": expire_at! }
+      content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
     sub_domain = define_subdomain(@)
@@ -106,13 +105,13 @@ class FastyAssets extends lapis.Application
     css = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
-      { "key": "#{@params.layout}" }
+      { 'key': "#{@params.layout}" }
     )[1]
     content = dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content_type: "text/css", content
+      content_type: 'text/css', content
     else
-      content_type: "text/css", content, headers: { "expires": expire_at! }
+      content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [component: '/:lang/:key/component/:rev.tag']: =>
     sub_domain = define_subdomain(@)
@@ -121,13 +120,13 @@ class FastyAssets extends lapis.Application
     for i, key in pairs(stringy.split(@params.key, '-'))
       html ..= aql(
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
-        { "key": "#{key}" }
+        { 'key': "#{key}" }
       )[1] .. "\n"
     content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content, headers: { "Access-Control-Allow-Origin": "*" }
+      content, headers: { 'Access-Control-Allow-Origin': '*' }
     else
-      content, headers: { "expires": expire_at!, "Access-Control-Allow-Origin": "*" }
+      content, headers: { 'expires': expire_at!, 'Access-Control-Allow-Origin': '*' }
 --  ------------------------------------------------------------------------------
   [componentjs: '/:lang/:key/component/:rev.js']: =>
     sub_domain = define_subdomain(@)
@@ -136,11 +135,11 @@ class FastyAssets extends lapis.Application
     for i, key in pairs(stringy.split(@params.key, '-'))
       html ..= aql(
         "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.javascript",
-        { "key": "#{key}" }
+        { 'key': "#{key}" }
       )[1] .. "\n"
     content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
-      content, headers: { "Content-Type": "text/javascript" }
+      content, headers: { 'Content-Type': 'text/javascript' }
     else
-      content, headers: { "expires": expire_at!, "Content-Type": "text/javascript" }
+      content, headers: { 'expires': expire_at!, 'Content-Type': 'text/javascript' }
 --

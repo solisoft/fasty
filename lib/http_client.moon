@@ -1,7 +1,7 @@
 import from_json, to_json from require 'lapis.util'
 --------------------------------------------------------------------------------
 http_request = (url, method, body, headers) ->
-  headers = { "User-Agent": "FastyCMS" } if headers == nil
+  headers = { 'User-Agent': 'FastyCMS' } if headers == nil
   body    = {} if body == nil
   html, status, h = http.simple {
     url: url, method: method, body: body, headers: headers

@@ -1,17 +1,17 @@
-lapis     = require "lapis"
-shell     = require "resty.shell"
-stringy   = require "stringy"
-google    = require "cloud_storage.google"
-http      = require "lapis.nginx.http"
-encoding  = require "lapis.util.encoding"
+lapis     = require 'lapis'
+shell     = require 'resty.shell'
+stringy   = require 'stringy'
+google    = require 'cloud_storage.google'
+http      = require 'lapis.nginx.http'
+encoding  = require 'lapis.util.encoding'
 config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
 
-import aqls from require "lib.aqls"
-import uuid, define_content_type from require "lib.utils"
-import from_json, to_json from require "lapis.util"
-import respond_to from require "lapis.application"
-import auth_arangodb, aql, list_databases, document_post from require "lib.arango"
+import aqls from require 'lib.aqls'
+import uuid, define_content_type from require 'lib.utils'
+import from_json, to_json from require 'lapis.util'
+import respond_to from require 'lapis.application'
+import auth_arangodb, aql, list_databases, document_post from require 'lib.arango'
 
 jwt = {}
 global_data = {}
@@ -34,11 +34,11 @@ watermark = (filename) ->
     shell.run "mv #{filename}.out.#{ext} #{filename}"
 --------------------------------------------------------------------------------
 write_content = (file, content, do_watermark=false) ->
-  path_arr = stringy.split(file, "/")
+  path_arr = stringy.split(file, '/')
   table.remove(path_arr, table.getn(path_arr))
-  path = table.concat(path_arr, "/")
+  path = table.concat(path_arr, '/')
   os.execute("mkdir -p #{path}")
-  output = io.open(file, "w+")
+  output = io.open(file, 'w+')
   io.output(output)
   io.write(content)
   io.close(output)
@@ -50,8 +50,8 @@ cloud_storage = () ->
   if io.open("certs/#{sub_domain}.json", "r")
     certificate = "certs/#{sub_domain}.json"
   else
-    if io.open("certs/default.json", "r")
-      certificate = "certs/default.json"
+    if io.open('certs/default.json', 'r')
+      certificate = 'certs/default.json'
   if certificate
     storage = google.CloudStorage\from_json_key_file(certificate)
   storage
@@ -59,7 +59,7 @@ cloud_storage = () ->
 storage = cloud_storage!
 --------------------------------------------------------------------------------
 load_original_from_cloud = (key) ->
-  res = ngx.location.capture("/" .. key)
+  res = ngx.location.capture('/' .. key)
   if bucket and res.status == 404
     content = storage\get_file bucket, key
     write_content key, content if content
@@ -68,7 +68,7 @@ check_file = (params) ->
   db_name = "db_#{sub_domain}"
   db_name = "db_" .. encoding.decode_base64(params._from) if params._from
   upload = aql(
-    db_name, "FOR u IN uploads FILTER u.uuid == @key RETURN u", { "key": params.uuid }
+    db_name, 'FOR u IN uploads FILTER u.uuid == @key RETURN u', { "key": params.uuid }
   )[1]
   load_original_from_cloud upload.path if upload
   upload
@@ -96,11 +96,11 @@ class FastyImages extends lapis.Application
       load_settings(@)
       @params.key = @req.headers['apikey'] if @req.headers['apikey']
       if true -- if @params.key == settings[sub_domain].secret
-        if file = @params["files[]"] or @params.files
-          arr = stringy.split(file.filename, ".")
+        if file = @params['files[]'] or @params.files
+          arr = stringy.split(file.filename, '.')
           ext = arr[table.getn(arr)]
 
-          date = os.date("%y/%m/%d", os.time())
+          date = os.date('%y/%m/%d', os.time())
           path = "static/assets/#{sub_domain}/#{date}"
           _uuid = uuid()
           filename = "#{_uuid}.#{ext}"
@@ -110,23 +110,23 @@ class FastyImages extends lapis.Application
           write_content "#{path}/#{filename}", content, true
 
           url = "/asset/o/#{_uuid}"
-          google_url = ""
+          google_url = ''
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
               google_url = "https://storage.googleapis.com/#{bucket}/#{path}/#{filename}" if status == 200
 
           upload = {
-            "uuid": _uuid, "root": path, "filename": file.filename, "path": path .. '/' .. filename,
-            "length": #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
+            'uuid': _uuid, 'root': path, 'filename': file.filename, 'path': path .. '/' .. filename,
+            'length': #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
           }
 
           if @params.id
-            upload["object_id"] = @params.collection .. "/" .. @params.id
+            upload["object_id"] = @params.collection .. '/' .. @params.id
             upload["pos"] = 10000
             upload["field"] = @params.field
 
-          doc_key = document_post("db_#{sub_domain}", "uploads", upload)._key
+          doc_key = document_post("db_#{sub_domain}", 'uploads', upload)._key
 
           to_json({ success: true, filename: _uuid, key: doc_key, file: { url: '/asset/o/' .. _uuid } })
         else
@@ -141,12 +141,12 @@ class FastyImages extends lapis.Application
 
       if true -- if @params.key == settings[sub_domain].secret
         if url_src = @params.image
-          arr = stringy.split(url_src, "/")
+          arr = stringy.split(url_src, '/')
           file = arr[table.getn(arr)]
-          arr = stringy.split(file, ".")
+          arr = stringy.split(file, '.')
           ext = arr[table.getn(arr)]
 
-          date = os.date("%y/%m/%d", os.time())
+          date = os.date('%y/%m/%d', os.time())
           path = "static/assets/#{sub_domain}/#{date}"
           _uuid = uuid()
           filename = "#{_uuid}.#{ext}"
@@ -158,15 +158,15 @@ class FastyImages extends lapis.Application
           write_content "#{path}/#{filename}", content, true
 
           url = "/asset/o/#{_uuid}"
-          google_url = ""
+          google_url = ''
           if bucket
             if storage
               status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
               google_url = "https://storage.googleapis.com/#{bucket}#{filename}" if status == 200
 
           upload = {
-            "uuid": _uuid, "root": path, "filename": file, "path": path .. '/' .. filename,
-            "length": #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
+            uuid: _uuid, root: path, filename: file, path: path .. '/' .. filename,
+            length: #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
           }
 
           doc_key = document_post("db_#{sub_domain}", "uploads", upload)._key
@@ -187,8 +187,8 @@ class FastyImages extends lapis.Application
     if upload
       ext   = @params.format or upload.ext
       _uuid = upload.uuid
-      str   = ""
-      res   = { "body": "", status: 0 }
+      str   = ''
+      res   = { body: '', status: 0 }
       url   = "#{upload.root}/#{_uuid}.#{ext}"
 
       if ext != upload.ext
@@ -199,7 +199,7 @@ class FastyImages extends lapis.Application
       else
         res = ngx.location.capture("/#{url}")
 
-      disposition = "inline"
+      disposition = 'inline'
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
       res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
@@ -210,11 +210,11 @@ class FastyImages extends lapis.Application
   [image_r: '/asset/r/:uuid[a-z%d\\-]/:width[%d](/:height[%d])(.:format[a-z])']: =>
     load_settings(@)
 
-    ext = @params.format or "jpg"
+    ext = @params.format or 'jpg'
     upload = check_file @params
 
     if upload
-      height  = ""
+      height  = ''
       height  = "--height #{@params.height} --crop none" if @params.height
       dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}.#{ext}"
 
@@ -226,7 +226,7 @@ class FastyImages extends lapis.Application
           print(to_json(reason))
         res = ngx.location.capture("/#{dest}")
 
-      disposition = "inline"
+      disposition = 'inline'
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
       res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
@@ -237,18 +237,18 @@ class FastyImages extends lapis.Application
   [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
     load_settings(@)
 
-    ext = @params.format or "jpg"
+    ext = @params.format or 'jpg'
     upload = check_file @params
 
     if upload
       interesting = @params.interesting or 'attention'
       dest = "#{upload.root}/#{upload.uuid}-sm-#{@params.width}-#{@params.height}-#{interesting}.#{ext}"
-      res = ngx.location.capture("/" .. dest)
+      res = ngx.location.capture("/#{dest}")
       if res and res.status == 404
         ok, stdout, stderr, reason, status = shell.run("vips smartcrop #{upload.path} #{dest} #{@params.width} #{@params.height} --interesting #{interesting}")
-        res = ngx.location.capture("/" .. dest)
+        res = ngx.location.capture("/#{dest}")
 
-      disposition = "inline"
+      disposition = 'inline'
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
 
       res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }

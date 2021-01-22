@@ -1,11 +1,11 @@
-cjson = require "cjson.safe"
+cjson = require 'cjson.safe'
 
 import table_merge, table_deep_merge from require 'lib.utils'
 
 from_json = (str) -> cjson.decode(str)
 to_json   = (obj) -> cjson.encode(obj)
 
-jwt       = ''
+jwt       = ""
 db_config = {}
 --------------------------------------------------------------------------------
 http_request = (url, method, body, headers) ->
@@ -23,7 +23,7 @@ api_run = (db_name, path, method, params={}, headers={}) ->
 --------------------------------------------------------------------------------
 list_databases = () ->
   body = http_request(
-    db_config.url .. '_api/user/' .. db_config.login .. '/database', 'GET',
+    "#{db_config.url}_api/user/#{db_config.login}/database", "GET",
     {}, { Authorization: "bearer #{jwt}" }
   )
   from_json(body)['result']
@@ -31,14 +31,14 @@ list_databases = () ->
 auth_arangodb = (db_name, cfg)->
   db_config = cfg
   body, status_code = http_request(
-    db_config.url .. '_open/auth', 'POST',
+    "#{db_config.url}_open/auth", "POST",
     to_json({ username: db_config.login, password: db_config.pass })
   )
   jwt = from_json(body)['jwt'] if status_code == 200
   jwt
 --------------------------------------------------------------------------------
 raw_aql = (db_name, stm)->
-  body, status_code = api_run(db_name, "/cursor", "POST", stm)
+  body, status_code = api_run(db_name, '/cursor', 'POST', stm)
   result    = body['result']
   has_more  = body['hasMore']
 
@@ -48,7 +48,7 @@ raw_aql = (db_name, stm)->
     print(body)
 
   while has_more
-    body      = api_run(db_name, "/cursor/#{body["id"]}", "PUT")
+    body      = api_run(db_name, "/cursor/#{body["id"]}", 'PUT')
     more      = from_json(body)
     result    = table_merge(result,  more['result'])
     has_more  = more['hasMore']
@@ -74,11 +74,11 @@ document_get = (db_name, handle)-> without_params(db_name, 'GET', handle)
 document_delete = (db_name, handle)-> without_params(db_name, 'DELETE', handle)
 --------------------------------------------------------------------------------
 transaction = (db_name, params)->
-  api_run(db_name, "/transaction", "POST", params)
+  api_run(db_name, '/transaction', 'POST', params)
 --------------------------------------------------------------------------------
--- stream_transaction(db_name, "POST", "begin", { some: params })  -- Begin
--- stream_transaction(db_name, "PUT", 1234)  -- Commit
--- stream_transaction(db_name, "DELETE", 1234)  -- Abort
+-- stream_transaction(db_name, 'POST', "begin", { some: params })  -- Begin
+-- stream_transaction(db_name, 'PUT', 1234)  -- Commit
+-- stream_transaction(db_name, 'DELETE', 1234)  -- Abort
 stream_transaction = (db_name, method, id, params={})->
   api_run(db_name, "/transaction/#{id}", method, params)
 --------------------------------------------------------------------------------
@@ -87,26 +87,26 @@ stream_transaction = (db_name, method, id, params={})->
 --    { "type" : "ttl", "expireAfter" : 3600, "fields" : [ "createdAt" ] }
 -- )
 create_index = (db_name, type, params)->
-  api_run(db_name, "/index##{type}", "POST", params)
+  api_run(db_name, "/index##{type}", 'POST', params)
 --------------------------------------------------------------------------------
 delete_index = (db_name, id)->
-  api_run(db_name, "/index/#{id}", "DELETE")
+  api_run(db_name, "/index/#{id}", 'DELETE')
 --------------------------------------------------------------------------------
 get_index = (db_name, id)->
-  api_run(db_name, "/index/#{id}", "GET")
+  api_run(db_name, "/index/#{id}", 'GET')
 --------------------------------------------------------------------------------
 foxx_services = (db_name)->
-  api_run(db_name, "/foxx?excludeSystem=true", "GET")
+  api_run(db_name, '/foxx?excludeSystem=true', 'GET')
 --------------------------------------------------------------------------------
 foxx_install = (db_name, mount, data)->
   api_run(
-    db_name, "/foxx?mount=/#{mount}", "POST", data,
+    db_name, "/foxx?mount=/#{mount}", 'POST', data,
     { 'Content-Type': 'application/zip' }
   )
 --------------------------------------------------------------------------------
 foxx_upgrade = (db_name, mount, data)->
   api_run(
-    db_name, "/foxx/service?mount=/#{mount}&force=true", "PATCH", data,
+    db_name, "/foxx/service?mount=/#{mount}&force=true", 'PATCH', data,
     { 'Content-Type': 'application/zip' }
   )
 --------------------------------------------------------------------------------

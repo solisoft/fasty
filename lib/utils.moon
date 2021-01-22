@@ -3,7 +3,7 @@ stringy = require 'stringy'
 date    = require 'date'
 --------------------------------------------------------------------------------
 get_nested = (arr, key) ->
-  keys = stringy.split(key, ".")
+  keys = stringy.split(key, '.')
   arr = arr[item] for k, item in pairs keys
   arr
 --------------------------------------------------------------------------------
@@ -21,8 +21,8 @@ table_merge = (t1, t2) ->
 --------------------------------------------------------------------------------
 table_deep_merge = (t1, t2) ->
   for k,v in pairs(t2) do
-    if type(v) == "table" then
-      if type(t1[k] or false) == "table" then
+    if type(v) == 'table' then
+      if type(t1[k] or false) == 'table' then
         table_deep_merge(t1[k] or {}, t2[k] or {})
       else t1[k] = v
     else t1[k] = v
@@ -51,7 +51,7 @@ last_element = (str, pattern) ->
   splitted[table.getn(splitted)]
 --------------------------------------------------------------------------------
 define_content_type = (slug) ->
-  ext = last_element(slug, ".")
+  ext = last_element(slug, '.')
   mimes_types = {
     wmv: 'video/x-ms-wmv',
     mov: 'video/quicktime',
@@ -124,7 +124,7 @@ define_content_type = (slug) ->
     '7z': 'application/x-7z-compressed'
   }
   page_content_type = mimes_types[ext\lower!]
-  page_content_type = "text/html" if page_content_type == nil
+  page_content_type = 'text/html' if page_content_type == nil
   page_content_type
 --------------------------------------------------------------------------------
 -- expose methods
