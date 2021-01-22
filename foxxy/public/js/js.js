@@ -591,7 +591,6 @@ var Common = {
 
       beforeSend: function(env) {
         env.headers = {
-          'apikey': localStorage.getItem('resize_api_key'),
           'X-Session-Id': localStorage.getItem('X-Session-Id'),
           'foxx-locale': i18n == true ? localStorage.getItem('foxx-locale') : null
         }

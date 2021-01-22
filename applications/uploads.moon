@@ -6,6 +6,7 @@ http      = require 'lapis.nginx.http'
 encoding  = require 'lapis.util.encoding'
 config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
+jwt       = require 'rest.jwt'
 
 import aqls from require 'lib.aqls'
 import uuid, define_content_type from require 'lib.utils'
@@ -23,6 +24,10 @@ bucket = nil
 
 expire_at = () ->
   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
+--------------------------------------------------------------------------------
+is_valid_jwt = (jwt_token) ->
+  secret = settings[sub_domain].jwt_secret
+  jwt\verify(secret, jwt_token).verified
 --------------------------------------------------------------------------------
 watermark = (filename) ->
   w = from_json(settings[sub_domain].home).watermark
@@ -94,8 +99,7 @@ class FastyImages extends lapis.Application
   [file_upload: '/file/upload(/:id)(/:collection)(/:field)']: respond_to {
     POST: =>
       load_settings(@)
-      @params.key = @req.headers['apikey'] if @req.headers['apikey']
-      if true -- if @params.key == settings[sub_domain].secret
+      if @req.headers['X-Session-Id'] and is_valid_jwt(@req.headers['X-Session-Id'])
         if file = @params['files[]'] or @params.files
           arr = stringy.split(file.filename, '.')
           ext = arr[table.getn(arr)]
@@ -139,7 +143,7 @@ class FastyImages extends lapis.Application
     POST: =>
       load_settings(@)
 
-      if true -- if @params.key == settings[sub_domain].secret
+      if @req.headers['X-Session-Id'] and is_valid_jwt(@req.headers['X-Session-Id'])
         if url_src = @params.image
           arr = stringy.split(url_src, '/')
           file = arr[table.getn(arr)]
