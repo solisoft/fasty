@@ -6,7 +6,7 @@ http      = require 'lapis.nginx.http'
 encoding  = require 'lapis.util.encoding'
 config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
-jwt       = require 'rest.jwt'
+resty_jwt = require 'resty.jwt'
 
 import aqls from require 'lib.aqls'
 import uuid, define_content_type from require 'lib.utils'
@@ -27,7 +27,7 @@ expire_at = () ->
 --------------------------------------------------------------------------------
 is_valid_jwt = (jwt_token) ->
   secret = settings[sub_domain].jwt_secret
-  jwt\verify(secret, jwt_token).verified
+  resty_jwt\verify(secret, jwt_token).verified
 --------------------------------------------------------------------------------
 watermark = (filename) ->
   w = from_json(settings[sub_domain].home).watermark

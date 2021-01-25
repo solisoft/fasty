@@ -5,7 +5,7 @@ orbs:
 executors:
   fasty:
     docker:
-      - image: solisoft/fasty
+      - image: solisoft/fasty:latest
       - image: arangodb/arangodb:latest
         environment:
           ARANGO_ROOT_PASSWORD: password
