@@ -56,8 +56,12 @@ etlua2html = (json, partial, params, global_data) ->
   data
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object) ->
-  request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
-  aql(db_name, request, { slug: slug })[1]
+  ret = ngx.location.capture("/git/#{db_name}/#{object}/#{slug}.html")
+  if ret.status == 200
+    return { item: { html: ret.body, _key: "#{objects}/#{slug}" }}
+  else
+    request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
+    return aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
 load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
   request = "FOR item IN pages FILTER item.slug[@lang] == @slug "

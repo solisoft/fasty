@@ -24,7 +24,7 @@ RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
 
 ARG LUAROCKS_VERSION=3.5.0
 
-RUN apt-get -qqy install lua5.1 liblua5.1-0-dev unzip
+RUN apt-get -qqy install lua5.1 liblua5.1-0-dev unzip zip
 
 RUN wget https://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz \
     && tar zxpf luarocks-${LUAROCKS_VERSION}.tar.gz \
