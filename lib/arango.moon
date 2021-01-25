@@ -96,20 +96,24 @@ get_index = (db_name, id)->
   api_run(db_name, "/index/#{id}", 'GET')
 --------------------------------------------------------------------------------
 foxx_services = (db_name)->
-  http_request(db_name, '/foxx?excludeSystem=true', 'GET')
+  body, status_code, headers = http_request(
+    "#{db_config.url}/_db/#{db_name}/_api/foxx?excludeSystem=true", 'GET',
+    {}, { Authorization: "bearer #{jwt}" }
+  )
+  body
 --------------------------------------------------------------------------------
 foxx_install = (db_name, mount, data)->
-  http_request(
-    db_name, "/foxx?mount=/#{mount}", 'POST', data,
-    { 'Content-Type': 'application/zip' }
+  body, status_code, headers = http_request(
+    "#{db_config.url}/_db/#{db_name}/_api/foxx?mount=/#{mount}", 'POST',
+    data, { 'Content-Type': 'application/zip', Authorization: "bearer #{jwt}" }
   )
+  body
 --------------------------------------------------------------------------------
 foxx_upgrade = (db_name, mount, data)->
-  body = http_request(
-    db_name, "/foxx/service?mount=/#{mount}&force=true", 'PATCH', data,
-    { 'Content-Type': 'application/zip' }
+  body, status_code, headers = http_request(
+    "#{db_config.url}/_db/#{db_name}/_api/foxx/service?mount=/#{mount}&force=true", 'PATCH',
+    data, { 'Content-Type': 'application/zip', Authorization: "bearer #{jwt}" }
   )
-  print(body)
   body
 --------------------------------------------------------------------------------
 -- expose methods
