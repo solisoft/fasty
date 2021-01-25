@@ -105,10 +105,12 @@ foxx_install = (db_name, mount, data)->
   )
 --------------------------------------------------------------------------------
 foxx_upgrade = (db_name, mount, data)->
-  http_request(
+  body = http_request(
     db_name, "/foxx/service?mount=/#{mount}&force=true", 'PATCH', data,
     { 'Content-Type': 'application/zip' }
   )
+  print(body)
+  body
 --------------------------------------------------------------------------------
 -- expose methods
 { :auth_arangodb, :aql, :document_get, :document_put, :document_post,
