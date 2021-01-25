@@ -96,16 +96,16 @@ get_index = (db_name, id)->
   api_run(db_name, "/index/#{id}", 'GET')
 --------------------------------------------------------------------------------
 foxx_services = (db_name)->
-  api_run(db_name, '/foxx?excludeSystem=true', 'GET')
+  http_request(db_name, '/foxx?excludeSystem=true', 'GET')
 --------------------------------------------------------------------------------
 foxx_install = (db_name, mount, data)->
-  api_run(
+  http_request(
     db_name, "/foxx?mount=/#{mount}", 'POST', data,
     { 'Content-Type': 'application/zip' }
   )
 --------------------------------------------------------------------------------
 foxx_upgrade = (db_name, mount, data)->
-  api_run(
+  http_request(
     db_name, "/foxx/service?mount=/#{mount}&force=true", 'PATCH', data,
     { 'Content-Type': 'application/zip' }
   )
