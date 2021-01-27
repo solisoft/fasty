@@ -74,9 +74,13 @@ etlua2html = (json, partial, params, global_data) ->
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object, ext = 'html') ->
   ret = ngx.location.capture("/git/#{db_name}/app/#{object}/#{slug}.#{ext}")
-  print to_json(ret)
   if ret.status == 200
-     { item: { html: ret.body, _key: "#{objects}/#{slug}", _rev: ret.ETag\gsub("-", "") }}
+    {
+      item: {
+       html: ret.body, _key: "#{objects}/#{slug}",
+        _rev: ret.header.ETag\gsub('"', '')\gsub("-", "")
+      }
+    }
   else
     request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
     aql(db_name, request, { slug: slug })[1]
@@ -464,54 +468,66 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- slug is layout's slug
     -- fields are : js, css, js_vendor, css_vendor
     if action == 'layout'
-
       aql = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
+      object = aql(db_name, aql, { slug: item })[1]
 
       if object
-        object = aql(db_name, aql, { slug: item })[1]
-
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.js")
-        object.i_js = ret.body if ret.status == 200
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.scss")
-        object.i_css = ret.body if ret.status == 200
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/js.js")
-        object.javascript = ret.body if ret.status == 200
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/scss.scss")
-        object.scss = ret.body if ret.status == 200
-
         js_vendor_hmac = stringy.split(encode_with_secret(object.i_js, ''), '.')[2]\gsub('/', '-')
         css_vendor_hmac = stringy.split(encode_with_secret(object.i_css, ''), '.')[2]\gsub('/', '-')
         jshmac = stringy.split(encode_with_secret(object.javascript, ''), '.')[2]\gsub('/', '-')
         csshmac = stringy.split(encode_with_secret(object.scss, ''), '.')[2]\gsub('/', '-')
+
         output = "/#{params.lang}/#{object._key}/vendors/#{js_vendor_hmac}.js" if dataset == 'js_vendor'
         output = "/#{params.lang}/#{object._key}/js/#{jshmac}.js" if dataset == 'js'
         output = "/#{params.lang}/#{object._key}/vendors/#{css_vendor_hmac}.css" if dataset == 'css_vendor'
         output = "/#{params.lang}/#{object._key}/css/#{csshmac}.css" if dataset == 'css'
-      else output = ' '
+      else
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.js")
+        i_js = ret.body if ret.status == 200
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.scss")
+        i_css = ret.body if ret.status == 200
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/js.js")
+        javascript = ret.body if ret.status == 200
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/scss.scss")
+        scss = ret.body if ret.status == 200
+
+        js_vendor_hmac = stringy.split(encode_with_secret(i_js, ''), '.')[2]\gsub('/', '-')
+        css_vendor_hmac = stringy.split(encode_with_secret(i_css, ''), '.')[2]\gsub('/', '-')
+        jshmac = stringy.split(encode_with_secret(javascript, ''), '.')[2]\gsub('/', '-')
+        csshmac = stringy.split(encode_with_secret(scss, ''), '.')[2]\gsub('/', '-')
+
+        output = "/#{params.lang}/#{item}/vendors/#{js_vendor_hmac}.js" if dataset == 'js_vendor'
+        output = "/#{params.lang}/#{item}/js/#{jshmac}.js" if dataset == 'js'
+        output = "/#{params.lang}/#{item}/vendors/#{css_vendor_hmac}.css" if dataset == 'css_vendor'
+        output = "/#{params.lang}/#{item}/css/#{csshmac}.css" if dataset == 'css'
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
 
   html
 --------------------------------------------------------------------------------
 page_info = (db_name, slug, lang) ->
-  request = "
-    FOR page IN pages FILTER page.slug[@lang] == @slug
-    LET root = (
-      FOR folder IN folders
-      FILTER folder.name == 'Root' AND folder.object_type == 'pages'
-      RETURN folder
-    )[0]
-
-    FOR folder IN folders
-      FILTER folder._key == (HAS(page, 'folder_key') ? page.folder_key : root._key)
-      LET path = (
-        FOR v, e IN ANY SHORTEST_PATH folder TO root GRAPH 'folderGraph'
-        FILTER HAS(v, 'ba_login') AND v.ba_login != ''
-        RETURN v
+  ret = ngx.location.capture("/git/#{db_name}/app/pages/#{params.slug}.yml")
+  if ret.status == 200
+    { page: lyaml.load(ret.body) }
+  else
+    request = "
+      FOR page IN pages FILTER page.slug[@lang] == @slug
+      LET root = (
+        FOR folder IN folders
+        FILTER folder.name == 'Root' AND folder.object_type == 'pages'
+        RETURN folder
       )[0]
 
-      RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
-  aql(db_name, request, { slug: slug, lang: lang })[1]
+      FOR folder IN folders
+        FILTER folder._key == (HAS(page, 'folder_key') ? page.folder_key : root._key)
+        LET path = (
+          FOR v, e IN ANY SHORTEST_PATH folder TO root GRAPH 'folderGraph'
+          FILTER HAS(v, 'ba_login') AND v.ba_login != ''
+          RETURN v
+        )[0]
+
+        RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
+    aql(db_name, request, { slug: slug, lang: lang })[1]
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
   request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
