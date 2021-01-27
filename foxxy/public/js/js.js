@@ -632,9 +632,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
-  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
+  ".fasty.ovh": "/_db",
+  ".inseytel.com": "https://inseytel.com/_db",
+  "epic20.world": "/_db"
 };
 
 module.exports = Config;
@@ -849,6 +849,9 @@ require.register("js/editor.js", function(exports, require, module) {
                   formData.append("key", localStorage.getItem('resize_api_key'))
 
                   $.ajax({
+                    headers: {
+                      'X-Session-Id': localStorage.getItem('X-Session-Id')
+                    },
                     xhr: function () {
                       var xhr = new window.XMLHttpRequest();
                       //Upload progress
