@@ -114,7 +114,11 @@ class extends lapis.Application
       if html ~= 'null' then
         content_type: page_content_type, html, status: status
       else
-        display_error_page(@, 404)
+        asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
+        if asset.status == 200
+           content_type: page_content_type, status: 200, asset.body
+        else
+          display_error_page(@, 404)
     else
       status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
   ------------------------------------------------------------------------------
@@ -143,7 +147,7 @@ class extends lapis.Application
         @params.lang  = @session.lang
 
       @session.lang = check_valid_lang(settings[sub_domain].langs, lang)
-      print(to_json(@params))
+
       if @params.slug
         display_page(@)
       else
