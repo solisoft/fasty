@@ -206,6 +206,9 @@
                   formData.append("key", localStorage.getItem('resize_api_key'))
 
                   $.ajax({
+                    headers: {
+                      'X-Session-Id': localStorage.getItem('X-Session-Id')
+                    },
                     xhr: function () {
                       var xhr = new window.XMLHttpRequest();
                       //Upload progress
