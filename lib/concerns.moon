@@ -75,6 +75,7 @@ etlua2html = (json, partial, params, global_data) ->
   data
 --------------------------------------------------------------------------------
 load_document_by_slug = (db_name, slug, object, ext = 'html') ->
+  print("*** load #{object}")
   ret = ngx.location.capture("/git/#{db_name}/app/#{object}/#{slug}.#{ext}")
   if ret.status == 200
     {
@@ -113,10 +114,11 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
     page_settings = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
     page_settings = lyaml.load(page_settings.body) if page_settings.status == 200
 
+    print("*** page_settings *** #{to_json(page_settings)}")
+    page = table_deep_merge(page, page_settings)
     if uselayout and page_settings.layout
       page.layout = check_git_layout(db_name, page_settings.layout)
 
-    print(to_json(page))
   page
 --------------------------------------------------------------------------------
 page_info = (db_name, slug, lang) ->
@@ -164,7 +166,6 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
     json = data.item.html.json
     json = data.item.html[params['lang']].json if data.item.html[params['lang']]
-
     if uselayout
       html = prepare_headers(data.layout.html, data, params)
 
@@ -389,7 +390,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         output = ''
         for i, k in pairs(stringy.split(item, '#'))
           component = load_document_by_slug(db_name, k, 'components', 'riot').item
-
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
@@ -543,6 +543,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
     json = data.item.html[params['lang']].json if data.item.html[params['lang']]
 
     if uselayout
+      print("*** #{to_json(data.item)}")
       html = prepare_headers(data.layout.html, data, params)
 
       if(data.item.raw_html and type(data.item.raw_html[params['lang']]) == 'string')

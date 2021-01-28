@@ -39,8 +39,7 @@ load_settings = () =>
 class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
-    define_subdomain(@)
-    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+    load_settings(@)
     data = aql(
       "db_#{sub_domain}",
       "FOR doc IN datasets FILTER doc._key == @key RETURN doc.@field",
@@ -51,8 +50,7 @@ class FastyAssets extends lapis.Application
     content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
   ------------------------------------------------------------------------------
   [js: '/:lang/:layout[%d]/js/:rev.js']: =>
-    define_subdomain(@)
-    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+    load_settings(@)
     javascript = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
@@ -66,8 +64,7 @@ class FastyAssets extends lapis.Application
       content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [js_vendors: '/:lang/:layout[%d]/vendors/:rev.js']: =>
-    define_subdomain(@)
-    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+    load_settings(@)
     i_js = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
@@ -82,8 +79,7 @@ class FastyAssets extends lapis.Application
 
   ------------------------------------------------------------------------------
   [css: '/:lang/:layout[%d]/css/:rev.css']: =>
-    define_subdomain(@)
-    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+    load_settings(@)
     layout = aql(
       "db_#{sub_domain}",
       "
@@ -103,8 +99,7 @@ class FastyAssets extends lapis.Application
       content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [css_vendors: '/:lang/:layout[%d]/vendors/:rev.css']: =>
-    define_subdomain(@)
-    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+    load_settings(@)
     layout = aql(
       "db_#{sub_domain}",
       "FOR doc in layouts FILTER doc._key == @key RETURN doc",
@@ -117,9 +112,10 @@ class FastyAssets extends lapis.Application
     else
       content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
-  [component: '/:lang/:key[%d]/component/:rev.tag']: =>
-    define_subdomain(@)
-    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+  [component: '/:lang/:key[%d-]/component/:rev.tag']: =>
+    print(">>>>>>")
+    load_settings(@)
+    print(to_json(global_data))
     html = ''
     for i, key in pairs(stringy.split(@params.key, '-'))
       html ..= aql(
@@ -134,8 +130,7 @@ class FastyAssets extends lapis.Application
       content, headers: { 'expires': expire_at!, 'Access-Control-Allow-Origin': '*' }
   ------------------------------------------------------------------------------
   [componentjs: '/:lang/:key[%d]/component/:rev.js']: =>
-    define_subdomain(@)
-    load_settings(@, jwt, no_db, settings, global_data, sub_domain)
+    load_settings(@)
     html = ''
     for i, key in pairs(stringy.split(@params.key, '-'))
       html ..= aql(
@@ -209,7 +204,8 @@ class FastyAssets extends lapis.Application
       content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [disk_component: '/:lang/:key/component/:rev.tag']: =>
-    define_subdomain(@)
+    load_settings(@)
+    print("..............................")
 
     content = '<!-- Not found -->'
     ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.html.tag")
@@ -222,7 +218,7 @@ class FastyAssets extends lapis.Application
       content, headers: { 'expires': expire_at!, 'Access-Control-Allow-Origin': '*' }
   ------------------------------------------------------------------------------
   [disk_componentjs: '/:lang/:key/component/:rev.js']: =>
-    define_subdomain(@)
+    load_settings(@)
 
     content = '/* Not found */'
     ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.compiled.js")

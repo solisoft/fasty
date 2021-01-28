@@ -10,7 +10,7 @@ db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
 import respond_to from require 'lapis.application'
-import check_valid_lang, uuid, define_content_type from require 'lib.utils'
+import check_valid_lang, uuid, define_content_type, table_deep_merge from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import from_json, to_json, unescape from require 'lapis.util'
@@ -92,7 +92,10 @@ class extends lapis.Application
     if @params.splat and table.getn(stringy.split(@params.splat, '/')) % 2 == 1
       @params.splat = "slug/#{@params.splat}"
 
-    infos = { 'page': {}, 'folder': {} } if infos == nil
+    if infos == nil
+      infos = { 'page': {}, 'folder': {} }
+    else
+      current_page.item = table_deep_merge(current_page.item, infos.page)
 
     if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
       splat = {}
@@ -103,6 +106,7 @@ class extends lapis.Application
     if redirection == nil then
       params_lang = @params.lang
       @params.lang = used_lang
+
       html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
       @params.lang = params_lang
     else
@@ -111,7 +115,6 @@ class extends lapis.Application
     html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
 
-    print("*** page info *** : #{to_json(infos)}")
     if is_auth(@, settings[sub_domain], infos)
       if html ~= 'null' then
         content_type: page_content_type, html, status: status
