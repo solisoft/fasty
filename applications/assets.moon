@@ -39,7 +39,7 @@ load_settings = () =>
 class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [ds: '/:lang/ds/:key/:field/:rev.:ext']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
     data = aql(
       "db_#{sub_domain}",
@@ -51,7 +51,7 @@ class FastyAssets extends lapis.Application
     content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
   ------------------------------------------------------------------------------
   [js: '/:lang/:layout[%d]/js/:rev.js']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
     javascript = aql(
       "db_#{sub_domain}",
@@ -66,7 +66,7 @@ class FastyAssets extends lapis.Application
       content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [js_vendors: '/:lang/:layout[%d]/vendors/:rev.js']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
     i_js = aql(
       "db_#{sub_domain}",
@@ -82,7 +82,7 @@ class FastyAssets extends lapis.Application
 
   ------------------------------------------------------------------------------
   [css: '/:lang/:layout[%d]/css/:rev.css']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
     layout = aql(
       "db_#{sub_domain}",
@@ -103,7 +103,7 @@ class FastyAssets extends lapis.Application
       content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [css_vendors: '/:lang/:layout[%d]/vendors/:rev.css']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
     layout = aql(
       "db_#{sub_domain}",
@@ -118,7 +118,7 @@ class FastyAssets extends lapis.Application
       content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [component: '/:lang/:key[%d]/component/:rev.tag']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
     html = ''
     for i, key in pairs(stringy.split(@params.key, '-'))
@@ -134,7 +134,7 @@ class FastyAssets extends lapis.Application
       content, headers: { 'expires': expire_at!, 'Access-Control-Allow-Origin': '*' }
   ------------------------------------------------------------------------------
   [componentjs: '/:lang/:key[%d]/component/:rev.js']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
     load_settings(@, jwt, no_db, settings, global_data, sub_domain)
     html = ''
     for i, key in pairs(stringy.split(@params.key, '-'))
@@ -154,10 +154,10 @@ class FastyAssets extends lapis.Application
 --------------------------------------------------------------------------------
 
   [disk_js: '/:lang/:layout/js/:rev.js']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
 
     content = '// Not found'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{params.layout}/js.js")
+    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/js.js")
     content = ret.body if ret.status == 200
 
     if @req.headers['x-forwarded-host'] != nil then
@@ -166,11 +166,13 @@ class FastyAssets extends lapis.Application
       content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [disk_js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
 
     content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{params.layout}/vendor.js")
+    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.js")
     content = ret.body if ret.status == 200
+
+    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
 
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'application/javascript', content
@@ -179,12 +181,13 @@ class FastyAssets extends lapis.Application
 
   ------------------------------------------------------------------------------
   [disk_css: '/:lang/:layout/css/:rev.css']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
 
     content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{params.layout}/css.css")
+    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
     content = ret.body if ret.status == 200
-    content = dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
+
+    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
 
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'text/css', content
@@ -192,12 +195,13 @@ class FastyAssets extends lapis.Application
       content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [disk_css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
 
     content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{params.layout}/vendor.css")
+    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.css")
     content = ret.body if ret.status == 200
-    content = dynamic_replace("db_#{sub_domain}", layout.i_css, {}, {}, @params)
+
+    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
 
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'text/css', content
@@ -205,12 +209,12 @@ class FastyAssets extends lapis.Application
       content_type: 'text/css', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
   [disk_component: '/:lang/:key/component/:rev.tag']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
 
     content = '<!-- Not found -->'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{params.key}.html.tag")
+    ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.html.tag")
     content = ret.body if ret.status == 200
-    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
 
     if @req.headers['x-forwarded-host'] != nil then
       content, headers: { 'Access-Control-Allow-Origin': '*' }
@@ -218,12 +222,12 @@ class FastyAssets extends lapis.Application
       content, headers: { 'expires': expire_at!, 'Access-Control-Allow-Origin': '*' }
   ------------------------------------------------------------------------------
   [disk_componentjs: '/:lang/:key/component/:rev.js']: =>
-    sub_domain = define_subdomain(@)
+    define_subdomain(@)
 
     content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{params.key}.compiled.js")
+    ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.compiled.js")
     content = ret.body if ret.status == 200
-    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
 
     if @req.headers['x-forwarded-host'] != nil then
       content, headers: { 'Content-Type': 'text/javascript' }

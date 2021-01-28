@@ -110,6 +110,8 @@ class extends lapis.Application
 
     html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
     basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
+
+    print("*** page info *** : #{to_json(infos)}")
     if is_auth(@, settings[sub_domain], infos)
       if html ~= 'null' then
         content_type: page_content_type, html, status: status
