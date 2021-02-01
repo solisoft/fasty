@@ -5,7 +5,7 @@ config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
-import from_json from require 'lapis.util'
+import from_json, to_json from require 'lapis.util'
 import dynamic_replace from require 'lib.concerns'
 import define_content_type from require 'lib.utils'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
@@ -49,184 +49,128 @@ class FastyAssets extends lapis.Application
 
     content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
   ------------------------------------------------------------------------------
-  [js: '/:lang/:layout[%d]/js/:rev.js']: =>
+  [js: '/:lang/:layout/js/:rev.js']: =>
     load_settings(@)
-    javascript = aql(
-      "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
-      { 'key': "#{@params.layout}" }
-    )[1]
+    content = '// Not found'
 
-    content = dynamic_replace("db_#{sub_domain}", javascript, {}, {}, @params)
+    if @params.layout\match("^[%d\\-]+$")
+      content = aql(
+        "db_#{sub_domain}",
+        "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
+        { 'key': "#{@params.layout}" }
+      )[1]
+    else
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/js.js")
+      content = ret.body if ret.status == 200
+
+    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'application/javascript', content
     else
       content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
   ------------------------------------------------------------------------------
-  [js_vendors: '/:lang/:layout[%d]/vendors/:rev.js']: =>
+  [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
     load_settings(@)
-    i_js = aql(
-      "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
-      { 'key': "#{@params.layout}" }
-    )[1]
-
-    content = dynamic_replace("db_#{sub_domain}", i_js, {}, {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: 'application/javascript', content
-    else
-      content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
-
-  ------------------------------------------------------------------------------
-  [css: '/:lang/:layout[%d]/css/:rev.css']: =>
-    load_settings(@)
-    layout = aql(
-      "db_#{sub_domain}",
-      "
-        FOR doc in layouts FILTER doc._key == @key
-          RETURN { name: doc.name, scss: doc.scss, compiled_css: doc }
-      ",
-      { 'key': "#{@params.layout}" }
-    )[1]
-
-    css = layout.compiled_css
-    css = sass.compile(layout.scss, 'compressed') if type(css) == 'userdata'
-
-    content = dynamic_replace("db_#{sub_domain}", css, {}, {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: 'text/css', content
-    else
-      content_type: 'text/css', content, headers: { 'expires': expire_at! }
-  ------------------------------------------------------------------------------
-  [css_vendors: '/:lang/:layout[%d]/vendors/:rev.css']: =>
-    load_settings(@)
-    layout = aql(
-      "db_#{sub_domain}",
-      "FOR doc in layouts FILTER doc._key == @key RETURN doc",
-      { 'key': "#{@params.layout}" }
-    )[1]
-
-    content = dynamic_replace("db_#{sub_domain}", layout.i_css, {}, {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: 'text/css', content
-    else
-      content_type: 'text/css', content, headers: { 'expires': expire_at! }
-  ------------------------------------------------------------------------------
-  [component: '/:lang/:key[%d-]/component/:rev.tag']: =>
-    print(">>>>>>")
-    load_settings(@)
-    print(to_json(global_data))
-    html = ''
-    for i, key in pairs(stringy.split(@params.key, '-'))
-      html ..= aql(
-        "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
-        { 'key': "#{key}" }
-      )[1] .. "\n"
-
-    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content, headers: { 'Access-Control-Allow-Origin': '*' }
-    else
-      content, headers: { 'expires': expire_at!, 'Access-Control-Allow-Origin': '*' }
-  ------------------------------------------------------------------------------
-  [componentjs: '/:lang/:key[%d]/component/:rev.js']: =>
-    load_settings(@)
-    html = ''
-    for i, key in pairs(stringy.split(@params.key, '-'))
-      html ..= aql(
-        "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.javascript",
-        { 'key': "#{key}" }
-      )[1] .. "\n"
-
-    content = dynamic_replace("db_#{sub_domain}", html, global_data[sub_domain], {}, @params)
-    if @req.headers['x-forwarded-host'] != nil then
-      content, headers: { 'Content-Type': 'text/javascript' }
-    else
-      content, headers: { 'expires': expire_at!, 'Content-Type': 'text/javascript' }
-
---------------------------------------------------------------------------------
---DISK ACCESS                                                                 --
---------------------------------------------------------------------------------
-
-  [disk_js: '/:lang/:layout/js/:rev.js']: =>
-    define_subdomain(@)
 
     content = '// Not found'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/js.js")
-    content = ret.body if ret.status == 200
-
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: 'application/javascript', content
+    if @params.layout\match("^[%d\\-]+$")
+      content = aql(
+        "db_#{sub_domain}",
+        "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
+        { 'key': "#{@params.layout}" }
+      )[1]
     else
-      content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
-  ------------------------------------------------------------------------------
-  [disk_js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
-    define_subdomain(@)
-
-    content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.js")
-    content = ret.body if ret.status == 200
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.js")
+      content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
-
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'application/javascript', content
     else
       content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
 
   ------------------------------------------------------------------------------
-  [disk_css: '/:lang/:layout/css/:rev.css']: =>
-    define_subdomain(@)
-
-    content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
-    content = ret.body if ret.status == 200
-
-    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
-
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: 'text/css', content
-    else
-      content_type: 'text/css', content, headers: { 'expires': expire_at! }
-  ------------------------------------------------------------------------------
-  [disk_css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
-    define_subdomain(@)
-
-    content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.css")
-    content = ret.body if ret.status == 200
-
-    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
-
-    if @req.headers['x-forwarded-host'] != nil then
-      content_type: 'text/css', content
-    else
-      content_type: 'text/css', content, headers: { 'expires': expire_at! }
-  ------------------------------------------------------------------------------
-  [disk_component: '/:lang/:key/component/:rev.tag']: =>
+  [css: '/:lang/:layout/css/:rev.css']: =>
     load_settings(@)
-    print("..............................")
+    content = '/* Not found */'
 
+    if @params.layout\match("^[%d\\-]+$")
+      layout = aql(
+        "db_#{sub_domain}",
+        "
+          FOR doc in layouts FILTER doc._key == @key
+            RETURN { scss: doc.scss, compiled_css: doc.compiled_css }
+        ",
+        { 'key': "#{@params.layout}" }
+      )[1]
+
+      content = layout.compiled_css
+      content = sass.compile(layout.scss, 'compressed') if type(content) == 'userdata'
+    else
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
+      content = ret.body if ret.status == 200
+
+    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: 'text/css', content
+    else
+      content_type: 'text/css', content, headers: { 'expires': expire_at! }
+  ------------------------------------------------------------------------------
+  [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
+    load_settings(@)
+    content = '/* Not found */'
+
+    if @params.layout\match("^[%d\\-]+$")
+      content = aql(
+        "db_#{sub_domain}",
+        "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
+        { 'key': "#{@params.layout}" }
+      )[1]
+    else
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.css")
+      content = ret.body if ret.status == 200
+
+    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: 'text/css', content
+    else
+      content_type: 'text/css', content, headers: { 'expires': expire_at! }
+  ------------------------------------------------------------------------------
+  [component: '/:lang/:key/component/:rev.tag']: =>
+    load_settings(@)
     content = '<!-- Not found -->'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.html.tag")
-    content = ret.body if ret.status == 200
-    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
+    if @params.key\match("^[%d\\-]+$")
+      for i, key in pairs(stringy.split(@params.key, '|'))
+        content ..= aql(
+          "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
+          { 'key': "#{key}" }
+        )[1] .. "\n"
+    else
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.html.tag")
+      content = ret.body if ret.status == 200
 
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content, headers: { 'Access-Control-Allow-Origin': '*' }
     else
       content, headers: { 'expires': expire_at!, 'Access-Control-Allow-Origin': '*' }
   ------------------------------------------------------------------------------
-  [disk_componentjs: '/:lang/:key/component/:rev.js']: =>
+  [componentjs: '/:lang/:key/component/:rev.js']: =>
     load_settings(@)
 
-    content = '/* Not found */'
-    ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.compiled.js")
-    content = ret.body if ret.status == 200
-    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
+    content = '// Not found'
+    if @params.key\match("^[%d\\-]+$")
+      for i, key in pairs(stringy.split(@params.key, '|'))
+        content ..= aql(
+          "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.javascript",
+          { 'key': "#{key}" }
+        )[1] .. "\n"
+    else
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.compiled.js")
+      content = ret.body if ret.status == 200
 
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content, headers: { 'Content-Type': 'text/javascript' }
     else
       content, headers: { 'expires': expire_at!, 'Content-Type': 'text/javascript' }
---
