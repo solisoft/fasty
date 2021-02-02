@@ -1,17 +1,18 @@
 -- fasty CMS
-sass      = require 'sass'
-lapis     = require 'lapis'
-stringy   = require 'stringy'
-config    = require('lapis.config').get!
-shell     = require 'resty.shell'
-encoding  = require 'lapis.util.encoding'
-config    = require('lapis.config').get!
-db_config = require('lapis.config').get("db_#{config._name}")
+sass        = require 'sass'
+lapis       = require 'lapis'
+stringy     = require 'stringy'
+shell       = require 'resty.shell'
+encoding    = require 'lapis.util.encoding'
+app_config  = require "lapis.config"
+config      = app_config.get!
+db_config   = app_config.get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
 import respond_to from require 'lapis.application'
 import check_valid_lang, uuid, define_content_type, table_deep_merge from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
+import after_dispatch from require 'lapis.nginx.context'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import from_json, to_json, unescape from require 'lapis.util'
 import dynamic_replace, dynamic_page, page_info, splat_to_table
@@ -23,6 +24,9 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+
+app_config "development", ->
+  measure_performance true
 
 --------------------------------------------------------------------------------
 define_subdomain = () =>
@@ -44,6 +48,12 @@ load_settings = () =>
   print((os.clock! - t1) * 1000)
 --------------------------------------------------------------------------------
 class extends lapis.Application
+  @before_filter =>
+    start_time = os.clock!
+    after_dispatch ->
+      if config._name == 'development'
+        print to_json(ngx.ctx.performance)
+        print to_json("#{(os.clock! - start_time) * 1000}ms")
 
   handle_error: (err, trace) =>
     if config._name == 'production' then

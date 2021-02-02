@@ -3,13 +3,13 @@ config = require "lapis.config"
 
 config "development", ->
   port 8080
-  measure_performance false
+  measure_performance true
 
 config "production", ->
   port 80
   num_workers 4
   code_cache "on"
-  measure_performance true
+  measure_performance false
   cache_ttl 10
 
 config "test", ->

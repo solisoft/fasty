@@ -102,7 +102,7 @@ class FastyServices extends lapis.Application
       is_valid = validate(
         { 'name': @params.name }, {{ 'name', matches_pattern: '^[%w%-_]+$' }}
       )
-      if is_valid == nil and @params.token == settings[sub_domain].secret
+      if is_valid == nil and (config._name == 'development' or @params.token == settings[sub_domain].secret)
         compile_riotjs(sub_domain, @params.name, @params.tag)
   }
   ------------------------------------------------------------------------------
