@@ -81,8 +81,8 @@ load_document_by_slug = (db_name, slug, object, ext = 'html') ->
   if ret.status == 200
     {
       item: {
-       html: ret.body, _key: "#{objects}/#{slug}",
-        _rev: ret.header.ETag\gsub('"', '')\gsub("-", "")
+       html: ret.body, _key: "#{slug}",
+       _rev: ret.header.ETag\gsub('"', '')\gsub("-", "")
       }
     }
   else
@@ -393,22 +393,22 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         data = { ids: {}, revisions: {}, names: {}, js: {} }
         output = ''
         for i, k in pairs(stringy.split(item, '#'))
-          component = load_document_by_slug(db_name, k, 'components', 'riot').item
-
+          component = load_document_by_slug(db_name, k, 'components', 'js').item
+          content = component.javascript or component.html
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
-          table.insert(data.js, component.javascript)
+          table.insert(data.js, content)
 
           if dataset == 'mount'
             output ..= '<script type="module">'
-            output ..= dynamic_replace(db_name, component.javascript, global_data, history, params)
+            output ..= dynamic_replace(db_name, content, global_data, history, params)
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
 
           if dataset == 'source'
-            output ..= dynamic_replace(db_name, component.javascript, global_data, history, params)
+            output ..= dynamic_replace(db_name, content, global_data, history, params)
 
         if dataset == 'url'
           output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"

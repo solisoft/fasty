@@ -5,7 +5,8 @@ config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
-import from_json, to_json from require 'lapis.util'
+import from_json from require 'lapis.util'
+import compile_riotjs from require 'lib.service'
 import dynamic_replace from require 'lib.concerns'
 import define_content_type from require 'lib.utils'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
@@ -51,7 +52,7 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [js: '/:lang/:layout/js/:rev.js']: =>
     load_settings(@)
-    content = '// Not found'
+    content = ''
 
     if @params.layout\match("^[%d\\-]+$")
       content = aql(
@@ -72,7 +73,7 @@ class FastyAssets extends lapis.Application
   [js_vendors: '/:lang/:layout/vendors/:rev.js']: =>
     load_settings(@)
 
-    content = '// Not found'
+    content = ''
     if @params.layout\match("^[%d\\-]+$")
       content = aql(
         "db_#{sub_domain}",
@@ -92,7 +93,7 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [css: '/:lang/:layout/css/:rev.css']: =>
     load_settings(@)
-    content = '/* Not found */'
+    content = ''
 
     if @params.layout\match("^[%d\\-]+$")
       layout = aql(
@@ -118,7 +119,7 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
     load_settings(@)
-    content = '/* Not found */'
+    content = ''
 
     if @params.layout\match("^[%d\\-]+$")
       content = aql(
@@ -138,15 +139,15 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [component: '/:lang/:key/component/:rev.tag']: =>
     load_settings(@)
-    content = '<!-- Not found -->'
+    content = ''
     if @params.key\match("^[%d\\-]+$")
-      for i, key in pairs(stringy.split(@params.key, '|'))
+      for i, key in pairs(stringy.split(@params.key, '-'))
         content ..= aql(
           "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
           { 'key': "#{key}" }
         )[1] .. "\n"
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.html.tag")
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.riot")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
@@ -158,7 +159,7 @@ class FastyAssets extends lapis.Application
   [componentjs: '/:lang/:key/component/:rev.js']: =>
     load_settings(@)
 
-    content = '// Not found'
+    content = ''
     if @params.key\match("^[%d\\-]+$")
       for i, key in pairs(stringy.split(@params.key, '|'))
         content ..= aql(
@@ -166,7 +167,7 @@ class FastyAssets extends lapis.Application
           { 'key': "#{key}" }
         )[1] .. "\n"
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.compiled.js")
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.js")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
