@@ -270,11 +270,11 @@ if (argv._.length == 0) {
 
     if (sync && argv.w) {
       console.log("Launching realtime events ...".yellow)
-      const io = require("socket.io-client");
-      socket = io(sync.server + ":" + sync.port);
+      const io = require("socket.io-client")
+      socket = io(sync.server + ":" + sync.port)
 
       socket.on("connect", () => {
-        console.log("Socket Connected to " + sync.server + " on port " + sync.port); // true
+        console.log("Socket Connected to " + sync.server + " on port " + sync.port) // true
         socket.emit("join", { secret: sync.secret, room: domain })
       });
 
