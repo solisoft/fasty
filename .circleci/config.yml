@@ -31,7 +31,7 @@ jobs:
       - run:
           name: 'Edit nginx.conf'
           command: echo -e "\nuser root root;" >> nginx.conf
-      - run: ln -sf foxxy/dist static/admin
+      - run: ln -sf static/admin foxxy/dist
       - run:
           name: 'Prepare database'
           command: |
