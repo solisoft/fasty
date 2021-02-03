@@ -10,7 +10,6 @@ static/assets/
 foxxy/yarn-error.log
 foxxy/specs/pictures/
 foxxy/*.sh
-foxxy/public/
 .nyc_output
 coverage
 foxxy/app/js/config.js

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>FastyCMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.4.6/css/uikit.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/2.2.3/css/datepicker.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/colors/ui/trumbowyg.colors.min.css" integrity="sha512-8dXb2ITE13jLrqqGDVTU8kKl9vHZI9E4TpZGyfhevHeF+/cWWA17wVj+SKX3+QHqZISiGihaCOyK3nA152ShDg==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/table/ui/trumbowyg.table.min.css" integrity="sha512-RFUKFRKDFU486gNjw9BJumR8a2gCoh9uP/0DJIKBKvhM1WtCDUg2KGA4jGk7dTZjQZP+PTJeKIEpslLUQ85Ixg==" crossorigin="anonymous" />
+    
+    <link rel="stylesheet" href="css/vendors.css">
+    <link rel="stylesheet" href="css/css.css">
+
+  </head>
+  <body>
+    <div class="uk-dark">
+      <nav class="uk-navbar-container" uk-navbar>
+
+        <div class="uk-navbar-nav-left">
+          <ul class="uk-navbar-nav">
+            <li class="uk-active"><a href="#">Admin</a></li>
+          </ul>
+        </div>
+        <div class="uk-navbar-right">
+          <rightnav></rightnav>
+        </div>
+      </nav>
+    </div>
+
+    <div class="uk-container uk-container-expand uk-container-center uk-margin-top">
+      <div class="uk-grid">
+        <div class="uk-width-auto">
+          <div class="rightnav uk-card uk-card-default uk-card-body">
+            <ul class="uk-nav-default" uk-nav>
+              <li class="uk-nav-header">Settings</li>
+              <li><a href="#datasets/layouts">Layouts</a></li>
+              <li><a href="#datasets/partials">Partials</a></li>
+              <li><a href="#datasets/components">Components</a></li>
+              <li><a href="#datasets/spas">Applications</a></li>
+              <li><a href="#datasets/redirections">Redirections</a></li>
+              <li><a href="#datasets/datatypes">Datatypes</a></li>
+              <li><a href="#settings">Settings</a></li>
+              <li><a href="#datasets/users">Users</a></li>
+              <li><a href="#datasets/aqls">AQLs</a></li>
+              <li><a href="#datasets/helpers">Helpers</a></li>
+              <li><a href="#datasets/apis">APIs</a></li>
+              <li><a href="#datasets/scripts">Scripts</a></li>
+              <!-- item_menu -->
+              <li class="uk-nav-header">Content</li>
+              <li><a href="#datasets/pages">Pages</a></li>
+              <li><a href="#datasets/trads">Trads</a></li>
+            </ul>
+
+          </div>
+
+          <all_datatypes></all_datatypes>
+
+        </div>
+
+        <div class="uk-width-expand">
+          <div id="app"></div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.4.6/js/uikit.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script src="js/vendors.js"></script>
+    <script src="js/js.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/trumbowyg.min.js" integrity="sha512-sffB9/tXFFTwradcJHhojkhmrCj0hWeaz8M05Aaap5/vlYBfLx5Y7woKi6y0NrqVNgben6OIANTGGlojPTQGEw==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/colors/trumbowyg.colors.min.js" integrity="sha512-iT7g30i1//3OBZsfoc5XmlULnKQKyxir582Z9fIFWI6+ohfrTdns118QYhCTt0d09aRGcE7IRvCFjw2wngaqRQ==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/table/trumbowyg.table.min.js" integrity="sha512-GWCV3uyQnGucExuHy3HQGz6LAO7buXoE54KhmxBd+eHbAAcdBI67fpjEMk/lTpRb9FT6FlLI0q2QI31RlvaQHg==" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/2.2.3/js/datepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/2.2.3/js/i18n/datepicker.en.min.js"></script>
+
+    <script>
+      var Sortable = require('vendors/Sortable.min.js')
+
+      var hostname = document.location.hostname
+      var subdomain = hostname.split('.')[0]
+
+      var configs = require('js/config.js')
+
+      var host = 'http://localhost:8529/_db'
+      _.each(configs, function(v, k) { if(hostname.indexOf(k) >= 0) host = v })
+
+      var url = host + '/db_' + subdomain + '/'
+
+      var per_page = 25
+
+      var locale = window.localStorage.getItem('foxx-locale') || 'en'
+      window.localStorage.setItem('foxx-locale', locale)
+
+      var common = require('js/common.js')
+      require('js/editor.js')
+
+      common.init()
+
+      require('widgets/loading.html.tag')
+      require('widgets/settings.html.tag')
+      require('widgets/datasets.html.tag')
+      require('widgets/uploads.html.tag')
+
+      require('js/js.js')
+
+      function eventHub() { riot.observable(this) }
+      var eventHub = new eventHub()
+
+      riot.mount('all_datatypes')
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.4.6/js/uikit-icons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.2/leaflet.js"></script>
+  </body>
+</html>
