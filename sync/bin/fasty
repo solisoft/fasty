@@ -11,8 +11,8 @@ const notifier = require("node-notifier")
 var yaml = require("js-yaml")
 var socket = null
 const fs = require("fs")
-const { exec } = require("child_process");
-const {compile} = require("@riotjs/compiler")
+const { minify } = require("terser")
+const { compile } = require("@riotjs/compiler")
 var dirname = process.cwd()
 var fullname = ""
 var webhook = null
@@ -21,8 +21,6 @@ var sync = null
 var updated_by_users = []
 var tokens = {}
 console.log("fasty@0.0.29")
-
-
 
 var check_json = function(json, folder, fullname, only) {
   _.each(json, function (v, k) {
@@ -236,29 +234,39 @@ if (argv._.length == 0) {
   console.log("Watching folder.", dirname)
   chokidar.watch(dirname, { ignored: /(^|[\/\\])\../ }).on("all", (event, path) => {
     if (event == "change") {
-      var path = path.split("/")
+      const original_path = path
+      path = path.replace(dirname, "").split("/").slice(1)
       // <db_name>/app/<component>/<file_path>
 
       // if path is */app/components/** .riot
       // check if it needs to be compiled
+      console.log(path)
       if (path[2] == "components") {
-        var file_path = _.slice(path, 0, -1).join("/")
-        var file_name = _.slice(_.last(path).split("."), 0, -1)
-        var file_ext = _.last(_.last(path).split("."))
-        var yml = file_path + "/" + file_name + ".yml"
-        if(fs.existsSync(yml)) {
-          yml = yaml.safeLoad(fs.readFileSync(yml, "utf8"))
-          if (yml.compiler == "riot5") {
-            exec("ls -la", (error, stdout, stderr) => {
-              if (error) {
-                console.log(`error: ${error.message}`);
-                return;
-              }
-              if (stderr) {
-                console.log(`stderr: ${stderr}`);
-                return;
-              }
-            });
+        const file_path = _.slice(path, 0, -1).join("/")
+        const file_name = _.slice(_.last(path).split("."), 0, -1)
+        const file_ext = _.last(_.last(path).split("."))
+        if(file_ext == "riot") {
+          let yml = file_path + "/" + file_name + ".yml"
+          if(fs.existsSync(yml)) {
+            
+            yml = yaml.safeLoad(fs.readFileSync(yml, "utf8"))
+            if (yml.compiler == "riot5") {
+              const src = fs.readFileSync(original_path, "utf8")
+              const { code, map } = compile(src, { format: "umd" })
+              //var { umd } = build(
+              //  { buildUMD: true, sourceType: "module" },
+              //  original_path,
+              //  code,
+              //  {}
+              //);
+              minify(code).then(compiled_code => {
+                var tag = compiled_code.code.replace(
+                  'export default', 
+                  'var '+file_name+'='
+                ) + 'riot.register("'+file_name+'", '+file_name+');riot.mount("'+file_name+'");'
+                console.log(tag)
+              })
+            }
           }
         }
       }

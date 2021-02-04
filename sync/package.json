@@ -12,13 +12,16 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@riotjs/compiler": "^5.2.0",
     "chokidar": "^3.4.0",
     "colors": "^1.1.2",
     "js-yaml": "^3.12.0",
     "lodash": "^4.17.10",
+    "moduloze": "^0.7.0",
     "node-notifier": "^8.0.1",
     "request": "^2.88.0",
     "socket.io": "^2.2.0",
+    "terser": "^5.5.1",
     "yargs": "^5.0.0"
   }
 }
