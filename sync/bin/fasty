@@ -240,7 +240,6 @@ if (argv._.length == 0) {
 
       // if path is */app/components/** .riot
       // check if it needs to be compiled
-      console.log(path)
       if (path[2] == "components") {
         const file_path = _.slice(path, 0, -1).join("/")
         const file_name = _.slice(_.last(path).split("."), 0, -1)
@@ -251,6 +250,7 @@ if (argv._.length == 0) {
             yml = yaml.safeLoad(fs.readFileSync(yml, "utf8"))
             if (yml.compiler == "riot5") {
               const src = fs.readFileSync(original_path, "utf8")
+              var t1 = +new Date()
               const { code, map } = compile(src, { format: "umd" })
               minify(code).then(compiled_code => {
                 var tag = compiled_code.code.replace(
@@ -260,6 +260,7 @@ if (argv._.length == 0) {
                 var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
                 fs.writeSync(file, tag)
                 fs.closeSync(file)
+                console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
               })
             }
           }
