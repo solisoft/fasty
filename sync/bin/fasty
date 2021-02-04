@@ -248,23 +248,18 @@ if (argv._.length == 0) {
         if(file_ext == "riot") {
           let yml = file_path + "/" + file_name + ".yml"
           if(fs.existsSync(yml)) {
-            
             yml = yaml.safeLoad(fs.readFileSync(yml, "utf8"))
             if (yml.compiler == "riot5") {
               const src = fs.readFileSync(original_path, "utf8")
               const { code, map } = compile(src, { format: "umd" })
-              //var { umd } = build(
-              //  { buildUMD: true, sourceType: "module" },
-              //  original_path,
-              //  code,
-              //  {}
-              //);
               minify(code).then(compiled_code => {
                 var tag = compiled_code.code.replace(
                   'export default', 
                   'var '+file_name+'='
                 ) + 'riot.register("'+file_name+'", '+file_name+');riot.mount("'+file_name+'");'
-                console.log(tag)
+                var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
+                fs.writeSync(file, tag)
+                fs.closeSync(file)
               })
             }
           }
