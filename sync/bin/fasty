@@ -256,7 +256,7 @@ if (argv._.length == 0) {
                 var tag = compiled_code.code.replace(
                   'export default', 
                   'var '+file_name+'='
-                ) + 'riot.register("'+file_name+'", '+file_name+');riot.mount("'+file_name+'");'
+                )
                 var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
                 fs.writeSync(file, tag)
                 fs.closeSync(file)
