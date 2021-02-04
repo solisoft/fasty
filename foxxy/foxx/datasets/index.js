@@ -346,10 +346,21 @@ router.get('/:service/:id', function (req, res) {
   const collection = db._collection(object.collection || 'datasets')
   let fields = object.model
   _.each(fields, function (field, i) { if (field.d && !_.isArray(field.d)) { fields[i].d = list(field.d, req.headers['foxx-locale']) } })
+
+  let model = JSON.parse(models()[req.pathParams.service].javascript)
+  let sub_models = model.sub_models
+  _.each(sub_models, function (sub_model, sub_mobel_key) {
+    _.each(sub_models[sub_mobel_key].fields, function (field, i) {
+      if (field.d && !_.isArray(field.d)) {
+        model.sub_models[sub_mobel_key].fields[i].d = list(field.d, req.headers['foxx-locale'])
+      }
+    })
+  })
+
   res.send({
     fields: fields,
     folders,
-    model: JSON.parse(models()[req.pathParams.service].javascript),
+    model,
     data: collection.document(req.pathParams.id)
   });
 })
