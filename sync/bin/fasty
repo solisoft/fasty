@@ -11,6 +11,8 @@ const notifier = require("node-notifier")
 var yaml = require("js-yaml")
 var socket = null
 const fs = require("fs")
+var sass = require('node-sass');
+const { execSync } = require('child_process');
 const { minify } = require("terser")
 const { compile } = require("@riotjs/compiler")
 var dirname = process.cwd()
@@ -236,14 +238,15 @@ if (argv._.length == 0) {
     if (event == "change") {
       const original_path = path
       path = path.replace(dirname, "").split("/").slice(1)
+      const file_path = _.slice(path, 0, -1).join("/")
+      const file_name = _.slice(_.last(path).split("."), 0, -1)
+      const file_ext = _.last(_.last(path).split("."))
       // <db_name>/app/<component>/<file_path>
 
       // if path is */app/components/** .riot
       // check if it needs to be compiled
       if (path[2] == "components") {
-        const file_path = _.slice(path, 0, -1).join("/")
-        const file_name = _.slice(_.last(path).split("."), 0, -1)
-        const file_ext = _.last(_.last(path).split("."))
+
         if(file_ext == "riot") {
           let yml = file_path + "/" + file_name + ".yml"
           if(fs.existsSync(yml)) {
@@ -254,7 +257,7 @@ if (argv._.length == 0) {
               const { code, map } = compile(src, { format: "umd" })
               minify(code).then(compiled_code => {
                 var tag = compiled_code.code.replace(
-                  'export default', 
+                  'export default',
                   'var '+file_name+'='
                 )
                 var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
@@ -268,13 +271,25 @@ if (argv._.length == 0) {
       }
 
       if (path[2] == "apis") {
-
+        console.log("Upgrading API endpoint /" + path[3])
+        execSync("foxx uninstall --database "+ path[0] +" --server fasty /" + path[3])
+        execSync("foxx install --database "+ path[0] +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
+        console.log("Done")
       }
       // if path is */app/apis/**
       // install service
 
       if (_.last(_.last(path).split(".")) == "scss") {
+        var t1 = +new Date()
+        console.log("Compiling " + original_path)
+        var result = sass.renderSync({
+          data: fs.readFileSync(original_path, "utf8")
+        });
 
+        var file = fs.openSync(file_path + "/" + file_name + ".css", "w+")
+        fs.writeSync(file, result.css)
+        fs.closeSync(file)
+        console.log(file_name + ".css compiled in " +(+new Date() - t1) +"ms")
       }
       // **/*.scss
       // compile to css
