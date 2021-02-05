@@ -33,19 +33,16 @@ define_subdomain = () =>
   sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = () =>
-  t1 = os.clock!
   define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true
   else
-    print(to_json(global_data[sub_domain]))
     global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
     global_data[sub_domain]['partials'] = {}
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
-  print((os.clock! - t1) * 1000)
 --------------------------------------------------------------------------------
 class extends lapis.Application
   @before_filter =>
