@@ -32,6 +32,7 @@ RUN wget https://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz \
     && ./configure && make \
     && make install && cd .. && rm -Rf luarocks-*
 
+ARG LAPIS_VERSION=1.8.2
 RUN luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis $LAPIS_VERSION
 RUN luarocks install moonscript
 RUN luarocks install lapis-console
@@ -42,6 +43,8 @@ RUN luarocks install web_sanitize
 RUN luarocks install luasec
 RUN luarocks install cloud_storage
 RUN luarocks install lua-resty-jwt
+RUN apt-get -qqy install libyaml-dev
+RUN luarocks --server=http://rocks.moonscript.org install lyaml
 
 RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
     chmod +x n && mv n /usr/bin/n && n lts
