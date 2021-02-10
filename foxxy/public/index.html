@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/colors/ui/trumbowyg.colors.min.css" integrity="sha512-8dXb2ITE13jLrqqGDVTU8kKl9vHZI9E4TpZGyfhevHeF+/cWWA17wVj+SKX3+QHqZISiGihaCOyK3nA152ShDg==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/table/ui/trumbowyg.table.min.css" integrity="sha512-RFUKFRKDFU486gNjw9BJumR8a2gCoh9uP/0DJIKBKvhM1WtCDUg2KGA4jGk7dTZjQZP+PTJeKIEpslLUQ85Ixg==" crossorigin="anonymous" />
-    
+
     <link rel="stylesheet" href="css/vendors.css">
     <link rel="stylesheet" href="css/css.css">
 
@@ -86,7 +86,7 @@
 
       var configs = require('js/config.js')
 
-      var host = 'http://' + document.location.hostname + ':8529/_db'
+      var host = '//' + document.location.hostname + ':8529/_db'
       _.each(configs, function(v, k) { if(hostname.indexOf(k) >= 0) host = v })
 
       var url = host + '/db_' + subdomain + '/'
