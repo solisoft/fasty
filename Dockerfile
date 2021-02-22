@@ -32,11 +32,7 @@ RUN wget https://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz \
     && ./configure && make \
     && make install && cd .. && rm -Rf luarocks-*
 
-<<<<<<< HEAD
-ARG LAPIS_VERSION=1.8.2
-=======
 ARG LAPIS_VERSION=1.8.3
->>>>>>> master
 RUN luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis $LAPIS_VERSION
 RUN luarocks install moonscript
 RUN luarocks install lapis-console

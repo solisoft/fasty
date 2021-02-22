@@ -25,15 +25,13 @@ settings = {}
 no_db = {}
 sub_domain = ''
 
-app_config "development", ->
-  measure_performance true
+app_config "development", -> measure_performance true
 
 --------------------------------------------------------------------------------
 define_subdomain = () =>
   sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = () =>
-  define_subdomain(@)
   jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
@@ -44,9 +42,25 @@ load_settings = () =>
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
 --------------------------------------------------------------------------------
+lua_files = (path) =>
+  for file in lfs.dir(path) do
+    if file ~= "." and file ~= ".." then
+      f = path..'/'..file
+      attr = lfs.attributes (f)
+      if(type(attr) ~= "nil")
+        assert(type(attr) == "table")
+        if(attr.mode == "directory")
+          lua_files(@, f)
+        else
+          if stringy.split(file, ".")[2] == "lua"
+            path = stringy.split(f, ".")[1]\gsub("/", ".")
+            @include path
+--------------------------------------------------------------------------------
 class extends lapis.Application
   @before_filter =>
     start_time = os.clock!
+
+    define_subdomain(@)
     after_dispatch ->
       if config._name == 'development'
         print to_json(ngx.ctx.performance)
@@ -66,17 +80,19 @@ class extends lapis.Application
   @include 'applications.services'
   @include 'applications.assets'
 
+  lua_files(@, "git")
+
   layout: false -- we don't need a layout, it will be loaded dynamically
   expire_at = () =>
    'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
-  ----------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
   display_error_page = (status=500, headers={}) =>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
     if error_page ~= nil then
       display_page(@, error_page, 404)
     else
       render: "error_#{status}" , status: status, headers: headers
-  ----------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
     db_name           = "db_#{sub_domain}"
     asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
@@ -148,7 +164,6 @@ class extends lapis.Application
       display_page(@)
   ------------------------------------------------------------------------------
   [root: '/(:lang)']: =>
-    define_subdomain(@)
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
       load_settings(@)
@@ -177,8 +192,6 @@ class extends lapis.Application
           display_page(@)
   ------------------------------------------------------------------------------
   [page_no_lang: '/:all/:slug']: =>
-    define_subdomain(@)
-
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
 
@@ -189,7 +202,6 @@ class extends lapis.Application
       display_page(@)
   ------------------------------------------------------------------------------
   [page: '/:lang/:all/:slug(/*)']: =>
-    define_subdomain(@)
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@)
