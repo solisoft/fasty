@@ -57,6 +57,10 @@ jobs:
           command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
 
       - run:
+          name: 'Add git folder'
+          command: mkdir git
+
+      - run:
           name: 'Start cms'
           command: /bin/bash -c "lapis server"
           background: true
