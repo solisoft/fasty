@@ -94,11 +94,7 @@ load_document_by_slug = (db_name, slug, object, ext = 'html') ->
     aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
 load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
-  request = "FOR item IN pages FILTER item.slug[@lang] == @slug "
-  if uselayout
-    request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
-  else request ..= 'RETURN { item }'
-
+  request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   if page
@@ -109,13 +105,16 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
     page.item.raw_html[lang] = ret.body if ret.status == 200
 
     if uselayout
+      request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
+      page.layout = aql(db_name, request, { key: page.item.layout_id })[1] or { html: "@raw_yield@yield" }
+
       page.layout = table_deep_merge(
         page.layout,
         check_git_layout(db_name, page.layout.name, page.layout._key)
       )
   else
     ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
-    page = { item: { html: {}, raw_html: {} }, layout: { html: "" } }
+    page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
     page.item.html[lang] = ""
     page.item.raw_html[lang] = ret.body if ret.status == 200
 
