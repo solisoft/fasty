@@ -19,7 +19,11 @@ check_git_layout = (db_name, slug, key) ->
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
   if ret.status == 200
     layout.html = ret.body
-    layout.key = slug
+    layout._key = slug
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/settings.yml")
+    page_settings = lyaml.load(ret.body) if ret.status == 200
+    layout.page_builder = page_settings.builder
+
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
   layout.i_js = ret.body if ret.status == 200
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.scss")
