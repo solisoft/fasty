@@ -97,7 +97,7 @@ class extends lapis.Application
     db_name           = "db_#{sub_domain}"
     asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
     if asset.status == 200
-      content_type: page_content_type, status: 200, asset.body
+      content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body
     else
       slug              = @params.slug if slug == nil
       slug              = unescape(slug)
