@@ -15,7 +15,7 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 check_git_layout = (db_name, slug, key) ->
-  layout = { _key: key }
+  layout = { _key: key, html: "@raw_yield @yield"}
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
   if ret.status == 200
     layout.html = ret.body
@@ -106,12 +106,17 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
 
     if uselayout
       request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
-      page.layout = aql(db_name, request, { key: page.item.layout_id })[1] or { html: "@raw_yield@yield" }
-
-      page.layout = table_deep_merge(
-        page.layout,
-        check_git_layout(db_name, page.layout.name, page.layout._key)
-      )
+      layout = aql(db_name, request, { key: page.item.layout_id })[1] 
+      if layout 
+        page.layout = layout
+        -- then override if it exists on disk
+        page.layout = table_deep_merge(
+          page.layout,
+          check_git_layout(db_name, page.layout.name, page.layout._key)
+        )
+      else
+        page.layout = check_git_layout(db_name, 'page') -- use the default one
+      
   else
     ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
     page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
