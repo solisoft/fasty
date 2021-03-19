@@ -15,7 +15,7 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 check_git_layout = (db_name, slug, key) ->
-  layout = { _key: key, html: "@raw_yield @yield"}
+  layout = { _key: key, html: "@raw_yield @yield" }
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
   if ret.status == 200
     layout.html = ret.body
@@ -123,12 +123,13 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
     page.item.html[lang] = ""
     page.item.raw_html[lang] = ret.body if ret.status == 200
 
-    page_settings = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
-    page_settings = lyaml.load(page_settings.body) if page_settings.status == 200
+    page_settings = {}
+    ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+    page_settings = lyaml.load(ret.body) if ret.status == 200
 
     page = table_deep_merge(page, page_settings)
-    if uselayout and page_settings.layout
-      page.layout = check_git_layout(db_name, page_settings.layout)
+    if uselayout
+      page.layout = check_git_layout(db_name, page_settings.layout or 'page')
 
   page
 --------------------------------------------------------------------------------
