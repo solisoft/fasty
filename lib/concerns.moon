@@ -15,7 +15,7 @@ escape_pattern = (text) ->
   str
 --------------------------------------------------------------------------------
 check_git_layout = (db_name, slug, key) ->
-  layout = { _key: key }
+  layout = { _key: key, html: "@raw_yield @yield" }
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
   if ret.status == 200
     layout.html = ret.body
@@ -95,11 +95,7 @@ load_document_by_slug = (db_name, slug, object, ext = 'html') ->
     aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
 load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
-  request = "FOR item IN pages FILTER item.slug[@lang] == @slug "
-  if uselayout
-    request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
-  else request ..= 'RETURN { item }'
-
+  request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   if page
@@ -110,22 +106,31 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
     page.item.raw_html[lang] = ret.body if ret.status == 200
 
     if uselayout
-      page.layout = table_deep_merge(
-        page.layout,
-        check_git_layout(db_name, page.layout.name, page.layout._key)
-      )
+      request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
+      layout = aql(db_name, request, { key: page.item.layout_id })[1] 
+      if layout 
+        page.layout = layout
+        -- then override if it exists on disk
+        page.layout = table_deep_merge(
+          page.layout,
+          check_git_layout(db_name, page.layout.name, page.layout._key)
+        )
+      else
+        page.layout = check_git_layout(db_name, 'page') -- use the default one
+      
   else
     ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
-    page = { item: { html: {}, raw_html: {} }, layout: { html: "" } }
+    page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
     page.item.html[lang] = ""
     page.item.raw_html[lang] = ret.body if ret.status == 200
 
-    page_settings = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
-    page_settings = lyaml.load(page_settings.body) if page_settings.status == 200
+    page_settings = {}
+    ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+    page_settings = lyaml.load(ret.body) if ret.status == 200
 
     page = table_deep_merge(page, page_settings)
-    if uselayout and page_settings.layout
-      page.layout = check_git_layout(db_name, page_settings.layout)
+    if uselayout
+      page.layout = check_git_layout(db_name, page_settings.layout or 'page')
 
   page
 --------------------------------------------------------------------------------
