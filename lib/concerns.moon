@@ -107,8 +107,8 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
 
     if uselayout
       request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
-      layout = aql(db_name, request, { key: page.item.layout_id })[1] 
-      if layout 
+      layout = aql(db_name, request, { key: page.item.layout_id })[1]
+      if layout
         page.layout = layout
         -- then override if it exists on disk
         page.layout = table_deep_merge(
@@ -117,7 +117,7 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
         )
       else
         page.layout = check_git_layout(db_name, 'page') -- use the default one
-      
+
   else
     ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
     page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
@@ -322,7 +322,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      partial = load_document_by_slug(db_name, unescape(item), 'partials')
+      partial = load_document_by_slug(db_name, unescape(item), 'partials', 'etlua')
+
       if partial
         db_data = { "page": 1 }
         if dataset == 'arango'
