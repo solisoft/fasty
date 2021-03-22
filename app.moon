@@ -14,7 +14,7 @@ import check_valid_lang, uuid, define_content_type, table_deep_merge from requir
 import basic_auth, is_auth from require 'lib.basic_auth'
 import after_dispatch from require 'lapis.nginx.context'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import from_json, to_json, unescape from require 'lapis.util'
+import trim, from_json, to_json, unescape from require 'lapis.util'
 import dynamic_replace, dynamic_page, page_info, splat_to_table
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
@@ -145,7 +145,7 @@ class extends lapis.Application
       html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
       basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
       if is_auth(@, settings[sub_domain], infos)
-        if html ~= 'null' and html != '' then
+        if html ~= 'null' and trim(html) != '' then
           content_type: page_content_type, html, status: status
         else
           display_error_page(@, 404)
