@@ -110,10 +110,17 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
       layout = aql(db_name, request, { key: page.item.layout_id })[1]
       if layout
         page.layout = layout
+        layout_name = layout.name
         -- then override if it exists on disk
+        page_settings = {}
+        ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+        if ret.status == 200
+          page_settings = lyaml.load(ret.body)
+          layout_name = page_settings.layout or layout_name
+
         page.layout = table_deep_merge(
           page.layout,
-          check_git_layout(db_name, page.layout.name, page.layout._key)
+          check_git_layout(db_name, layout_name, page.layout._key)
         )
       else
         page.layout = check_git_layout(db_name, 'page') -- use the default one

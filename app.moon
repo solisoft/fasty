@@ -62,7 +62,7 @@ class extends lapis.Application
 
     define_subdomain(@)
     after_dispatch ->
-      if config._name == 'development'
+      if config.measure_performance
         print to_json(ngx.ctx.performance)
         print to_json("#{(os.clock! - start_time) * 1000}ms")
 

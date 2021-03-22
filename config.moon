@@ -9,7 +9,7 @@ config "production", ->
   port 80
   num_workers 4
   code_cache "on"
-  measure_performance false
+  measure_performance true
   cache_ttl 10
 
 config "test", ->
