@@ -27,12 +27,13 @@ check_git_layout = (db_name, slug, key) ->
 
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
   layout.i_js = ret.body if ret.status == 200
-  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.scss")
+  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.css")
   layout.i_css = ret.body if ret.status == 200
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/css.css")
   layout.scss = ret.body if ret.status == 200
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/js.js")
   layout.javascript = ret.body if ret.status == 200
+
   layout
 --------------------------------------------------------------------------------
 prepare_assets = (html, layout, params) ->
@@ -188,6 +189,11 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
     json = data.item.html[params['lang']].json if data.item.html[params['lang']]
 
     if uselayout
+      print("------")
+      data.layout = table_deep_merge(
+        data.layout, check_git_layout(db_name, params.slug)
+      )
+
       html = prepare_headers(data.layout.html, data, params)
 
       if(data.item.raw_html and type(data.item.raw_html[params['lang']]) == 'string')
@@ -197,8 +203,6 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
-
-      html = prepare_assets(html, data.layout, params)
     else
       html = etlua2html(json, page_partial, params, global_data)
 
