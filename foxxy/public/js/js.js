@@ -632,12 +632,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  ".inseytel.com": "https://inseytel.com/_db/",
-  ".epic20.com": "https://epic20.com/_db/",
-  ".lamarqueduconsommateur.com": "https://questionnaire.lamarqueduconsommateur.com/_db/"
-  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
-  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
+  ".fasty.ovh": "/_db",
+  ".inseytel.com": "https://inseytel.com/_db",
+  "epic20.world": "/_db"
 };
 
 module.exports = Config;

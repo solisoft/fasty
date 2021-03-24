@@ -118,10 +118,10 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
           page_settings = lyaml.load(ret.body)
           layout_name = page_settings.layout or layout_name
 
-        page.layout = table_deep_merge(
-          page.layout,
-          check_git_layout(db_name, layout_name, page.layout._key)
-        )
+          page.layout = table_deep_merge(
+            page.layout,
+            check_git_layout(db_name, layout_name, page.layout._key)
+          )
       else
         page.layout = check_git_layout(db_name, 'page') -- use the default one
 
