@@ -22,7 +22,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 var tokens = {}
-console.log("fasty@0.0.29")
+console.log("fasty@0.0.30")
 
 var check_json = function(json, folder, fullname, only) {
   _.each(json, function (v, k) {
@@ -242,7 +242,6 @@ if (argv._.length == 0) {
       const file_name = _.slice(_.last(path).split("."), 0, -1)
       const file_ext = _.last(_.last(path).split("."))
       // <db_name>/app/<component>/<file_path>
-
       // if path is */app/components/** .riot
       // check if it needs to be compiled
       if (path[2] == "components") {
@@ -272,6 +271,7 @@ if (argv._.length == 0) {
 
       if (path[2] == "apis") {
         console.log("Upgrading API endpoint /" + path[3])
+        execSync("cd " + path.slice(0, 4).join("/") + " && npm i")
         execSync("foxx uninstall --database "+ path[0] +" --server fasty /" + path[3])
         execSync("foxx install --database "+ path[0] +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
         console.log("Done")
