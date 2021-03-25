@@ -505,10 +505,10 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- fields are : js, css, js_vendor, css_vendor
     if action == 'layout'
 
-      aql = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
+      aql_request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
 
       if object
-        object = aql(db_name, aql, { slug: item })[1]
+        object = aql(db_name, aql_request, { slug: item })[1]
 
         ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.js")
         object.i_js = ret.body if ret.status == 200
