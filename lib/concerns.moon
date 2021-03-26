@@ -217,9 +217,10 @@ load_redirection = (db_name, params) ->
 
   if redirection ~= nil then
 
+    git_layout = check_git_layout(db_name, params.slug)
     redirection.layout = table_deep_merge(
       redirection.layout, check_git_layout(db_name, params.slug)
-    )
+    ) if git_layout.found
 
     if redirection.item.type_redirection == "spa"
       html = redirection.layout.html\gsub(
