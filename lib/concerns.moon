@@ -127,17 +127,18 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
 
   else
     ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
-    page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
-    page.item.html[lang] = ""
-    page.item.raw_html[lang] = ret.body if ret.status == 200
+    if ret.status == 200
+      page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
+      page.item.html[lang] = ""
+      page.item.raw_html[lang] = ret.body 
 
-    page_settings = {}
-    ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
-    page_settings = lyaml.load(ret.body) if ret.status == 200
+      page_settings = {}
+      ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+      page_settings = lyaml.load(ret.body) if ret.status == 200
 
-    page = table_deep_merge(page, page_settings)
-    if uselayout
-      page.layout = check_git_layout(db_name, page_settings.layout or 'page')
+      page = table_deep_merge(page, page_settings)
+      if uselayout
+        page.layout = check_git_layout(db_name, page_settings.layout or 'page')
 
   page
 --------------------------------------------------------------------------------
