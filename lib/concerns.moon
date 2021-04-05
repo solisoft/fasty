@@ -26,14 +26,14 @@ check_git_layout = (db_name, slug, key) ->
       page_settings = lyaml.load(ret.body)
       layout.page_builder = page_settings.builder
 
-  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
-  layout.i_js = ret.body if ret.status == 200
-  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.css")
-  layout.i_css = ret.body if ret.status == 200
-  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/css.css")
-  layout.scss = ret.body if ret.status == 200
-  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/js.js")
-  layout.javascript = ret.body if ret.status == 200
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
+    layout.i_js = ret.body if ret.status == 200
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.css")
+    layout.i_css = ret.body if ret.status == 200
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/css.css")
+    layout.scss = ret.body if ret.status == 200
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/js.js")
+    layout.javascript = ret.body if ret.status == 200
 
   layout
 --------------------------------------------------------------------------------

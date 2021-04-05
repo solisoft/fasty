@@ -95,62 +95,62 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200) =>
     db_name           = "db_#{sub_domain}"
-    asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
-    if asset.status == 200
-      content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body
+    slug              = @params.slug if slug == nil
+    slug              = unescape(slug)
+    @params.lang      = check_valid_lang(settings[sub_domain].langs, @params.lang)
+    @session.lang     = @params.lang
+    redirection       = load_redirection(db_name, @params)
+    current_page      = load_page_by_slug(db_name, slug, @params.lang)
+
+    used_lang         = @params.lang
+
+    infos = page_info(db_name, @params.slug, @params.lang)
+
+    if current_page == nil then
+      used_lang = stringy.split(settings[sub_domain].langs, ',')[1]
+      infos = page_info(db_name, @params.slug, used_lang)
+      current_page = load_page_by_slug(db_name, slug, used_lang)
+
+    page_content_type = define_content_type(slug)
+
+    html = ''
+
+    if @params.splat and table.getn(stringy.split(@params.splat, '/')) % 2 == 1
+      @params.splat = "slug/#{@params.splat}"
+
+    if infos == nil
+      infos = { 'page': {}, 'folder': {} }
     else
-      slug              = @params.slug if slug == nil
-      slug              = unescape(slug)
-      @params.lang      = check_valid_lang(settings[sub_domain].langs, @params.lang)
-      @session.lang     = @params.lang
-      redirection       = load_redirection(db_name, @params)
-      current_page      = load_page_by_slug(db_name, slug, @params.lang)
+      current_page.item = table_deep_merge(current_page.item, infos.page)
 
-      used_lang         = @params.lang
+    if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
+      splat = {}
+      splat = splat_to_table(@params.splat) if @params.splat
+      bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
+      @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
 
-      infos = page_info(db_name, @params.slug, @params.lang)
+    if redirection == nil then
+      params_lang = @params.lang
+      @params.lang = used_lang
 
-      if current_page == nil then
-        used_lang = stringy.split(settings[sub_domain].langs, ',')[1]
-        infos = page_info(db_name, @params.slug, used_lang)
-        current_page = load_page_by_slug(db_name, slug, used_lang)
+      html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
+      @params.lang = params_lang
+    else
+      html = redirection
 
-      page_content_type = define_content_type(slug)
-
-      html = ''
-
-      if @params.splat and table.getn(stringy.split(@params.splat, '/')) % 2 == 1
-        @params.splat = "slug/#{@params.splat}"
-
-      if infos == nil
-        infos = { 'page': {}, 'folder': {} }
+    html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
+    basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
+    if is_auth(@, settings[sub_domain], infos)
+      if html ~= 'null' and trim(html) != '' then
+        content_type: page_content_type, html, status: status
       else
-        current_page.item = table_deep_merge(current_page.item, infos.page)
-
-      if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
-        splat = {}
-        splat = splat_to_table(@params.splat) if @params.splat
-        bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
-        @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
-
-      if redirection == nil then
-        params_lang = @params.lang
-        @params.lang = used_lang
-
-        html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
-        @params.lang = params_lang
-      else
-        html = redirection
-
-      html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
-      basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
-      if is_auth(@, settings[sub_domain], infos)
-        if html ~= 'null' and trim(html) != '' then
-          content_type: page_content_type, html, status: status
+        asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
+        if asset.status == 200
+          content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body
         else
           display_error_page(@, 404)
-      else
-        status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
+    else
+      status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
   ------------------------------------------------------------------------------
   [need_a_db: '/need_a_db']: => render: true
   ------------------------------------------------------------------------------
