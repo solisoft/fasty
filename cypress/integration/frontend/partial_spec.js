@@ -1,5 +1,5 @@
 
-// var host = 'http://test.127.0.0.1.xip.io:8080'
+// var host = 'http://test.127.0.0.1.nip.io:8080'
 // var host_admin = host + '/static/admin'
 
 // describe('Frontend / {{ partial | key }}', function () {

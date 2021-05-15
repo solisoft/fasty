@@ -52,7 +52,7 @@ services:
         ipv4_address: 12.12.0.8
 
   arangodb:
-    image: arangodb/arangodb:3.7.6
+    image: arangodb/arangodb:3.7.11
     restart: always
     environment:
       ARANGO_ROOT_PASSWORD: password
