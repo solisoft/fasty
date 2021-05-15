@@ -3,7 +3,7 @@ config = require "lapis.config"
 
 config "development", ->
   port 8080
-  measure_performance false
+  measure_performance true
 
 config "production", ->
   port 80

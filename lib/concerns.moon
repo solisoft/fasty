@@ -1,4 +1,5 @@
 etlua   = require 'etlua'
+lyaml   = require 'lyaml'
 stringy = require 'stringy'
 import http_get from require 'lib.http_client'
 import web_sanitize from require 'web_sanitize'
@@ -13,13 +14,40 @@ escape_pattern = (text) ->
   str, _ = tostring(text)\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
 --------------------------------------------------------------------------------
+check_git_layout = (db_name, slug, key) ->
+  layout = { _key: key, html: "@raw_yield@yield" }
+  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
+  if ret.status == 200
+    layout.found = true
+    layout.html = ret.body
+    layout._key = slug
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/settings.yml")
+    if ret.status == 200
+      page_settings = lyaml.load(ret.body)
+      layout.page_builder = page_settings.builder
+
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
+    layout.i_js = ret.body if ret.status == 200
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.css")
+    layout.i_css = ret.body if ret.status == 200
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/css.css")
+    layout.scss = ret.body if ret.status == 200
+    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/js.js")
+    layout.javascript = ret.body if ret.status == 200
+
+  layout
+--------------------------------------------------------------------------------
 prepare_assets = (html, layout, params) ->
-  jshmac = stringy.split(encode_with_secret(layout.i_js, ''), '.')[2]\gsub('/', '-')
-  csshmac = stringy.split(encode_with_secret(layout.i_css, ''), '.')[2]\gsub('/', '-')
-  html = html\gsub('@js_vendors', "/#{params.lang}/#{layout._key}/vendors/#{jshmac}.js")
-  html = html\gsub('@js', "/#{params.lang}/#{layout._key}/js/#{layout._rev}.js")
-  html = html\gsub('@css_vendors', "/#{params.lang}/#{layout._key}/vendors/#{csshmac}.css")
-  html = html\gsub('@css', "/#{params.lang}/#{layout._key}/css/#{layout._rev}.css")
+  html = "@raw_yield" unless html
+  js_vendor_hmac = stringy.split(encode_with_secret(layout.i_js, ''), '.')[2]\gsub('/', '-')
+  css_vendor_hmac = stringy.split(encode_with_secret(layout.i_css, ''), '.')[2]\gsub('/', '-')
+  jshmac = stringy.split(encode_with_secret(layout.javascript, ''), '.')[2]\gsub('/', '-')
+  csshmac = stringy.split(encode_with_secret(layout.scss, ''), '.')[2]\gsub('/', '-')
+
+  html = html\gsub('@js_vendors', "/#{params.lang}/#{layout._key}/vendors/#{js_vendor_hmac}.js")
+  html = html\gsub('@js', "/#{params.lang}/#{layout._key}/js/#{jshmac}.js")
+  html = html\gsub('@css_vendors', "/#{params.lang}/#{layout._key}/vendors/#{css_vendor_hmac}.css")
+  html = html\gsub('@css', "/#{params.lang}/#{layout._key}/css/#{csshmac}.css")
   html
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params) ->
@@ -55,42 +83,88 @@ etlua2html = (json, partial, params, global_data) ->
   )
   data
 --------------------------------------------------------------------------------
-load_document_by_slug = (db_name, slug, object) ->
-  request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
-  aql(db_name, request, { slug: slug })[1]
+load_document_by_slug = (db_name, slug, object, ext = 'html') ->
+  ret = ngx.location.capture("/git/#{db_name}/app/#{object}/#{slug}.#{ext}")
+  if ret.status == 200
+    {
+      item: {
+       html: ret.body, _key: "#{slug}",
+       _rev: ret.header.ETag\gsub('"', '')\gsub("-", "")
+      }
+    }
+  else
+    request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
+    aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
 load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
-  request = "FOR item IN pages FILTER item.slug[@lang] == @slug "
-  if uselayout == true
-    request ..= 'FOR layout IN layouts FILTER layout._id == item.layout_id RETURN { item, layout }'
-  else request ..= 'RETURN { item }'
+  request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   if page
     publication = document_get(db_name, 'publications/pages_' .. page.item._key)
-    if publication.code ~= 404 then page.item = publication.data
+    page.item = publication.data if publication.code == 200
+
+    ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
+    page.item.raw_html[lang] = ret.body if ret.status == 200
+
+    if uselayout
+      request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
+      layout = aql(db_name, request, { key: page.item.layout_id })[1]
+      if layout
+        page.layout = layout
+        layout_name = layout.name
+        -- then override if it exists on disk
+        page_settings = {}
+        ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+        if ret.status == 200
+          page_settings = lyaml.load(ret.body)
+          layout_name = page_settings.layout or layout_name
+
+        git_layout = check_git_layout(db_name, layout_name, page.layout._key)
+        page.layout = table_deep_merge(page.layout, git_layout) if git_layout.found
+      else
+        page.layout = check_git_layout(db_name, 'page') -- use the default one
+
+  else
+    ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
+    if ret.status == 200
+      page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
+      page.item.html[lang] = ""
+      page.item.raw_html[lang] = ret.body 
+
+      page_settings = {}
+      ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+      page_settings = lyaml.load(ret.body) if ret.status == 200
+
+      page = table_deep_merge(page, page_settings)
+      if uselayout
+        page.layout = check_git_layout(db_name, page_settings.layout or 'page')
 
   page
 --------------------------------------------------------------------------------
 page_info = (db_name, slug, lang) ->
-  request = "
-    FOR page IN pages FILTER page.slug[@lang] == @slug
-    LET root = (
-      FOR folder IN folders
-      FILTER folder.name == 'Root' AND folder.object_type == 'pages'
-      RETURN folder
-    )[0]
-
-    FOR folder IN folders
-      FILTER folder._key == (HAS(page, 'folder_key') ? page.folder_key : root._key)
-      LET path = (
-        FOR v, e IN ANY SHORTEST_PATH folder TO root GRAPH 'folderGraph'
-        FILTER HAS(v, 'ba_login') AND v.ba_login != ''
-        RETURN v
+  ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+  if ret.status == 200
+    { page: lyaml.load(ret.body), folder: {} }
+  else
+    request = "
+      FOR page IN pages FILTER page.slug[@lang] == @slug
+      LET root = (
+        FOR folder IN folders
+        FILTER folder.name == 'Root' AND folder.object_type == 'pages'
+        RETURN folder
       )[0]
 
-      RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
-  aql(db_name, request, { slug: slug, lang: lang })[1]
+      FOR folder IN folders
+        FILTER folder._key == (HAS(page, 'folder_key') ? page.folder_key : root._key)
+        LET path = (
+          FOR v, e IN ANY SHORTEST_PATH folder TO root GRAPH 'folderGraph'
+          FILTER HAS(v, 'ba_login') AND v.ba_login != ''
+          RETURN v
+        )[0]
+
+        RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
+    aql(db_name, request, { slug: slug, lang: lang })[1]
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
   request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
@@ -124,8 +198,6 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
       if(type(json) == 'table' and next(json) ~= nil)
         html = html\gsub('@yield', escape_pattern(etlua2html(json, page_partial, params, global_data)))
-
-      html = prepare_assets(html, data.layout, params)
     else
       html = etlua2html(json, page_partial, params, global_data)
 
@@ -145,6 +217,12 @@ load_redirection = (db_name, params) ->
   redirection = aql(db_name, request, { slug: params.slug })[1]
 
   if redirection ~= nil then
+
+    git_layout = check_git_layout(db_name, params.slug)
+    redirection.layout = table_deep_merge(
+      redirection.layout, check_git_layout(db_name, params.slug)
+    ) if git_layout.found
+
     if redirection.item.type_redirection == "spa"
       html = redirection.layout.html\gsub(
         '@yield',
@@ -251,7 +329,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      partial = load_document_by_slug(db_name, unescape(item), 'partials', false)
+      partial = load_document_by_slug(db_name, unescape(item), 'partials', 'etlua')
+
       if partial
         db_data = { "page": 1 }
         if dataset == 'arango'
@@ -259,11 +338,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           aql_request = {}
           aql_options = {}
           if args['req']
-            aql_request = aql(
-              db_name, 'FOR aql IN aqls FILTER aql.slug == @slug RETURN aql',
-              { slug: args['req'] }
-            )[1]
-
+            aql_request = load_document_by_slug(db_name, args['req'], 'aqls', 'aql').item
             args['aql'] = aql_request.aql\gsub('{{ lang }}', params.lang)
             aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
 
@@ -313,11 +388,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         history[widget] = true
         data = { ids: {}, revisions: {}, names: {} }
         for i, k in pairs(stringy.split(item, '#'))
-          component = aql(
-            db_name,
-            'FOR doc in components FILTER doc.slug == @slug RETURN doc',
-            { "slug": k }
-          )[1]
+          component = load_document_by_slug(db_name, k, 'components', 'riot').item
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
@@ -340,26 +411,22 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         data = { ids: {}, revisions: {}, names: {}, js: {} }
         output = ''
         for i, k in pairs(stringy.split(item, '#'))
-          component = aql(
-            db_name,
-            'FOR doc in components FILTER doc.slug == @slug RETURN { _key: doc._key, _rev: doc._rev, javascript: doc.javascript }',
-            { "slug": k }
-          )[1]
-
+          component = load_document_by_slug(db_name, k, 'components', 'js').item
+          content = component.javascript or component.html
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
-          table.insert(data.js, component.javascript)
+          table.insert(data.js, content)
 
           if dataset == 'mount'
             output ..= '<script type="module">'
-            output ..= dynamic_replace(db_name, component.javascript, global_data, history, params)
+            output ..= dynamic_replace(db_name, content, global_data, history, params)
             output ..= "riot.register('#{k}', #{k});"
             output ..= "riot.mount('#{k}')"
             output ..='</script>'
 
           if dataset == 'source'
-            output ..= dynamic_replace(db_name, component.javascript, global_data, history, params)
+            output ..= dynamic_replace(db_name, content, global_data, history, params)
 
         if dataset == 'url'
           output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.js"
@@ -373,11 +440,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'spa'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        spa = aql(
-          db_name,
-          'FOR doc in spas FILTER doc.slug == @slug RETURN doc',
-          { 'slug': item }
-        )[1]
+        spa = load_document_by_slug(db_name, item, 'spas', 'js').item
         if spa
           output = spa.html
           output ..="<script>#{spa.js}</script>"
@@ -386,9 +449,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- {{ aql | slug }} -- Run an AQL request
     -- e.g. {{ aql | activate_account }}
     if action == 'aql'
-      aql_request = aql(
-        db_name, 'FOR a in aqls FILTER a.slug == @slug RETURN a', { "slug": item }
-      )[1]
+      aql_request = load_document_by_slug(db_name, item, 'aqls', 'aql').item
       if aql_request
         options = {}
         options = from_json(aql_request.options) if aql_request.options
@@ -445,15 +506,29 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- slug is layout's slug
     -- fields are : js, css, js_vendor, css_vendor
     if action == 'layout'
-      request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
-      object = aql(db_name, request, { slug: item })[1]
+
+      aql_request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
+
       if object
-        jshmac = stringy.split(encode_with_secret(object.i_js, ''), '.')[2]\gsub('/', '-')
-        csshmac = stringy.split(encode_with_secret(object.i_css, ''), '.')[2]\gsub('/', '-')
-        output = "/#{params.lang}/#{object._key}/vendors/#{jshmac}.js" if dataset == 'js_vendor'
-        output = "/#{params.lang}/#{object._key}/js/#{object._rev}.js" if dataset == 'js'
-        output = "/#{params.lang}/#{object._key}/vendors/#{csshmac}.css" if dataset == 'css_vendor'
-        output = "/#{params.lang}/#{object._key}/css/#{object._rev}.css" if dataset == 'css'
+        object = aql(db_name, aql_request, { slug: item })[1]
+
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.js")
+        object.i_js = ret.body if ret.status == 200
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.scss")
+        object.i_css = ret.body if ret.status == 200
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/js.js")
+        object.javascript = ret.body if ret.status == 200
+        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/scss.scss")
+        object.scss = ret.body if ret.status == 200
+
+        js_vendor_hmac = stringy.split(encode_with_secret(object.i_js, ''), '.')[2]\gsub('/', '-')
+        css_vendor_hmac = stringy.split(encode_with_secret(object.i_css, ''), '.')[2]\gsub('/', '-')
+        jshmac = stringy.split(encode_with_secret(object.javascript, ''), '.')[2]\gsub('/', '-')
+        csshmac = stringy.split(encode_with_secret(object.scss, ''), '.')[2]\gsub('/', '-')
+        output = "/#{params.lang}/#{object._key}/vendors/#{js_vendor_hmac}.js" if dataset == 'js_vendor'
+        output = "/#{params.lang}/#{object._key}/js/#{jshmac}.js" if dataset == 'js'
+        output = "/#{params.lang}/#{object._key}/vendors/#{css_vendor_hmac}.css" if dataset == 'css_vendor'
+        output = "/#{params.lang}/#{object._key}/css/#{csshmac}.css" if dataset == 'css'
       else output = ' '
 
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''

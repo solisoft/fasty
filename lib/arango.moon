@@ -45,7 +45,7 @@ raw_aql = (db_name, stm)->
   if body['error'] then
     print(status_code)
     print(to_json(stm))
-    print(body)
+    print(to_json(body))
 
   while has_more
     body      = api_run(db_name, "/cursor/#{body["id"]}", 'PUT')

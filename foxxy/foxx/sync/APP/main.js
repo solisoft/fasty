@@ -236,6 +236,17 @@ router.post('/:token', function (req, res) {
       })
     }
 
+    if (req.body.type == "api_route") {
+      api = db.apis.byExample({ name: req.body.name.split("#")[0] })[0]
+
+      obj = db.apis.save({
+        name: req.body.name.split("#")[1],
+        api_id: api._key,
+        parent_id: api._key,
+        javascript: "//"
+      })
+    }
+
     if (req.body.type == "page") {
       obj = db.pages.save({
         name: req.body.name,
@@ -291,7 +302,6 @@ router.post('/:token', function (req, res) {
         code: "// Node JS app"
       })
     }
-    console.log(obj)
     res.json(obj)
   } else {
     res.json({ error: true, reason: 'Bad Token' })

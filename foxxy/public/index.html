@@ -11,9 +11,9 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/colors/ui/trumbowyg.colors.min.css" integrity="sha512-8dXb2ITE13jLrqqGDVTU8kKl9vHZI9E4TpZGyfhevHeF+/cWWA17wVj+SKX3+QHqZISiGihaCOyK3nA152ShDg==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/table/ui/trumbowyg.table.min.css" integrity="sha512-RFUKFRKDFU486gNjw9BJumR8a2gCoh9uP/0DJIKBKvhM1WtCDUg2KGA4jGk7dTZjQZP+PTJeKIEpslLUQ85Ixg==" crossorigin="anonymous" />
-    
-    <link rel="stylesheet" href="css/vendors.css">
-    <link rel="stylesheet" href="css/css.css">
+
+    <link rel="stylesheet" href="DIGEST(css/vendors.css)">
+    <link rel="stylesheet" href="DIGEST(css/css.css)">
 
   </head>
   <body>
@@ -68,8 +68,8 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.4.6/js/uikit.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
-    <script src="js/vendors.js"></script>
-    <script src="js/js.js"></script>
+    <script src="DIGEST(js/vendors.js)"></script>
+    <script src="DIGEST(js/js.js)"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/trumbowyg.min.js" integrity="sha512-sffB9/tXFFTwradcJHhojkhmrCj0hWeaz8M05Aaap5/vlYBfLx5Y7woKi6y0NrqVNgben6OIANTGGlojPTQGEw==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.23.0/plugins/colors/trumbowyg.colors.min.js" integrity="sha512-iT7g30i1//3OBZsfoc5XmlULnKQKyxir582Z9fIFWI6+ohfrTdns118QYhCTt0d09aRGcE7IRvCFjw2wngaqRQ==" crossorigin="anonymous"></script>
@@ -86,7 +86,7 @@
 
       var configs = require('js/config.js')
 
-      var host = 'http://localhost:8529/_db'
+      var host = '//' + document.location.hostname + ':8529/_db'
       _.each(configs, function(v, k) { if(hostname.indexOf(k) >= 0) host = v })
 
       var url = host + '/db_' + subdomain + '/'

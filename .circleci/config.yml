@@ -31,7 +31,6 @@ jobs:
       - run:
           name: 'Edit nginx.conf'
           command: echo -e "\nuser root root;" >> nginx.conf
-
       - run:
           name: 'Prepare database'
           command: |
@@ -56,6 +55,10 @@ jobs:
       - run:
           name: 'Moon'
           command: /bin/bash -c "moonc *.moon && moonc **/*.moon"
+
+      - run:
+          name: 'Add git folder'
+          command: mkdir git
 
       - run:
           name: 'Start cms'

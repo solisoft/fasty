@@ -10,22 +10,19 @@ var chokidar = require("chokidar")
 const notifier = require("node-notifier")
 var yaml = require("js-yaml")
 var socket = null
-var fs = require("fs")
+const fs = require("fs")
+var sass = require('node-sass');
+const { execSync } = require('child_process');
+const { minify } = require("terser")
+const { compile } = require("@riotjs/compiler")
 var dirname = process.cwd()
 var fullname = ""
 var webhook = null
 var domain = null
 var sync = null
 var updated_by_users = []
-
-console.log("fasty@0.0.28")
-
-if(!fs.existsSync(dirname + "/.tokens.yml")) {
-  console.log("Please configure a .tokens.yml file for tokens".red)
-  process.exit()
-}
-
-var tokens = yaml.safeLoad(fs.readFileSync(dirname + "/.tokens.yml", "utf8"))
+var tokens = {}
+console.log("fasty@0.0.30")
 
 var check_json = function(json, folder, fullname, only) {
   _.each(json, function (v, k) {
@@ -235,70 +232,143 @@ var check_json = function(json, folder, fullname, only) {
   }
 }
 
-if(argv._.length != 1) {
-  console.log("usage : fasty <shortuct> -w".yellow)
-} else {
-  fullname = tokens["name"]
-  domain = tokens["domains"][argv._[0]].domain
-  webhook = tokens["domains"][argv._[0]].webhook
-  var token  = tokens["domains"][argv._[0]].token
-  sync   = tokens["domains"][argv._[0]].sync
-  var folder = argv._[0]
+if (argv._.length == 0) {
+  console.log("Watching folder.", dirname)
+  chokidar.watch(dirname, { ignored: /(^|[\/\\])\../ }).on("all", (event, path) => {
+    if (event == "change") {
+      const original_path = path
+      path = path.replace(dirname, "").split("/").slice(1)
+      const file_path = _.slice(path, 0, -1).join("/")
+      const file_name = _.slice(_.last(path).split("."), 0, -1)
+      const file_ext = _.last(_.last(path).split("."))
+      // <db_name>/app/<component>/<file_path>
+      // if path is */app/components/** .riot
+      // check if it needs to be compiled
+      if (path[2] == "components") {
 
-  if (typeof (sync) == "string" && tokens["sync"]) {
-    sync = tokens["sync"]
-  }
-
-  if (sync && argv.w) {
-    console.log("Launching realtime events ...".yellow)
-    const io = require("socket.io-client");
-    socket = io(sync.server + ":" + sync.port);
-
-    socket.on("connect", () => {
-      console.log("Socket Connected to " + sync.server + " on port " + sync.port); // true
-      socket.emit("join", { secret: sync.secret, room: domain })
-    });
-
-    socket.on("updated", (data) => {
-      var date = new Date()
-      console.log(date.getHours() + ":" + date.getMinutes() + " Update event received : " + data.fileMeta)
-
-      if (data.from != fullname) {
-
-        var onlyPath = "." + require('path').dirname(data.path)
-        if (!fs.existsSync(onlyPath)) fs.mkdirSync(onlyPath)
-
-        console.log("File " + data.path + " updated by " + data.from)
-        updated_by_users.push(data.fileMeta)
-        fs.writeFileSync("." + data.path, data.fileData)
+        if(file_ext == "riot") {
+          let yml = file_path + "/" + file_name + ".yml"
+          if(fs.existsSync(yml)) {
+            yml = yaml.safeLoad(fs.readFileSync(yml, "utf8"))
+            if (yml.compiler == "riot5") {
+              const src = fs.readFileSync(original_path, "utf8")
+              var t1 = +new Date()
+              const { code, map } = compile(src, { format: "umd" })
+              minify(code).then(compiled_code => {
+                var tag = compiled_code.code.replace(
+                  'export default',
+                  'var '+file_name+'='
+                )
+                var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
+                fs.writeSync(file, tag)
+                fs.closeSync(file)
+                console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
+              })
+            }
+          }
+        }
       }
-    })
-  }
 
-  if(token === undefined) {
-    console.log("Token not found for this domain".red)
+      if (path[2] == "apis") {
+        console.log("Upgrading API endpoint /" + path[3])
+        execSync("cd " + path.slice(0, 4).join("/") + " && npm i")
+        execSync("foxx uninstall --database "+ path[0] +" --server fasty /" + path[3])
+        execSync("foxx install --database "+ path[0] +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
+        console.log("Done")
+      }
+      // if path is */app/apis/**
+      // install service
+
+      if (_.last(_.last(path).split(".")) == "scss") {
+        var t1 = +new Date()
+        console.log("Compiling " + original_path)
+        var result = sass.renderSync({
+          data: fs.readFileSync(original_path, "utf8")
+        });
+
+        var file = fs.openSync(file_path + "/" + file_name + ".css", "w+")
+        fs.writeSync(file, result.css)
+        fs.closeSync(file)
+        console.log(file_name + ".css compiled in " +(+new Date() - t1) +"ms")
+      }
+      // **/*.scss
+      // compile to css
+      // check for tailwindcss
+    }
+  })
+} else {
+  if(!fs.existsSync(dirname + "/.tokens.yml")) {
+    console.log("Please configure a .tokens.yml file for tokens".red)
     process.exit()
   }
 
-  var url = domain + "/sync/" + token
+  tokens = yaml.safeLoad(fs.readFileSync(dirname + "/.tokens.yml", "utf8"))
 
-  if(!fs.existsSync("fs")) fs.mkdirSync("fs")
-  if(!fs.existsSync("fs/"+ folder)) fs.mkdirSync("fs/" + folder)
+  if(argv._.length != 1) {
+    console.log("usage : fasty <shortuct> -w".yellow)
+  } else {
+    fullname = tokens["name"]
+    domain = tokens["domains"][argv._[0]].domain
+    webhook = tokens["domains"][argv._[0]].webhook
+    var token  = tokens["domains"][argv._[0]].token
+    sync   = tokens["domains"][argv._[0]].sync
+    var folder = argv._[0]
 
-  if(argv.w) {
-    console.log("Fetching data ...".green)
-    request(url, function (_error, _response, body) {
-      var data = JSON.parse(body)
-      check_json(data, folder, fullname, domain)
-    })
-  }
+    if (typeof (sync) == "string" && tokens["sync"]) {
+      sync = tokens["sync"]
+    }
 
-  if (argv.c && argv.n) {
-    request.post({
-      url: url, form: JSON.stringify({ name: argv.n, type: argv.c })
-    }, function (err, httpResponse, body) {
-        console.log(body)
-        console.log("Please resynchronize your folder!")
-    })
+    if (sync && argv.w) {
+      console.log("Launching realtime events ...".yellow)
+      const io = require("socket.io-client")
+      socket = io(sync.server + ":" + sync.port)
+
+      socket.on("connect", () => {
+        console.log("Socket Connected to " + sync.server + " on port " + sync.port) // true
+        socket.emit("join", { secret: sync.secret, room: domain })
+      });
+
+      socket.on("updated", (data) => {
+        var date = new Date()
+        console.log(date.getHours() + ":" + date.getMinutes() + " Update event received : " + data.fileMeta)
+
+        if (data.from != fullname) {
+
+          var onlyPath = "." + require('path').dirname(data.path)
+          if (!fs.existsSync(onlyPath)) fs.mkdirSync(onlyPath)
+
+          console.log("File " + data.path + " updated by " + data.from)
+          updated_by_users.push(data.fileMeta)
+          fs.writeFileSync("." + data.path, data.fileData)
+        }
+      })
+    }
+
+    if(token === undefined) {
+      console.log("Token not found for this domain".red)
+      process.exit()
+    }
+
+    var url = domain + "/sync/" + token
+
+    if(!fs.existsSync("fs")) fs.mkdirSync("fs")
+    if(!fs.existsSync("fs/"+ folder)) fs.mkdirSync("fs/" + folder)
+
+    if(argv.w) {
+      console.log("Fetching data ...".green)
+      request(url, function (_error, _response, body) {
+        var data = JSON.parse(body)
+        check_json(data, folder, fullname, domain)
+      })
+    }
+
+    if (argv.c && argv.n) {
+      request.post({
+        url: url, form: JSON.stringify({ name: argv.n, type: argv.c })
+      }, function (err, httpResponse, body) {
+          console.log(body)
+          console.log("Please resynchronize your folder!")
+      })
+    }
   }
 }
