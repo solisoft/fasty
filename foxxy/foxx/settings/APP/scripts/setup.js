@@ -20,3 +20,8 @@ if (!db._collection('settings')) {
     mailgun_from: 'mailgun_from',
   }) // Create an empty element
 }
+
+
+if (!db._collection('stats_aql')) {
+  db._createDocumentCollection('stats_aql');
+}
