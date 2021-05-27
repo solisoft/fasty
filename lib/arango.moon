@@ -24,21 +24,17 @@ api_run = (db_name, path, method, params={}, headers={}) ->
   query_time = (os.clock! - t1) * 1000
   http_request(
     api_url(db_name, '/transaction'), 'POST',
-    to_json(
-      {
-        collections: { write: ["stats_aql"] },
-        action: "function() {
+    to_json({
+        "collections": { "write": "stats_aql" },
+        "action": "function() {
           var db = require('@arangodb').db;
-          db._query(`
-            FOR doc IN stats_aql
-              LET date_str = DATE_FORMAT(DATE_NOW(), '%yyyy-%mm')
-              LET val = TO_NUMBER(doc.time[date_str])
-              UPDATE doc WITH MERGE([doc, { time: { [ date_str ]: val + @time }}])
-              IN stats_aql`, { time: #{query_time} }
-          )
+          db._query(`FOR doc IN stats_aql
+          LET date_str = DATE_FORMAT(DATE_NOW(), '%yyyy-%mm')
+          LET val = TO_NUMBER(doc.time[date_str])
+          UPDATE doc WITH MERGE([doc, { time: { [ date_str ]: val + @time }}])
+          IN stats_aql`, { time: #{query_time}})
         }"
-      }
-    ),
+    }),
     table_merge({ Authorization: "bearer #{jwt}" }, headers)
   )
 
