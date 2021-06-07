@@ -130,7 +130,7 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
     if ret.status == 200
       page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
       page.item.html[lang] = ""
-      page.item.raw_html[lang] = ret.body 
+      page.item.raw_html[lang] = ret.body
 
       page_settings = {}
       ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
@@ -508,10 +508,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'layout'
 
       aql_request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
+      object = aql(db_name, aql_request, { slug: item })[1]
 
       if object
-        object = aql(db_name, aql_request, { slug: item })[1]
-
         ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.js")
         object.i_js = ret.body if ret.status == 200
         ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.scss")
