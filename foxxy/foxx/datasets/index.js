@@ -423,6 +423,10 @@ router.post('/:service', function (req, res) {
     var data = fieldsToData(fields, body, req.headers)
     data.type = req.pathParams.service
 
+    if (data.html && data.html.html) {
+      data['html_text'] = data.html.html.replace(/(<([^>]+)>)/gi, "")
+    }
+
     if (object.act_as_tree) data['folder_key'] = body.folder_key
 
     if (object.search) {
@@ -585,6 +589,10 @@ router.post('/:service/:id', function (req, res) {
         })
         data.compiled_css = response.body
       }
+    }
+
+    if (doc.html && doc.html.html) {
+      data['html_text'] = data.html.html.replace(/(<([^>]+)>)/gi, "")
     }
 
     obj = collection.update(doc, data)
