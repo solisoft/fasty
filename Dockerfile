@@ -13,7 +13,7 @@ RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/v
     && ./configure \
     && make && make install && ldconfig && cd .. && rm -Rf vips-*
 
-ARG OPENRESTY_VERSION=1.19.3.1
+ARG OPENRESTY_VERSION=1.19.3.2
 
 RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar xf openresty-${OPENRESTY_VERSION}.tar.gz \
