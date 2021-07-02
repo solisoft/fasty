@@ -469,12 +469,12 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         )
         if args['multi']
           aql(
-            db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
-            { key: item .. " :0:", lang: params.lang }
+            db_name, 'INSERT { key: @key, value: { @lang: @value }, type: "trads" } IN trads',
+            { key: item .. " :0:", value: item, lang: params.lang }
           )
           aql(
-            db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
-            { key: item .. " :1:", lang: params.lang }
+            db_name, 'INSERT { key: @key, value: { @lang: @value }, type: "trads" } IN trads',
+            { key: item .. " :1:", value: item, lang: params.lang }
           )
 
         output = item
