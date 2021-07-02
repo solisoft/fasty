@@ -458,6 +458,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ tr | slug }}
     -- e.g. {{ tr | my_text }}
+    -- e.g. with interpolation {{ tr | $(one) $(two) $(three) | one/1/two/2/three/3 }}
+    -- e.g. with multi {{ tr | You have $(num) items in your cart | num/5 | multi#true }}
     if action == 'tr'
       output = ""
       unless translations[item]
@@ -465,6 +467,16 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
           { key: item, lang: params.lang }
         )
+        if args['multi']
+          aql(
+            db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
+            { key: item .. " :0:", lang: params.lang }
+          )
+          aql(
+            db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
+            { key: item .. " :1:", lang: params.lang }
+          )
+
         output = item
 
       default_lang = stringy.split(global_data.settings[1].langs, ",")[1]
@@ -473,6 +485,13 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
       if dataset
         variables = splat_to_table(dataset)
+        if args['multi']
+          _k, v =  next(variables) -- check a value
+          if v == "0"
+            output = translations[item .. " :0:"][params.lang] or translations[item .. " :0:"][default_lang] or ""
+          if v == "1"
+            output = translations[item .. " :1:"][params.lang] or translations[item .. " :1:"][default_lang] or ""
+
         output = output\gsub("%$%((.-)%)", variables)
 
       output = "Missing translation <em style='color:red'>#{item}</em>" if output == ''
