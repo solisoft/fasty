@@ -5,7 +5,7 @@ RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libsass-dev glib2.0-dev libexpat1-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget
 
-ARG VIPS_VERSION=8.10.1
+ARG VIPS_VERSION=8.11.1
 
 RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
     && tar -xf vips-${VIPS_VERSION}.tar.gz \
