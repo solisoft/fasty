@@ -456,7 +456,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql), options)
         output = "&nbsp;"
 
-    -- {{ tr | slug }}
+    -- {{ tr | slug (| keys/values | multi#true) }}
     -- e.g. {{ tr | my_text }}
     -- e.g. with interpolation {{ tr | $(one) $(two) $(three) | one/1/two/2/three/3 }}
     -- e.g. with multi {{ tr | You have $(num) items in your cart | num/5 | multi#true }}
