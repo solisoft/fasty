@@ -31,3 +31,5 @@ certs/
 compile_tag/
 compile_tailwind/
 git/
+Dockerfile_arm64
+docker-compose.override.yml
