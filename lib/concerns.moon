@@ -74,7 +74,7 @@ etlua2html = (json, partial, params, global_data) ->
     template = etlua.compile(partial.item.html)
     global_data.partials[partial.item._key] = template
 
-  success, data = pcall(
+  _, data = pcall(
     template, {
       'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
       'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp,
@@ -338,8 +338,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           aql_request = {}
           aql_options = {}
           if args['req']
-            aql_request = load_document_by_slug(db_name, args['req'], 'aqls', 'aql').item
-            args['aql'] = aql_request.aql\gsub('{{ lang }}', params.lang)
+            aql_request = aqls[1][args['req']]
+            args['aql'] = aql_request\gsub('{{ lang }}', params.lang)
             aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
 
           -- prepare the bindvar variable with variable found in the request
