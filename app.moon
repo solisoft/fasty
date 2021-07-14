@@ -9,8 +9,7 @@ config      = app_config.get!
 db_config   = app_config.get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
-import respond_to from require 'lapis.application'
-import check_valid_lang, uuid, define_content_type, table_deep_merge from require 'lib.utils'
+import check_valid_lang, define_content_type, table_deep_merge from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import after_dispatch from require 'lapis.nginx.context'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
