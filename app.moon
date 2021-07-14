@@ -192,7 +192,6 @@ class extends lapis.Application
   [page_no_lang: '/:all/:slug']: =>
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
-
       load_settings(@)
       @params.lang = check_valid_lang(settings[sub_domain].langs, @params.all)
       unless @session.lang
