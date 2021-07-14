@@ -83,8 +83,6 @@ class extends lapis.Application
   lua_files(@, "git")
 
   layout: false -- we don't need a layout, it will be loaded dynamically
-  expire_at = () =>
-   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
   ------------------------------------------------------------------------------
   display_error_page = (status=500, headers={}) =>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
