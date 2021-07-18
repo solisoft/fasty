@@ -49,12 +49,12 @@ RUN luarocks --server=http://rocks.moonscript.org install lyaml
 RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
     chmod +x n && mv n /usr/bin/n && n lts
 
-#RUN wget https://download.arangodb.com/arangodb37/DEBIAN/Release.key && \
-#    apt-key add - < Release.key && \
-#    echo 'deb https://download.arangodb.com/arangodb37/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
-#    apt-get update && \
-#    apt-get install apt-transport-https && \
-#    apt-get install arangodb3-client
+RUN wget https://download.arangodb.com/arangodb37/DEBIAN/Release.key && \
+    apt-key add - < Release.key && \
+    echo 'deb https://download.arangodb.com/arangodb37/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
+    apt-get update && \
+    apt-get install apt-transport-https && \
+    apt-get install arangodb3-client
 
 RUN npm install -g yarn forever @riotjs/cli terser tailwindcss autoprefixer postcss
 
