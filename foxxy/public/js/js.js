@@ -302,7 +302,8 @@ var Common = {
             html_editors.push([l.n, value])
           }
           if(l.t === "list") {
-            _html += '<select name="'+ l.n +'" style="width:100%" class="uk-select select_list" id="'+l.n+'">'
+            _html += '<select name="' + l.n + '" style="width:100%" class="uk-select select_list" id="' + l.n + '">'
+            if(l.empty === true) _html += '<option value="">--</option>'
             l.d.forEach(function(o) {
               selected = ""
               if(value === o[0]) selected="selected='selected'"
@@ -632,9 +633,10 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/",
-  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
-  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
+  ".fasty.ovh": "/_db",
+  ".inseytel.com": "https://inseytel.com/_db",
+  ".epic20.world": "/_db",
+  ".epiks.io": "/_db"
 };
 
 module.exports = Config;
