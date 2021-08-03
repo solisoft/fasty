@@ -636,7 +636,7 @@ var Config = {
   ".fasty.ovh": "/_db",
   ".inseytel.com": "https://inseytel.com/_db",
   ".epic20.world": "/_db",
-  ".epiks.io": "/_db"
+  ".epiks.io": "/_db",
 };
 
 module.exports = Config;
