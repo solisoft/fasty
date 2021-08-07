@@ -7,7 +7,7 @@
       LET g_components = (
         FOR doc IN components RETURN ZIP([doc.slug], [{ _key: doc._key, _rev: doc._rev }])
       )
-      LET g_aqls = (FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
+      LET g_aqls = MERGE(FOR doc IN aqls RETURN ZIP([doc.slug], [doc.aql]))
       LET g_helpers = (
         FOR h IN helpers
           FOR p IN partials

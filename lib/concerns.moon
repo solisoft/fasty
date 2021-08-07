@@ -338,7 +338,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           aql_request = {}
           aql_options = {}
           if args['req']
-            aql_request = aqls[1][args['req']]
+            aql_request = aqls[args['req']]
             args['aql'] = aql_request\gsub('{{ lang }}', params.lang)
             aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
 
