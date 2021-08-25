@@ -10,7 +10,11 @@ const model = function() {
     is_script: true,
     columns: [{ name: "name" }],
     sort: "SORT doc.name ASC",
-    timestamps: true
+    timestamps: true,
+    roles: {
+      read: ['designer', 'developer', 'admin'],
+      write: ['designer', 'developer', 'admin']
+    }
   }
 }
 module.exports = model

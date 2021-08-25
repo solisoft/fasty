@@ -10,6 +10,10 @@ const model = function() {
     singular: "api",
     is_api: true,
     columns: [{ name: "name" }],
+    roles: {
+      read: ['developer', 'admin'],
+      write: ['developer', 'admin']
+    },
     sub_models: {
       api_routes: {
         fields: [
