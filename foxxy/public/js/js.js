@@ -1904,6 +1904,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
         if(self.can_access == false) {
           common.get(url + "/auth/whoami", function(me) {
             localStorage.setItem('resize_api_key', me.resize_api_key)
+            console.log(model)
             self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
             self.update()
           })

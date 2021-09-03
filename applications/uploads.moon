@@ -237,6 +237,32 @@ class FastyImages extends lapis.Application
     else
       'no asset found!', status: 404
   ------------------------------------------------------------------------------
+  -- resize image
+  [image_rc: '/asset/rc/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:crop)(.:format[a-z])']: =>
+    load_settings(@)
+
+    ext = @params.format or 'jpg'
+    crop = @params.crop or "centre"
+    upload = check_file @params
+
+    if upload
+      dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}-{crop}.#{ext}"
+
+      res = ngx.location.capture("/#{dest}")
+      if res and res.status == 404
+        ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} --height #{@params.height} --crop #{crop} --size down")
+        if stderr
+          print(to_json(stderr))
+          print(to_json(reason))
+        res = ngx.location.capture("/#{dest}")
+
+      disposition = 'inline'
+      disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+
+      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
+    else
+      'no asset found!', status: 404
+  ------------------------------------------------------------------------------
   -- smart crop
   [image_sm: '/asset/sm/:uuid[a-z%d\\-]/:width[%d]/:height[%d](/:interesting)(.:format[a-z])']: =>
     load_settings(@)
