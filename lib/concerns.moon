@@ -525,7 +525,6 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     -- slug is layout's slug
     -- fields are : js, css, js_vendor, css_vendor
     if action == 'layout'
-
       aql_request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
       object = aql(db_name, aql_request, { slug: item })[1]
 

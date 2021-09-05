@@ -14,7 +14,11 @@ const model = function() {
     collection: "helpers",
     singular: "helper",
     columns: [{ name: 'shortcut' }],
-    sort: "SORT doc.shortcut"
+    sort: "SORT doc.shortcut",
+    roles: {
+      read: ['designer', 'developer', 'admin'],
+      write: ['designer', 'developer', 'admin']
+    }
   }
 }
 module.exports = model

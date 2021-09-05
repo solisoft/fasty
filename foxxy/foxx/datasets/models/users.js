@@ -18,7 +18,11 @@ const model = function() {
       { name: "username", label: "Email" },
       { name: "role", label: "Roles" },
       { name: "image" }
-    ]
+    ],
+    roles: {
+      read: ['admin'],
+      write: ['admin']
+    }
   }
 }
 module.exports = model
