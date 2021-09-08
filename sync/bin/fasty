@@ -294,6 +294,7 @@ if (argv._.length == 0) {
       // **/*.scss
       // compile to css
       // check for tailwindcss
+
     }
   })
 } else {

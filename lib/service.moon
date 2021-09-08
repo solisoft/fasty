@@ -124,6 +124,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
 
   -- default config file
   config_file = "module.exports = {
+    mode: 'jit',
     purge: ['./*.html'],
     darkMode: false,
     theme: { extend: {} },
@@ -167,7 +168,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
   for k, item in pairs partials
     write_content("#{path}/partial_#{k}.html", item.html)
 
-  command = "cd #{path} && export PATH=\"$PATH;/usr/local/bin\" && NODE_ENV=production tailwindcss build #{layout_id}.css -o #{layout_id}_compiled.css"
+  command = "cd #{path} && export PATH=\"$PATH;/usr/local/bin\" && NODE_ENV=production tailwindcss build -m -i #{layout_id}.css -o #{layout_id}_compiled.css"
   handle = io.popen(command)
   result = handle\read('*a')
   handle\close()

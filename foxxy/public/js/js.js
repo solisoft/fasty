@@ -633,10 +633,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "/_db",
-  ".inseytel.com": "https://inseytel.com/_db",
-  ".epic20.world": "/_db",
-  ".epiks.io": "/_db",
+  ".fasty.ovh": "https://fasty.ovh/_db/",
+  /*".s1.fasty.ovh": "https://s1.fasty.ovh/_db/",
+  ".s2.fasty.ovh": "https://s2.fasty.ovh/_db/"*/
 };
 
 module.exports = Config;
@@ -1904,6 +1903,7 @@ riot.tag2('datasets', '<dataset_folders show="{loaded}" if="{act_as_tree}" folde
         if(self.can_access == false) {
           common.get(url + "/auth/whoami", function(me) {
             localStorage.setItem('resize_api_key', me.resize_api_key)
+            console.log(model)
             self.can_access = model.roles === undefined || _.includes(model.roles.read, me.role)
             self.update()
           })
