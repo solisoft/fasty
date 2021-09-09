@@ -61,6 +61,19 @@ var restart_services = function (collection, id, _settings) {
   }
 }
 
+var compile_tailwindcss = function () {
+  const _settings = db.settings.firstExample({})
+  var h_settings = JSON.parse(_settings.home)
+  const url = h_settings.base_url
+  if(url)
+    _.each(db.layouts.all().toArray(), function (layout) {
+      var response = request.post(url + "/tailwindcss", {
+        form: { token: _settings.secret, id: layout._key, field: "scss" }
+      })
+      db.layouts.update(layout, { compiled_css: response.body })
+    })
+}
+
 // -----------------------------------------------------------------------------
 // GET /sync
 router.get('/:token', function (req, res) {
@@ -203,8 +216,8 @@ router.patch('/:token', function (req, res) {
         res.json(`Saved! ${collection} ${id} ${field}`)
       }
       var h_settings = JSON.parse(_settings.home)
-      if(h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
-
+      if (h_settings.url_reset) request({ method: "GET", url: h_settings.url_reset })
+      compile_tailwindcss()
     }
   } else {
     res.json({ error: true, reason: 'Bad Token' })
