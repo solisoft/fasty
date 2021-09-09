@@ -246,11 +246,11 @@ class FastyImages extends lapis.Application
     upload = check_file @params
 
     if upload
-      dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}-{crop}.#{ext}"
+      dest    = "#{upload.root}/#{upload.uuid}-#{@params.width}-#{@params.height}-#{crop}.#{ext}"
 
       res = ngx.location.capture("/#{dest}")
       if res and res.status == 404
-        ok, stdout, stderr, reason, status = shell.run("vips thumbnail #{upload.path} #{dest} #{@params.width} --height #{@params.height} --crop #{crop} --size down")
+        ok, stdout, stderr, reason, status = shell.run("vips thumbnail -i #{upload.path} -o #{dest} #{@params.width} --height #{@params.height} --crop #{crop} --size down")
         if stderr
           print(to_json(stderr))
           print(to_json(reason))
