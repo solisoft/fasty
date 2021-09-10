@@ -55,8 +55,9 @@ var restart_services = function (collection, id, _settings) {
 
   if (collection == "components" && h_settings.base_url && object.kind == "riot4") {
     var response = request.post(h_settings.base_url + "/riotjs", {
-      form: { token: _settings.secret, name: object.slug, tag: object.html }
+      form: { token: _settings.secret, name: object.slug, id: id }
     })
+    console.log(response)
     db.components.update(object, { javascript: response.body })
   }
 }
