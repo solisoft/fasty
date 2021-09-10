@@ -101,7 +101,7 @@ compile_riotjs = (sub_domain, name, id) ->
   if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
     path = "compile_tag/#{sub_domain}/#{name}"
     os.execute("mkdir -p #{path}")
-    tag = document_get(subdomain, id)
+    tag = document_get(sub_domain, id)
 
     write_content("#{path}/#{name}.riot", tag.html)
 
