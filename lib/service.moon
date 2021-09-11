@@ -97,11 +97,13 @@ deploy_site = (sub_domain, settings) ->
     for k, item in pairs apis
       install_service(deploy_to[1]\gsub('db_', ''), item.name)
 --------------------------------------------------------------------------------
-compile_riotjs = (sub_domain, name, tag) ->
+compile_riotjs = (sub_domain, name, id) ->
   if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
     path = "compile_tag/#{sub_domain}/#{name}"
     os.execute("mkdir -p #{path}")
-    write_content("#{path}/#{name}.riot", tag)
+    tag = document_get("db_" .. sub_domain, id)
+
+    write_content("#{path}/#{name}.riot", tag.html)
 
     command = "export PATH=\"$PATH;/usr/local/bin\" && riot --format umd #{path}/#{name}.riot --output #{path}/#{name}.js && terser --compress --mangle -o #{path}/#{name}.js #{path}/#{name}.js"
     handle = io.popen(command)

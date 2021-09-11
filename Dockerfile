@@ -59,6 +59,7 @@ RUN wget https://download.arangodb.com/arangodb37/DEBIAN/Release.key && \
 RUN npm install -g yarn@1.22.11 \
     forever@4.0.1 \
     @riotjs/cli@6.0.5 \
+    @babel/core@7.15.5 \
     terser@5.7.2 \
     tailwindcss@2.2.14 \
     autoprefixer@10.3.4 \

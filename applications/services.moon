@@ -103,7 +103,7 @@ class FastyServices extends lapis.Application
         { 'name': @params.name }, {{ 'name', matches_pattern: '^[%w%-_]+$' }}
       )
       if is_valid == nil and (config._name == 'development' or @params.token == settings[sub_domain].secret)
-        compile_riotjs(sub_domain, @params.name, @params.tag)
+        compile_riotjs(sub_domain, @params.name, @params.id)
   }
   ------------------------------------------------------------------------------
   -- tailwindcss compiler
