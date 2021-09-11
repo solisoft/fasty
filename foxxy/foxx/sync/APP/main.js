@@ -6,6 +6,9 @@ const _ = require('lodash')
 const request = require('@arangodb/request');
 const createRouter = require('@arangodb/foxx/router')
 const router = createRouter()
+const queues = require('@arangodb/foxx/queues');
+const queue = queues.create('compiler');
+
 module.context.use(router)
 const _settings = db._collection('settings').firstExample()
 
@@ -67,10 +70,10 @@ var compile_tailwindcss = function () {
   const url = h_settings.base_url
   if(url)
     _.each(db.layouts.all().toArray(), function (layout) {
-      var response = request.post(url + "/tailwindcss", {
-        form: { token: _settings.secret, id: layout._key, field: "scss" }
-      })
-      db.layouts.update(layout, { compiled_css: response.body })
+      queue.push(
+        {mount: '/sync', name: 'tailwindcss'},
+        { token: _settings.secret, id: layout._key, field: "scss" }
+      );
     })
 }
 
