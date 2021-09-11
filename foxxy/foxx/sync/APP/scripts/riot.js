@@ -6,7 +6,5 @@ const params = module.context.argv[0];
 var response = request.post(h_settings.base_url + "/riotjs", {
   form: { token: params.secret, name: params.name, tag: params.id }
 })
-
-
-const layout = db.layouts.document(params.id)
-db.layouts.update(layout, { compiled_css: response.body })
+const object = db.components.document(params.id)
+db.components.update(object, { javascript: response.body })

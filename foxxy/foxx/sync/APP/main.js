@@ -57,11 +57,10 @@ var restart_services = function (collection, id, _settings) {
   } else console.log("Missing base_url in settings")
 
   if (collection == "components" && h_settings.base_url && object.kind == "riot4") {
-    var response = request.post(h_settings.base_url + "/riotjs", {
-      form: { token: _settings.secret, name: object.slug, id: id }
-    })
-    console.log(response)
-    db.components.update(object, { javascript: response.body })
+    queue.push(
+      {mount: '/sync', name: 'riot'},
+      { token: _settings.secret, name: object.slug, id: id }
+    );
   }
 }
 
