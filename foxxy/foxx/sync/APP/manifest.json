@@ -10,6 +10,8 @@
     "main": "main.js",
     "scripts": {
         "setup": "scripts/setup.js",
+        "riot": "scripts/riot.js",
+        "tailwindcss": "scripts/tailwindcss.js",
         "teardown": "scripts/teardown.js"
     },
     "tests": "test/**/*.js"
