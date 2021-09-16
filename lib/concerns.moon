@@ -48,6 +48,9 @@ prepare_assets = (html, layout, params) ->
   html = html\gsub('@js', "/#{params.lang}/#{layout._key}/js/#{jshmac}.js")
   html = html\gsub('@css_vendors', "/#{params.lang}/#{layout._key}/vendors/#{css_vendor_hmac}.css")
   html = html\gsub('@css', "/#{params.lang}/#{layout._key}/css/#{csshmac}.css")
+
+  html = html\gsub('$css', layout.compiled_css)
+
   html
 --------------------------------------------------------------------------------
 prepare_headers = (html, data, params) ->
