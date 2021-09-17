@@ -315,6 +315,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
+    -- e.g. {{ helper | hello_world | args1#true}}
     if action == 'helper'
       helper = helpers[item]
       if helper
