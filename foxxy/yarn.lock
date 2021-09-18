@@ -4503,8 +4503,8 @@ wrappy@1, wrappy@^1.0.1:
   resolved "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz"
 
 ws@>=3.3.1:
-  version "7.3.0"
-  resolved "https://registry.npmjs.org/ws/-/ws-7.3.0.tgz"
+  version "7.4.6"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
 
 ws@~1.1.0:
   version "1.1.5"
