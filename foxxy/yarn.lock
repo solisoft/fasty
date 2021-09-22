@@ -3087,8 +3087,8 @@ path-key@^2.0.0, path-key@^2.0.1:
   resolved "https://registry.npmjs.org/path-key/-/path-key-2.0.1.tgz"
 
 path-parse@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.npmjs.org/path-parse/-/path-parse-1.0.6.tgz"
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
 
 path-to-regexp@0.1.7:
   version "0.1.7"
@@ -4503,8 +4503,8 @@ wrappy@1, wrappy@^1.0.1:
   resolved "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz"
 
 ws@>=3.3.1:
-  version "7.3.0"
-  resolved "https://registry.npmjs.org/ws/-/ws-7.3.0.tgz"
+  version "7.4.6"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
 
 ws@~1.1.0:
   version "1.1.5"
