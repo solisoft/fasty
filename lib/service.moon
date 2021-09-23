@@ -157,7 +157,7 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
       if type(item['raw_html']) == 'table' and item['raw_html'][lang]
       	html = html .. item['raw_html'][lang]
       if type(item['html']) == "table" and item['html'][lang] and item['html'][lang].html
-          html = html .. item['html'][lang].html
+        html = html .. item['html'][lang].html
       write_content("#{path}/page_#{k}_#{lang}.html", html)
 
   -- Components

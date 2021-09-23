@@ -81,8 +81,13 @@
       <tr each={ row in data } >
         <td if={sortable}><i class="fas fa-grip-vertical handle"></i></td>
         <td each={ col in cols } class="{col.class}">
-          <virtual if={ col.tr == true }>{_.get(row,col.name)[locale]}</virtual>
-          <virtual if={ col.tr != true }>{_.get(row,col.name)}</virtual>
+          <virtual if={ col.type == "image" }>
+            <img src="{calc_value(row, col, locale)} " style="height:50px">
+          </virtual>
+          <virtual if={ col.type != "image" }>
+            <virtual if={ col.tr == true }>{_.get(row,col.name)[locale]}</virtual>
+            <virtual if={ col.tr != true }>{_.get(row,col.name)}</virtual>
+          </virtual>
         </td>
         <td class="uk-text-center" width="110">
           <a onclick={edit} class="uk-button uk-button-primary uk-button-small"><i class="fas fa-edit"></i></a>
@@ -147,6 +152,16 @@
           self.loadPage(1)
         })
       }, function() {})
+    }
+    ////////////////////////////////////////////////////////////////////////////
+    calc_value(row, col, locale) {
+      value = _.get(row, col.name)
+      if(col.tr) { value = value[locale] }
+      if(col.truncate) { value = value.substring(0,col.truncate) }
+      if(col.capitalize) { value = _.capitalize(value) }
+      if(col.uppercase) { value = _.toUpper(value) }
+      if(col.downcase) { value = _.toLower(value) }
+      return value
     }
     ////////////////////////////////////////////////////////////////////////////
     this.on('updated', function() {
