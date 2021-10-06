@@ -81,7 +81,8 @@ etlua2html = (json, partial, params, global_data) ->
     template, {
       'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
       'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp,
-      'settings': from_json(global_data.settings[1].home)
+      'settings': from_json(global_data.settings[1].home),
+      'stringy': stringy
     }
   )
   data
