@@ -59,7 +59,10 @@ var restart_services = function (collection, id, _settings) {
   if (collection == "components" && h_settings.base_url && object.kind == "riot4") {
     queue.push(
       {mount: '/sync', name: 'riot'},
-      { token: _settings.secret, name: object.slug, id: id }
+      {
+        token: _settings.secret, name: object.slug, id: id,
+        url: h_settings.base_url
+      }
     );
   }
 }
@@ -72,7 +75,11 @@ var compile_tailwindcss = function () {
     _.each(db.layouts.all().toArray(), function (layout) {
       queue.push(
         {mount: '/sync', name: 'tailwindcss'},
-        { token: _settings.secret, id: layout._key, field: "scss" }
+        {
+          token: _settings.secret,
+          id: layout._key, field: "scss",
+          url: h_settings.base_url
+        }
       );
     })
 }

@@ -3,7 +3,7 @@ const db = require('@arangodb').db;
 const request = require('@arangodb/request');
 const params = module.context.argv[0];
 
-var response = request.post(h_settings.base_url + "/riotjs", {
+var response = request.post(params.url + "/riotjs", {
   form: { token: params.secret, name: params.name, tag: params.id }
 })
 const object = db.components.document(params.id)

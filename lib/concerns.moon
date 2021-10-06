@@ -415,6 +415,7 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
         data = { ids: {}, revisions: {}, names: {}, js: {} }
         output = ''
         for i, k in pairs(stringy.split(item, '#'))
+          name = stringy.split(k, "/")[#stringy.split(k, "/")]
           component = load_document_by_slug(db_name, k, 'components', 'js').item
           content = component.javascript or component.html
           table.insert(data.ids, component._key)
@@ -425,8 +426,8 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
           if dataset == 'mount'
             output ..= '<script type="module">'
             output ..= dynamic_replace(db_name, content, global_data, history, params)
-            output ..= "riot.register('#{k}', #{k});"
-            output ..= "riot.mount('#{k}')"
+            output ..= "riot.register('#{name}', #{name});"
+            output ..= "riot.mount('#{name}')"
             output ..='</script>'
 
           if dataset == 'source'
@@ -444,8 +445,9 @@ dynamic_replace = (db_name, html, global_data, history, params) ->
     if action == 'spa'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        spa = load_document_by_slug(db_name, item, 'spas', 'js').item
+        spa = load_document_by_slug(db_name, item, 'spas', 'html').item
         if spa
+          spa.js = ngx.location.capture("/git/#{db_name}/app/spas/#{item}.js").body unless spa.js
           output = spa.html
           output ..="<script>#{spa.js}</script>"
           output = dynamic_replace(db_name, output, global_data, {}, params)
