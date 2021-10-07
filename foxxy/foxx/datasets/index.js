@@ -576,7 +576,7 @@ router.post('/:service/:id', function (req, res) {
       // Compile widget to javascript using riotjs/cli
       const url = JSON.parse(db.settings.firstExample({}).home).base_url
       var response = request.post(url + "/riotjs", {
-        form: { token: _settings.secret, name: data.slug, tag: data.html }
+        form: { token: _settings.secret, name: data.slug, tag: data.html, id: req.pathParams.id }
       })
       data.javascript = response.body
     }
