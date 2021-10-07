@@ -74,14 +74,15 @@ var compile_tailwindcss = function () {
   const url = h_settings.base_url
   if(url)
     _.each(db.layouts.all().toArray(), function (layout) {
-      queue.push(
-        {mount: '/sync', name: 'tailwindcss'},
-        {
-          token: _settings.secret,
-          id: layout._key, field: "scss",
-          url: h_settings.base_url
-        }
-      );
+      if(layout.scss.indexOf("@tailwind")>= 0)
+        queue.push(
+          {mount: '/sync', name: 'tailwindcss'},
+          {
+            token: _settings.secret,
+            id: layout._key, field: "scss",
+            url: h_settings.base_url
+          }
+        );
     })
 }
 
