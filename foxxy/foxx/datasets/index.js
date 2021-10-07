@@ -575,8 +575,9 @@ router.post('/:service/:id', function (req, res) {
     if(req.pathParams.service == "components" && data.kind == "riot4") {
       // Compile widget to javascript using riotjs/cli
       const url = JSON.parse(db.settings.firstExample({}).home).base_url
+
       var response = request.post(url + "/riotjs", {
-        form: { token: _settings.secret, name: data.slug, tag: data.html, id: req.pathParams.id }
+        form: { token: _settings.secret, name: data.slug, id: req.pathParams.id }
       })
       data.javascript = response.body
     }
