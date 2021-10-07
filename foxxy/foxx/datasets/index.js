@@ -577,7 +577,7 @@ router.post('/:service/:id', function (req, res) {
       const url = JSON.parse(db.settings.firstExample({}).home).base_url
 
       var response = request.post(url + "/riotjs", {
-        form: { token: _settings.secret, name: data.slug, id: req.pathParams.id }
+        form: { token: _settings.secret, name: data.slug, id: "components/" + req.pathParams.id }
       })
       data.javascript = response.body
     }

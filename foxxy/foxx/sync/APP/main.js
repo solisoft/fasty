@@ -28,6 +28,7 @@ var save_revision = function (uid, object, data, max) {
 
 var restart_services = function (collection, id, _settings) {
   var h_settings = JSON.parse(_settings.home)
+  console.log(_settings)
   var object = db._collection(collection).document(id)
 
   if (object.api_id) {
