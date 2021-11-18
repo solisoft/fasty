@@ -77,8 +77,6 @@ etlua2html = (json, partial, params, global_data) ->
     template = etlua.compile(partial.item.html)
     global_data.partials[partial.item._key] = template
 
-  params.splat = splat_to_table(params.splat) if params.splat
-
   _, data = pcall(
     template, {
       'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
