@@ -3,7 +3,7 @@ const db = require('@arangodb').db;
 const request = require('@arangodb/request');
 const params = module.context.argv[0];
 
-var response = request.post(url + "/tailwindcss", {
+var response = request.post(params.url + "/tailwindcss", {
   form: { token: params.token, id: params.id, field: params.field }
 })
 
