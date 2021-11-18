@@ -1902,8 +1902,8 @@ https-browserify@~0.0.1:
   resolved "https://registry.npmjs.org/https-browserify/-/https-browserify-0.0.1.tgz"
 
 i@^0.3.6:
-  version "0.3.6"
-  resolved "https://registry.npmjs.org/i/-/i-0.3.6.tgz"
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/i/-/i-0.3.7.tgz#2a7437a923d59c14b17243dc63a549af24d85799"
 
 iconv-lite@0.4.24, iconv-lite@^0.4.17:
   version "0.4.24"
