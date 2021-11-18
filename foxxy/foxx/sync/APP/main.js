@@ -108,6 +108,12 @@ router.get('/:token', function (req, res) {
         LET path = (FOR vertex IN ANY SHORTEST_PATH CONCAT('folders/', p.folder_key) TO @root_partial GRAPH 'folderGraph' RETURN vertex.name)
         RETURN { id: p._id, name: p.slug, html: p.html, locked_by: p.locked_by, path: REVERSE(path) }
     )
+    LET widgets = (
+      FOR p IN widgets
+        LET path = (FOR vertex IN ANY SHORTEST_PATH CONCAT('folders/', p.folder_key) TO @root_partial GRAPH 'folderGraph' RETURN vertex.name)
+        RETURN { id: p._id, name: p.name, partial: p.partial, model: p.model, locked_by: p.locked_by, path: REVERSE(path) }
+    )
+
     LET aqls = (FOR a IN aqls RETURN { id: a._id, name: a.slug, aql: a.aql, locked_by: a.locked_by })
     LET data_types = (
       FOR d IN datatypes
@@ -150,7 +156,7 @@ router.get('/:token', function (req, res) {
 
     RETURN {
       pages, layouts, components, spas, partials, aqls, datatypes: data_types,
-      apis, scripts, datasets: data_sets
+      apis, scripts, datasets: data_sets, widgets
     }
     `, { root_component, root_partial }).toArray()[0]
   }

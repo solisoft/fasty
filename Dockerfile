@@ -3,9 +3,13 @@ LABEL Olivier Bonnaure <olivier@solisoft.net>
 RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libncurses5-dev libpcre3-dev libssl-dev gcc perl make git-core \
     libsass-dev glib2.0-dev libexpat1-dev \
-    libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget
+    libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget \
+    libde265-dev autoconf cmake
 
-ARG VIPS_VERSION=8.11.1
+ARG VIPS_VERSION=8.11.4
+
+#RUN git clone https://aomedia.googlesource.com/aom \
+#    && mkdir aombuild && cd aombuild && cmake ../aom
 
 RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
     && tar -xf vips-${VIPS_VERSION}.tar.gz \

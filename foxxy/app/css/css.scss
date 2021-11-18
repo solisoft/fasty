@@ -150,7 +150,13 @@ body {
 .col-11-sm { width: 87.66%; }
 .col-12-sm { width: 96%; }
 .sg-row::after { content: ""; display: table; clear: both; }
-
+.sg-widgets {
+  position: absolute !important;
+  left: 101px !important;
+  width: 200px !important;
+  padding: 5px;
+}
+.sg-hidden { display: none; }
 .hidden-sm { display: none; }
 
 @media only screen and (min-width: 33.75em) {  /* 540px */

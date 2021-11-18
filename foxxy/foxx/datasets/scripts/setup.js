@@ -187,6 +187,7 @@ create_collection('folders');
 create_collection('revisions');
 create_collection('publications');
 create_collection('forms');
+create_collection('widgets');
 
 db._collection('revisions').ensureIndex({ type: 'hash', fields: ['object_id'] });
 db._collection('publications').ensureIndex({ type: 'hash', fields: ['object_id'] });
