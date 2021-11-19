@@ -30,7 +30,7 @@
       ],
     }, options)
 
-    var dragObj, activeObj, loopid = 0, editObj, ace_editor;
+    var dragObj, activeObj, loopid = 0, editObj, ace_editor, widgets;
 
     var LSet = function (key, val) { window.localStorage.setItem(key, val) }
     var LGet = function (key) { return window.localStorage.getItem(key) }
@@ -52,7 +52,7 @@
         .replace(/"/g, '&quot;');
     }
 
-    var get_widget_html = function (id, full) {
+    var get_widget_html = function (el, id, full) {
       var before
       var html
       var after
@@ -157,10 +157,69 @@
           html = '<div class="sg-row cms_row sub_row drag" data-type="col84"><div class="col-8 cms_col"></div><div class="col-4 cms_col"></div></div></div>'
           after = ''
           break
+        default:
+          before = ''
+          html = interpolate_widget(
+            atob(el.data("partial")),
+            JSON.parse(atob(el.data("model"))),
+            JSON.parse(atob(el.data("dataset")))
+          )
+          after = ""
+          break
       }
       loopid++
 
       return full ? $(before + html + after) : $(html)
+    }
+
+    var interpolate_widget = function(html, model, dataset) {
+      var _html = html + ""
+      model.forEach(function(f) {
+        var k = Object.keys(f)[0]
+        var v = Object.values(f)[0]
+        if(Object.keys(v).indexOf("_fields") < 0) {
+          var value = dataset[k] || v.default || ""
+          html = html.replace("<!-- @" + k + " -->", value)
+        } else {
+          var key_length = ("<!-- #" + k + " -->").length
+          var pos_start  = html.indexOf("<!-- #" + k + " -->")
+          var pos_end    = html.indexOf("<!-- /" + k + " -->")
+          var sub_html = html.substring(pos_start + key_length, pos_end)
+
+          var build = ""
+          //console.log(dataset[k] || v.default, v)
+          var ds = (dataset[k] || v.default)
+          ds.forEach(function(d) {
+            v["_fields"].forEach(function(f) {
+              build += sub_html.replace("<!-- @" + f.name + " -->", d[f.name])
+            })
+          })
+          html = "<div class='drag' data-editable='true' data-type='widget' data-model='"+ btoa(_html) +"' data-dataset='"+btoa(JSON.stringify(model))+"' data-partial='"+btoa(JSON.stringify(dataset))+"'>" + html.substring(0, pos_start) + build + html.substring(pos_end + key_length, html.length) + "</div>"
+        }
+      })
+      return html
+    }
+    /*
+      get_widgets <function>
+      Load widgets defined in Fasty
+    */
+    var get_widgets = function() {
+      $.get(url + "/api/_widgets", function(data) {
+        if(data.data) {
+          widgets = data.data
+          var w_html = '<aside class="edit-mode sg-widgets">'
+          widgets.forEach(function(w) {
+            w_html += "<div class='drag' data-dataset=\""+btoa("{}")+"\" data-partial=\"" + btoa(w.partial) + "\" data-menuItem='widget' data-model=\"" + btoa(w.model)+ "\" dragdraggable=\"true\"><img style=\"max-width: 100%;\" src=\""+ (w.picture || "https://fasty.ovh/asset/o/06650e1c-2579-463b-94fd-fc09655d3cd1?_from=Y21z") +"\" /></div>"
+            w_html += "<div>" + w.name + "</div>"
+          })
+          w_html += "</aside>"
+
+          $(self).append(w_html)
+
+          set_content(options.value)
+
+        }
+      })
     }
 
     /*
@@ -349,7 +408,7 @@
       const parent = to.parentNode
 
       if ($(from).data('menuitem')) {
-        var html = get_widget_html($(from).data('menuitem'), false)
+        var html = get_widget_html($(from), $(from).data('menuitem'), false)
 
         if ($(to).hasClass('row_empty')) {
           var dest = $(html).hasClass('sub_row') ? $(parent).parent() : $(parent)
@@ -522,11 +581,10 @@
     var set_content = function (value) {
       $(self).find('.page-content').html(value || '')
 
-      clear_empty_drags();
+      clear_empty_drags()
       set_empty_rows()
-      prepare_drag($(self).find(".drag"));
+      prepare_drag($(self).find(".drag"))
       prepare_drag($(self).find(".drop"))
-      ;
       activate_events()
       remove_drag_attributes()
 
@@ -567,62 +625,67 @@
       $(self).find('.edit-mode .page-content').on('click', '[data-type]', function () {
         editObj = $(this)
         raw_object = $(this.outerHTML)
-        if (raw_object.data("attr")) {
-          $(self).find("input[data-name=col-class]").val(raw_object.data("attr")['col-class'])
-          $(self).find("input[data-name=row-class]").val(raw_object.data("attr")['row-class'])
-          $(self).find("input[data-name=container-class]").val(raw_object.data("attr")['container-class'])
+        if (raw_object.data('type') != 'widget') {
+          if (raw_object.data("attr")) {
+            $(self).find("input[data-name=col-class]").val(raw_object.data("attr")['col-class'])
+            $(self).find("input[data-name=row-class]").val(raw_object.data("attr")['row-class'])
+            $(self).find("input[data-name=container-class]").val(raw_object.data("attr")['container-class'])
+          } else {
+            $(self).find("input[data-name=col-class]").val('')
+            $(self).find("input[data-name=row-class]").val('')
+            $(self).find("input[data-name=container-class]").val('')
+          }
+          $(self).find(".editor-code").hide()
+          $(self).find(".editor-simplecode").hide()
+          $(self).find(".editor-img-code").hide()
+
+          if (raw_object.data('editable')) {
+            $(self).find('.trumbowyg').hide()
+            $(self).find('#ace-editor-' + object_name).hide()
+
+            var html = $(this).html().trim()
+            $(self).find('.edit-mode .cms_editor').addClass('editmode')
+            if (raw_object.data('type') == 'text') {
+              $('#trumbowyg-' + object_name).trumbowyg('html', html);
+              $(self).find('.trumbowyg').show()
+            }
+
+            if (raw_object.data('type') == 'code') {
+              $(self).find(".editor-code").show()
+              $(self).find('#ace-editor-' + object_name).show()
+              $(self).find("input[data-name=lang]").val(raw_object.find("code:first")[0].className.replace('language-', ''))
+              ace_editor.session.setMode('ace/mode/' + mode);
+              ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
+              ace_editor.getSession().setValue($(this).text());
+            }
+
+            if (['embed', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].indexOf(raw_object.data('type')) >= 0) {
+              $(self).find(".editor-simplecode").show()
+              $('#ace-editor-'+object_name).show()
+              var mode = 'html'
+              ace_editor.session.setMode('ace/mode/' + mode);
+              ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
+              var html = $(this).html()
+              if (raw_object.data('type') == 'embed') html = $(this).attr('data-html').replace(/&quot;/g, '"')
+              ace_editor.getSession().setValue(html);
+            }
+
+            if (['img'].indexOf(editObj.data('type')) >= 0) {
+              var img_div = $(this).find('.img-div').length > 0 ? $(this).find('.img-div') : $(this).find('img').parent()
+              $(self).find(".editor-simplecode").show()
+              $(self).find(".editor-img-code").show()
+              $('#ace-editor-'+object_name).show()
+              $(self).find("input[data-name=img-width").val(img_div.attr('data-img-width'))
+              $(self).find("select[data-name=img-alignment").val(img_div[0].style['text-align'])
+              var mode = 'html'
+              ace_editor.session.setMode('ace/mode/' + mode);
+              ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
+              ace_editor.getSession().setValue(img_div[0].innerHTML);
+            }
+
+          }
         } else {
-          $(self).find("input[data-name=col-class]").val('')
-          $(self).find("input[data-name=row-class]").val('')
-          $(self).find("input[data-name=container-class]").val('')
-        }
-        $(self).find(".editor-code").hide()
-        $(self).find(".editor-simplecode").hide()
-        $(self).find(".editor-img-code").hide()
-        if (raw_object.data('editable')) {
-          $(self).find('.trumbowyg').hide()
-          $(self).find('#ace-editor-' + object_name).hide()
-
-          var html = $(this).html().trim()
-          $(self).find('.edit-mode .cms_editor').addClass('editmode')
-          if (raw_object.data('type') == 'text') {
-            $('#trumbowyg-' + object_name).trumbowyg('html', html);
-            $(self).find('.trumbowyg').show()
-          }
-
-          if (raw_object.data('type') == 'code') {
-            $(self).find(".editor-code").show()
-            $(self).find('#ace-editor-' + object_name).show()
-            $(self).find("input[data-name=lang]").val(raw_object.find("code:first")[0].className.replace('language-', ''))
-            ace_editor.session.setMode('ace/mode/' + mode);
-            ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
-            ace_editor.getSession().setValue($(this).text());
-          }
-
-          if (['embed', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].indexOf(raw_object.data('type')) >= 0) {
-            $(self).find(".editor-simplecode").show()
-            $('#ace-editor-'+object_name).show()
-            var mode = 'html'
-            ace_editor.session.setMode('ace/mode/' + mode);
-            ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
-            var html = $(this).html()
-            if (raw_object.data('type') == 'embed') html = $(this).attr('data-html').replace(/&quot;/g, '"')
-            ace_editor.getSession().setValue(html);
-          }
-
-          if (['img'].indexOf(editObj.data('type')) >= 0) {
-            var img_div = $(this).find('.img-div').length > 0 ? $(this).find('.img-div') : $(this).find('img').parent()
-            $(self).find(".editor-simplecode").show()
-            $(self).find(".editor-img-code").show()
-            $('#ace-editor-'+object_name).show()
-            $(self).find("input[data-name=img-width").val(img_div.attr('data-img-width'))
-            $(self).find("select[data-name=img-alignment").val(img_div[0].style['text-align'])
-            var mode = 'html'
-            ace_editor.session.setMode('ace/mode/' + mode);
-            ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
-            ace_editor.getSession().setValue(img_div[0].innerHTML);
-          }
-
+          $(self).find('.edit-mode .widget_editor').addClass('editmode')
         }
 
         return false
@@ -631,6 +694,7 @@
       // Close the editor modal
       $(self).find('.edit-mode .sg-editcontent').on('click', '.fa-times-circle', function () {
         $('.edit-mode .cms_editor').removeClass('editmode')
+        $('.edit-mode .widget_editor').removeClass('editmode')
         save_editor()
 
         return false
@@ -639,7 +703,7 @@
       // When you click on the toolbar item
       $(self).find('.edit-mode .addwidget').on('click', function (e) {
         e.preventDefault();
-        var html = get_widget_html($(this).data('id'), true)
+        var html = get_widget_html($(this), $(this).data('id'), true)
         $(self).find('.edit-mode .page-content').append(html)
         $(self).find('.edit-mode .drag').attr('draggable', true)
         $(self).find('.edit-mode .drag').attr('ondragstart', 'drag(event)')
@@ -710,6 +774,7 @@
     })
 
     var content = '<section class="edit-mode">\
+      <div class="widget_editor"><div class="sg-editcontent"><i class="far fa-times-circle" style="float: right;padding: 10px"></i></div></div>\
       <div class="cms_editor">\
         <div class="row_editor">\
           <div class="cms_toolbar">\
@@ -738,7 +803,9 @@
     </section>'
 
     $(self).append(content)
-    set_content(options.value)
+
+    get_widgets()
+    //set_content(options.value)
 
     $('#trumbowyg-'+object_name).trumbowyg({
       btns: [

@@ -14,6 +14,7 @@ const load_models = function() {
     helpers: require('./models/helpers.js')(),
     apis: require('./models/apis.js')(),
     scripts: require('./models/scripts.js')(),
+    widgets: require('./models/widgets.js')(),
     /*@{{models}}*/
     // Don't remove this models line ...
   }

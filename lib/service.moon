@@ -78,13 +78,13 @@ deploy_site = (sub_domain, settings) ->
 
   if deploy_to[2] == sub_domain_settings.secret
     os.execute("mkdir -p #{path}")
-    command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection scripts --collection pages --collection folder_path --collection folders --collection scripts --include-system-collections true --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint} --output-directory #{path} --overwrite true"
+    command = "arangodump --collection layouts --collection partials --collection components --collection spas --collection redirections --collection datatypes --collection aqls --collection helpers --collection apis --collection api_libs --collection api_routes --collection api_scripts --collection api_tests --collection scripts --collection pages --collection folder_path --collection folders --collection scripts --server.database db_#{sub_domain} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint} --output-directory #{path} --overwrite true"
     command ..= " --collection datasets" if home['deploy_datasets']
     command ..= " --collection trads" if home['deploy_trads']
 
     os.execute(command)
 
-    os.execute("arangorestore --include-system-collections true --server.database #{deploy_to[1]} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint}  --input-directory #{path} --overwrite true")
+    os.execute("arangorestore --server.database #{deploy_to[1]} --server.username #{db_config.login} --server.password #{db_config.pass} --server.endpoint #{db_config.endpoint}  --input-directory #{path} --overwrite true")
     os.execute("rm -Rf #{path}")
 
     -- Restart scripts
@@ -169,6 +169,11 @@ compile_tailwindcss = (sub_domain, layout_id, field) ->
   partials = aql(subdomain, 'FOR doc IN partials RETURN { html: doc.html }')
   for k, item in pairs partials
     write_content("#{path}/partial_#{k}.html", item.html)
+
+  -- Widgets
+  partials = aql(subdomain, 'FOR doc IN widgets RETURN { html: doc.partial }')
+  for k, item in pairs partials
+    write_content("#{path}/widget_#{k}.html", item.html)
 
   command = "cd #{path} && export PATH=\"$PATH;/usr/local/bin\" && NODE_ENV=production tailwindcss build -m -i #{layout_id}.css -o #{layout_id}_compiled.css"
   handle = io.popen(command)

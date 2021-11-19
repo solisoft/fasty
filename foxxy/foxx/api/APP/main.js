@@ -14,20 +14,24 @@ router.get('/:type', function (req, res) {
 
   let aql = ""
 
+  let collection = "datasets"
+  if(req.pathParams.type == "_widgets") collection = "widgets"
+
   if (req.queryParams.search) {
     let key = req.queryParams.search.split('@')[0]
     let term = req.queryParams.search.split('@')[1]
-    aql = `FOR data IN FULLTEXT(datasets, '${key}', '${term}')`
+    aql = `FOR data IN FULLTEXT(@@collection, '${key}', '${term}')`
   } else {
-    aql = "FOR data IN datasets"
+    aql = "FOR data IN @@collection"
   }
 
   aql += " FILTER data.type == @type"
 
   aql += " LET assets = (FOR asset IN uploads FILTER asset.object_id == data._id SORT asset.pos, asset._key RETURN asset)"
 
-  let bindvars = { type: req.pathParams.type }
-  let bindvars_count = { type: req.pathParams.type }
+  let type = req.pathParams.type == "_widgets" ? "widgets" : req.pathParams.type
+  let bindvars = { type: type, "@collection": collection }
+  let bindvars_count = { type: type, "@collection": collection }
 
   let i = 0
   _.each(req.queryParams, function (v, k) {

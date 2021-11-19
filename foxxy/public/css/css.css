@@ -184,6 +184,15 @@ body {
   display: table;
   clear: both; }
 
+.sg-widgets {
+  position: absolute !important;
+  left: 101px !important;
+  width: 200px !important;
+  padding: 5px; }
+
+.sg-hidden {
+  display: none; }
+
 .hidden-sm {
   display: none; }
 
