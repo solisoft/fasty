@@ -2,24 +2,24 @@ import from_json, to_json from require 'lapis.util'
 stringy = require 'stringy'
 date    = require 'date'
 --------------------------------------------------------------------------------
-get_nested = (arr, key) ->
+get_nested = (arr, key)->
   keys = stringy.split(key, '.')
   arr = arr[item] for k, item in pairs keys
   arr
 --------------------------------------------------------------------------------
-uuid = () ->
+uuid = ()->
   template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   math.randomseed(os.clock())
-  return string.gsub(template, '[xy]', (c) ->
+  return string.gsub(template, '[xy]', (c)->
       v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
       return string.format('%x', v)
   )
 --------------------------------------------------------------------------------
-table_merge = (t1, t2) ->
+table_merge = (t1, t2)->
   for k,v in ipairs(t2) do table.insert(t1, v)
   t1
 --------------------------------------------------------------------------------
-table_deep_merge = (t1, t2) ->
+table_deep_merge = (t1, t2)->
   for k,v in pairs(t2) do
     if type(v) == 'table' then
       if type(t1[k] or false) == 'table' then
@@ -28,11 +28,11 @@ table_deep_merge = (t1, t2) ->
     else t1[k] = v
   t1
 --------------------------------------------------------------------------------
-table_index = (tab, val) ->
+table_index = (tab, val)->
   for index, value in ipairs(tab) do return index if value == val
   nil
 --------------------------------------------------------------------------------
-check_valid_lang = (langs, lang) ->
+check_valid_lang = (langs, lang)->
   allowed_langs = stringy.split(langs, ',')
   lang = allowed_langs[1] if table_index(allowed_langs, lang) == nil
   lang
@@ -42,15 +42,15 @@ map = (tbl, f)->
   for k,v in pairs tbl do data[k] = f(v)
   data
 --------------------------------------------------------------------------------
-to_timestamp = (d) ->
+to_timestamp = (d)->
   d1 = date(d)
   date.diff(d1, date.epoch!)\spanseconds!
 --------------------------------------------------------------------------------
-last_element = (str, pattern) ->
+last_element = (str, pattern)->
   splitted = stringy.split(str, pattern)
   splitted[table.getn(splitted)]
 --------------------------------------------------------------------------------
-define_content_type = (slug) ->
+define_content_type = (slug)->
   ext = last_element(slug, '.')
   mimes_types = {
     wmv: 'video/x-ms-wmv',

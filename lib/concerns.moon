@@ -8,13 +8,13 @@ import encode_with_secret from require 'lapis.util.encoding'
 import from_json, to_json, trim, unescape from require 'lapis.util'
 import table_deep_merge, to_timestamp, get_nested from require 'lib.utils'
 --------------------------------------------------------------------------------
-splat_to_table = (splat, sep = '/') -> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
+splat_to_table = (splat, sep = '/')-> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
-escape_pattern = (text) ->
+escape_pattern = (text)->
   str, _ = tostring(text)\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
 --------------------------------------------------------------------------------
-check_git_layout = (db_name, slug, key) ->
+check_git_layout = (db_name, slug, key)->
   layout = { _key: key, html: "@raw_yield@yield" }
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
   if ret.status == 200
@@ -37,7 +37,7 @@ check_git_layout = (db_name, slug, key) ->
 
   layout
 --------------------------------------------------------------------------------
-prepare_assets = (html, layout, params) ->
+prepare_assets = (html, layout, params)->
   html = "@raw_yield" unless html
   js_vendor_hmac = stringy.split(encode_with_secret(layout.i_js, ''), '.')[2]\gsub('/', '-')
   css_vendor_hmac = stringy.split(encode_with_secret(layout.i_css, ''), '.')[2]\gsub('/', '-')
@@ -53,7 +53,7 @@ prepare_assets = (html, layout, params) ->
 
   html
 --------------------------------------------------------------------------------
-prepare_headers = (html, data, params) ->
+prepare_headers = (html, data, params)->
   headers = "<title>#{data.item.name}</title>"
   if(data.item.og_title and data.item.og_title[params.lang])
     headers = "<title>#{data.item.og_title[params.lang]}</title>"
@@ -71,7 +71,7 @@ prepare_headers = (html, data, params) ->
   html = prepare_assets(html, data.layout, params)
   html\gsub('@headers', headers)
 --------------------------------------------------------------------------------
-etlua2html = (json, partial, params, global_data) ->
+etlua2html = (json, partial, params, global_data)->
   template = global_data.partials[partial.item._key]
   if template == nil
     template = etlua.compile(partial.item.html)
@@ -87,7 +87,7 @@ etlua2html = (json, partial, params, global_data) ->
   )
   data
 --------------------------------------------------------------------------------
-load_document_by_slug = (db_name, slug, object, ext = 'html') ->
+load_document_by_slug = (db_name, slug, object, ext = 'html')->
   ret = ngx.location.capture("/git/#{db_name}/app/#{object}/#{slug}.#{ext}")
   if ret.status == 200
     {
@@ -100,7 +100,7 @@ load_document_by_slug = (db_name, slug, object, ext = 'html') ->
     request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
     aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
-load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
+load_page_by_slug = (db_name, slug, lang, uselayout = true)->
   request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
@@ -146,7 +146,7 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true) ->
 
   page
 --------------------------------------------------------------------------------
-page_info = (db_name, slug, lang) ->
+page_info = (db_name, slug, lang)->
   ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
   if ret.status == 200
     { page: lyaml.load(ret.body), folder: {} }
@@ -170,7 +170,7 @@ page_info = (db_name, slug, lang) ->
         RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
     aql(db_name, request, { slug: slug, lang: lang })[1]
 --------------------------------------------------------------------------------
-load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
+load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
   request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
   request ..= 'RETURN { item }'
   dataset = aql(db_name, request, { slug: slug })[1]
@@ -182,7 +182,7 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true) ->
   dataset
 --------------------------------------------------------------------------------
 -- dynamic_page : check all {{ .* }} and load layout
-dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true) ->
+dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
   html = to_json(data)
   if data
     page_builder = (data.layout and data.layout.page_builder) or 'page'
@@ -210,7 +210,7 @@ dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = tr
 
   html
 --------------------------------------------------------------------------------
-load_redirection = (db_name, params) ->
+load_redirection = (db_name, params)->
   request = '
   FOR r IN redirections
     FILTER r.route == @slug
@@ -237,7 +237,7 @@ load_redirection = (db_name, params) ->
       prepare_headers(html, redirection, params)
   else nil
 --------------------------------------------------------------------------------
-prepare_bindvars = (splat, aql_request, locale = nil) ->
+prepare_bindvars = (splat, aql_request, locale = nil)->
   bindvar = { }
   bindvar['page'] = 1 if aql_request\find('@page')
   bindvar['limit'] = 20 if aql_request\find('@limit')
@@ -248,7 +248,7 @@ prepare_bindvars = (splat, aql_request, locale = nil) ->
     bindvar[k] = v if aql_request\find('@' .. k)
   bindvar
 --------------------------------------------------------------------------------
-dynamic_replace = (db_name, html, global_data, history, params) ->
+dynamic_replace = (db_name, html, global_data, history, params)->
   translations = global_data.trads
   aqls = global_data.aqls
   helpers = global_data.helpers

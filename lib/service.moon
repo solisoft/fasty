@@ -56,7 +56,7 @@ install_service = (sub_domain, name)->
       "db_#{sub_domain}", name, read_file("install_service/#{sub_domain}/#{name}.zip")
     )
 --------------------------------------------------------------------------------
-install_script = (sub_domain, name) ->
+install_script = (sub_domain, name)->
   if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
     path = "scripts/#{sub_domain}/#{name}"
     os.execute("mkdir -p #{path}")
@@ -66,7 +66,7 @@ install_script = (sub_domain, name) ->
     os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
     write_content("#{path}/index.js", script.code)
 --------------------------------------------------------------------------------
-deploy_site = (sub_domain, settings) ->
+deploy_site = (sub_domain, settings)->
   config = require('lapis.config').get!
   db_config = require('lapis.config').get("db_#{config._name}")
   path = "dump/#{sub_domain[1]}/"
@@ -97,7 +97,7 @@ deploy_site = (sub_domain, settings) ->
     for k, item in pairs apis
       install_service(deploy_to[1]\gsub('db_', ''), item.name)
 --------------------------------------------------------------------------------
-compile_riotjs = (sub_domain, name, id) ->
+compile_riotjs = (sub_domain, name, id)->
   if name\match('^[%w_%-%d]+$') -- allow only [a-zA-Z0-9_-]+
     path = "compile_tag/#{sub_domain}/#{name}"
     os.execute("mkdir -p #{path}")
@@ -112,7 +112,7 @@ compile_riotjs = (sub_domain, name, id) ->
 
     read_file("#{path}/#{name}.js")
 --------------------------------------------------------------------------------
-compile_tailwindcss = (sub_domain, layout_id, field) ->
+compile_tailwindcss = (sub_domain, layout_id, field)->
   subdomain = 'db_' .. sub_domain
   layout = document_get(subdomain, "layouts/" .. layout_id)
   settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')[1]
