@@ -84,7 +84,7 @@ define_subdomain = () =>
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
-  if (os.clock! - last_db_connect) * 1000 > 1000 -- reconnect each 10 seconds
+  if (os.clock! - last_db_connect) * 10 > (config.db_ttl and config.db_ttl or 10)
     jwt[sub_domain] = nil
     last_db_connect = os.clock!
 

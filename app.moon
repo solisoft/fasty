@@ -32,7 +32,7 @@ define_subdomain = ()=>
   sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = ()=>
-  if (os.clock! - last_db_connect) * 1000 > 1000 -- reconnect each 10 seconds
+  if (os.clock! - last_db_connect) * 10 > (config.db_ttl and config.db_ttl or 10) -- reconnect each 10 seconds
     jwt[sub_domain] = nil
     last_db_connect = os.clock!
 
