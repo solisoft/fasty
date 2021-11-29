@@ -23,6 +23,7 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+last_db_connect = os.clock!
 
 app_config "development", -> measure_performance true
 
@@ -31,6 +32,10 @@ define_subdomain = ()=>
   sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
 load_settings = ()=>
+  if (os.clock! - last_db_connect) * 1000 > 10000 -- reconnect each 10 seconds
+    jwt[sub_domain] = nil
+    last_db_connect = os.clock!
+
   jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
