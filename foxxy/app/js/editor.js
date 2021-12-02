@@ -208,13 +208,16 @@
         if(data.data) {
           widgets = data.data
           var w_html = '<aside class="edit-mode sg-widgets">'
+          var c_html = ""
           widgets.forEach(function(w) {
-            w_html += "<div class='drag' data-dataset=\""+btoa("{}")+"\" data-partial=\"" + btoa(w.partial) + "\" data-menuItem='widget' data-model=\"" + btoa(w.model)+ "\" dragdraggable=\"true\"><img style=\"max-width: 100%;\" src=\""+ (w.picture || "https://fasty.ovh/asset/o/06650e1c-2579-463b-94fd-fc09655d3cd1?_from=Y21z") +"\" /></div>"
-            w_html += "<div>" + w.name + "</div>"
+            c_html += "<div class='drag' data-dataset=\""+btoa("{}")+"\" data-partial=\"" + btoa(w.partial) + "\" data-menuItem='widget' data-model=\"" + btoa(w.model)+ "\" dragdraggable=\"true\"><img style=\"max-width: 100%;\" src=\""+ (w.picture || "https://fasty.ovh/asset/o/06650e1c-2579-463b-94fd-fc09655d3cd1?_from=Y21z") +"\" /></div>"
+            c_html += "<div>" + w.name + "</div>"
           })
-          w_html += "</aside>"
 
-          $(self).append(w_html)
+          if (c_html != "") {
+            w_html += c_html + "</aside>"
+            $(self).append(w_html)
+          }
 
           set_content(options.value)
 
