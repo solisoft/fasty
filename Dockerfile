@@ -7,14 +7,14 @@ RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget \
     libde265-dev autoconf cmake libheif-dev libtool build-essential
 
-RUN git clone https://github.com/strukturag/libde265.git \
-    && cd libde265 && ./autogen.sh && ./configure && make && make install \
-    && cd .. && rm -Rf libde265
+#RUN git clone https://github.com/strukturag/libde265.git \
+#    && cd libde265 && ./autogen.sh && ./configure && make && make install \
+#    && cd .. && rm -Rf libde265
 
-RUN git clone https://github.com/strukturag/libheif.git \
-    && cd libheif && ./autogen.sh \
-    && ./configure && make && make install \
-    && cd .. && rm -Rf libheif
+#RUN git clone https://github.com/strukturag/libheif.git \
+#    && cd libheif && ./autogen.sh \
+#    && ./configure && make && make install \
+#    && cd .. && rm -Rf libheif
 
 ARG VIPS_VERSION=8.12.1
 
