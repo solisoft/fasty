@@ -17,6 +17,7 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+last_db_connect = os.clock!
 
 expire_at = () ->
   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
@@ -26,6 +27,10 @@ define_subdomain = () =>
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
+  if (os.clock! - last_db_connect) * 10 > (config.db_ttl and config.db_ttl or 10)
+    jwt[sub_domain] = nil
+    last_db_connect = os.clock!
+
   jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
@@ -104,9 +109,8 @@ class FastyAssets extends lapis.Application
         ",
         { 'key': "#{@params.layout}" }
       )[1]
-      
-      content = layout.compiled_css
-      content = sass.compile(layout.scss, 'compressed') if type(content) == 'userdata'
+
+      content = sass.compile(layout.scss, 'compressed')
     else
       ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
       content = ret.body if ret.status == 200

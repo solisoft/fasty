@@ -208,13 +208,16 @@
         if(data.data) {
           widgets = data.data
           var w_html = '<aside class="edit-mode sg-widgets">'
+          var c_html = ""
           widgets.forEach(function(w) {
-            w_html += "<div class='drag' data-dataset=\""+btoa("{}")+"\" data-partial=\"" + btoa(w.partial) + "\" data-menuItem='widget' data-model=\"" + btoa(w.model)+ "\" dragdraggable=\"true\"><img style=\"max-width: 100%;\" src=\""+ (w.picture || "https://fasty.ovh/asset/o/06650e1c-2579-463b-94fd-fc09655d3cd1?_from=Y21z") +"\" /></div>"
-            w_html += "<div>" + w.name + "</div>"
+            c_html += "<div class='drag' data-dataset=\""+btoa("{}")+"\" data-partial=\"" + btoa(w.partial) + "\" data-menuItem='widget' data-model=\"" + btoa(w.model)+ "\" dragdraggable=\"true\"><img style=\"max-width: 100%;\" src=\""+ (w.picture || "https://fasty.ovh/asset/o/06650e1c-2579-463b-94fd-fc09655d3cd1?_from=Y21z") +"\" /></div>"
+            c_html += "<div>" + w.name + "</div>"
           })
-          w_html += "</aside>"
 
-          $(self).append(w_html)
+          if (c_html != "") {
+            w_html += c_html + "</aside>"
+            $(self).append(w_html)
+          }
 
           set_content(options.value)
 
@@ -290,14 +293,14 @@
                       data = JSON.parse(data)
                       setTimeout(function () {
                         var picture = '<picture>'
-                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
-                        picture += '<source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480?_from='+ btoa(subdomain) +'">'
-                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
-                        picture += '<source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799?_from='+ btoa(subdomain) +'">'
-                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
-                        picture += '<source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '?_from='+ btoa(subdomain) +'">'
-                        picture += '<img src="/asset/o/' + data.filename + '">'
-                        picture += '</picture>'
+                        picture += "\n"+'  <source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += "\n"+'  <source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480?_from='+ btoa(subdomain) +'">'
+                        picture += "\n"+'  <source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += "\n"+'  <source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799?_from='+ btoa(subdomain) +'">'
+                        picture += "\n"+'  <source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
+                        picture += "\n"+'  <source media="(min-width: 800px)" srcset="/asset/o/' + data.filename + '?_from='+ btoa(subdomain) +'">'
+                        picture += "\n"+'  <img src="/asset/o/' + data.filename + '">'
+                        picture += "\n"+'</picture>'
                         $(el).html(picture)
                       }, 100)
                       clear_empty_drags()
@@ -680,7 +683,8 @@
               var mode = 'html'
               ace_editor.session.setMode('ace/mode/' + mode);
               ace_editor.setOptions({ maxLines: Infinity, tabSize: 2, useSoftTabs: true });
-              ace_editor.getSession().setValue(img_div[0].innerHTML);
+              html = $(this).find('.img-div').length > 0 ? $(this).find('.img-div').html() : $(this).html()
+              ace_editor.getSession().setValue(html);
             }
 
           }

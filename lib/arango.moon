@@ -8,13 +8,13 @@ to_json   = (obj) -> cjson.encode(obj)
 jwt       = ""
 db_config = {}
 --------------------------------------------------------------------------------
-http_request = (url, method, body, headers) ->
+http_request = (url, method, body, headers)->
   http.simple { url: url, method: method, body: body, headers: headers }
 --------------------------------------------------------------------------------
-api_url = (db_name, path) ->
+api_url = (db_name, path)->
   "#{db_config.url}/_db/#{db_name}/_api#{path}"
 --------------------------------------------------------------------------------
-api_run = (db_name, path, method, params={}, headers={}) ->
+api_run = (db_name, path, method, params={}, headers={})->
   t1 = os.clock!
   body, status_code, h = http_request(
     api_url(db_name, path), method,
@@ -40,7 +40,7 @@ api_run = (db_name, path, method, params={}, headers={}) ->
 
   from_json(body), status_code, h
 --------------------------------------------------------------------------------
-list_databases = () ->
+list_databases = ()->
   body = http_request(
     "#{db_config.url}_api/user/#{db_config.login}/database", "GET",
     {}, { Authorization: "bearer #{jwt}" }

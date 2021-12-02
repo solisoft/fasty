@@ -328,8 +328,6 @@ if (argv._.length == 0) {
       sync = tokens["sync"][sync]
     }
 
-
-
     if (sync && argv.w) {
       console.log("Launching realtime events ...".yellow)
       const io = require("socket.io-client")

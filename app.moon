@@ -23,14 +23,19 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+last_db_connect = os.clock!
 
 app_config "development", -> measure_performance true
 
 --------------------------------------------------------------------------------
-define_subdomain = () =>
+define_subdomain = ()=>
   sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
 --------------------------------------------------------------------------------
-load_settings = () =>
+load_settings = ()=>
+  if (os.clock! - last_db_connect) * 10 > (config.db_ttl and config.db_ttl or 10) -- reconnect each 10 seconds
+    jwt[sub_domain] = nil
+    last_db_connect = os.clock!
+
   jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
   if all_domains["db_#{sub_domain}"] == nil
@@ -41,7 +46,7 @@ load_settings = () =>
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
 --------------------------------------------------------------------------------
-lua_files = (path) =>
+lua_files = (path)=>
   for file in lfs.dir(path) do
     if file ~= "." and file ~= ".." then
       f = path..'/'..file
@@ -56,7 +61,7 @@ lua_files = (path) =>
             @include path
 --------------------------------------------------------------------------------
 class extends lapis.Application
-  @before_filter =>
+  @before_filter=>
     start_time = os.clock!
 
     define_subdomain(@)
@@ -65,7 +70,7 @@ class extends lapis.Application
         print to_json(ngx.ctx.performance)
         print to_json("#{(os.clock! - start_time) * 1000}ms")
 
-  handle_error: (err, trace) =>
+  handle_error: (err, trace)=>
     if config._name == 'production' then
       print(to_json(err) .. to_json(trace))
       @err = err
@@ -83,14 +88,14 @@ class extends lapis.Application
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   ------------------------------------------------------------------------------
-  display_error_page = (status=500, headers={}) =>
+  display_error_page = (status=500, headers={})=>
     error_page = from_json(settings[sub_domain].home)["error_#{status}"]
     if error_page ~= nil then
       display_page(@, error_page, 404)
     else
       render: "error_#{status}" , status: status, headers: headers
   ------------------------------------------------------------------------------
-  display_page = (slug=nil, status=200) =>
+  display_page = (slug=nil, status=200)=>
     db_name           = "db_#{sub_domain}"
     asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
     if asset.status == 200
@@ -149,9 +154,9 @@ class extends lapis.Application
       else
         status: 401, headers: { 'WWW-Authenticate': 'Basic realm=\"admin\"' }
   ------------------------------------------------------------------------------
-  [need_a_db: '/need_a_db']: => render: true
+  [need_a_db: '/need_a_db']:=> render: true
   ------------------------------------------------------------------------------
-  [robots: '/robots.txt']: =>
+  [robots: '/robots.txt']:=>
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
       load_settings(@)
@@ -160,7 +165,7 @@ class extends lapis.Application
       @params.slug  = 'robots'
       display_page(@)
   ------------------------------------------------------------------------------
-  [root: '/(:lang)']: =>
+  [root: '/(:lang)']:=>
     if no_db[sub_domain] then redirect_to: 'need_a_db'
     else
       load_settings(@)
@@ -188,7 +193,7 @@ class extends lapis.Application
         else
           display_page(@)
   ------------------------------------------------------------------------------
-  [page_no_lang: '/:all/:slug']: =>
+  [page_no_lang: '/:all/:slug']:=>
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@)
@@ -197,7 +202,7 @@ class extends lapis.Application
         @session.lang = stringy.split(settings[sub_domain].langs, ',')[1]
       display_page(@)
   ------------------------------------------------------------------------------
-  [page: '/:lang/:all/:slug(/*)']: =>
+  [page: '/:lang/:all/:slug(/*)']:=>
     if no_db[sub_domain] then redirect_to: '/need_a_db'
     else
       load_settings(@)
