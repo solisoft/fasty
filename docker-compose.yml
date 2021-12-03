@@ -25,7 +25,7 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ./:/var/www
+      - ./:/var/www:delegated
     depends_on:
       - arangodb
       - foxxy
@@ -43,7 +43,7 @@ services:
     ports:
       - 9090:80
     volumes:
-      - ./:/var/www
+      - ./:/var/www:delegated
     depends_on:
       - arangodb
     links:
