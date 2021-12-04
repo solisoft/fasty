@@ -37,7 +37,7 @@ services:
 
   cms_prod:
     build: .
-    image: solisoft/fasty
+    #image: solisoft/fasty
     restart: always
     command: /bin/bash -c "cd /var/www && moonc *.moon && moonc **/*.moon && lapis server production"
     ports:
@@ -53,7 +53,7 @@ services:
         ipv4_address: 12.12.0.8
 
   arangodb:
-    image: arangodb/arangodb:3.8.1
+    image: arangodb/arangodb:3.8.3
     restart: always
     environment:
       ARANGO_ROOT_PASSWORD: password
