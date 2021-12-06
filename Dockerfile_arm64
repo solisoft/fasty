@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM --platform=linux/amd64 ubuntu:20.04
 LABEL Olivier Bonnaure <olivier@solisoft.net>
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \

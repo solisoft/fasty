@@ -74,6 +74,7 @@ define_content_type = (slug)->
     eot: 'application/vnd.ms-fontobject',
     epub: 'application/epub+zip',
     gif: 'image/gif',
+    heic: 'image/heic',
     htm: 'text/html',
     html: 'text/html',
     ico: 'image/x-icon',

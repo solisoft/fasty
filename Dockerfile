@@ -7,19 +7,7 @@ RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget \
     libx265-dev libde265-dev libheif-dev autoconf cmake build-essential
 
-#RUN git clone https://github.com/strukturag/libde265.git \
-#    && cd libde265 && ./autogen.sh && ./configure && make && make install \
-#    && cd .. && rm -Rf libde265
-
-#RUN git clone https://github.com/strukturag/libheif.git \
-#    && cd libheif && ./autogen.sh \
-#    && ./configure && make && make install \
-#    && cd .. && rm -Rf libheif
-
 ARG VIPS_VERSION=8.12.1
-
-#RUN git clone https://aomedia.googlesource.com/aom \
-#    && mkdir aombuild && cd aombuild && cmake ../aom
 
 RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
     && tar -xf vips-${VIPS_VERSION}.tar.gz \

@@ -19,8 +19,8 @@ services:
       frontend:
 
   cms:
-    build: .
-    #image: solisoft/fasty
+    #build: .
+    image: solisoft/fasty
     command: /bin/bash -c "cd /var/www && lapis server"
     ports:
       - 8080:8080
@@ -36,8 +36,8 @@ services:
         ipv4_address: 12.12.0.7
 
   cms_prod:
-    build: .
-    #image: solisoft/fasty
+    #build: .
+    image: solisoft/fasty
     restart: always
     command: /bin/bash -c "cd /var/www && moonc *.moon && moonc **/*.moon && lapis server production"
     ports:
