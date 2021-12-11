@@ -126,12 +126,7 @@ compile_tailwindcss = (sub_domain, layout_id, field)->
 
   -- default config file
   config_file = "module.exports = {
-    mode: 'jit',
-    purge: ['./*.html'],
-    darkMode: false,
-    theme: { extend: {} },
-    variants: {},
-    plugins: []
+    content: ['./*.html']
   }"
 
   -- check if we have defined a config file
