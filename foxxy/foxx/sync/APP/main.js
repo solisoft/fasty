@@ -28,9 +28,9 @@ var save_revision = function (uid, object, data, max) {
 
 var restart_services = function (collection, id, _settings) {
   var h_settings = JSON.parse(_settings.home)
-  console.log(_settings)
   var object = db._collection(collection).document(id)
 
+  if(!h_settings.base_url) console.log("Missing base_url in settings")
   if (object.api_id) {
     object = db.apis.document(object.api_id)
     collection = "apis"
@@ -45,7 +45,7 @@ var restart_services = function (collection, id, _settings) {
         token: _settings.token
       }
     })
-  } else console.log("Missing base_url in settings")
+  }
 
   if (collection == "scripts" && h_settings.base_url) {
     request({
@@ -55,7 +55,7 @@ var restart_services = function (collection, id, _settings) {
         token: _settings.token
       }
     })
-  } else console.log("Missing base_url in settings")
+  }
 
   if (collection == "components" && h_settings.base_url && object.kind == "riot4") {
     queue.push(

@@ -260,10 +260,10 @@ if (argv._.length == 0) {
   let tw_files = findFilesInDir(".", "_tw_src")
   console.log(tw_files)
   _.each(tw_files, (file) => {
-    const tw = spawn("tailwind", ["-i", file, "-o", file.replace("_tw_src", ""), "-w", "--minify"])
-    tw.stdout.on('data', (data) => { if(data && data != "") console.log(data.toString().trim()) })
+    const tw = spawn("tailwind", ["-i", file, "-o", file.replace("_tw_src", ""), "-w", "--minify", "-c", file.split("/")[0] + "/tailwind.config.js"])
+    tw.stdout.on('data', (data) => { if(data && data != "") console.log("tw css wompiled") })
 
-    tw.stderr.on('data', (data) => { if(data && data != "") console.error(data.toString().trim()) })
+    tw.stderr.on('data', (data) => { if(data && data != "") console.error("tw css wompiled") })
 
     tw.on('close', (code) => {
       console.log(`child process exited with code ${code}`)
@@ -349,7 +349,7 @@ if (argv._.length == 0) {
       // check for tailwindcss
 
       if (_.last(_.last(path).split(".")) == "css" && original_path.indexOf("_tw_src") >= 0) {
-        // var input = path.join("/")
+        //var input = path.join("/")
         //execSync("tailwind -i " + input + " -o " + input.replace("_tw_src", "") + " --minify")
       }
 
