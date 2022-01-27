@@ -104,6 +104,11 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
   request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
+  page_settings = {}
+  ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+  if ret.status == 200
+    page_settings = lyaml.load(ret.body)
+
   if page
     publication = document_get(db_name, 'publications/pages_' .. page.item._key)
     page.item = publication.data if publication.code == 200
@@ -118,16 +123,12 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
         page.layout = layout
         layout_name = layout.name
         -- then override if it exists on disk
-        page_settings = {}
-        ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
-        if ret.status == 200
-          page_settings = lyaml.load(ret.body)
-          layout_name = page_settings.layout or layout_name
+        layout_name = page_settings.layout or layout_name
 
         git_layout = check_git_layout(db_name, layout_name, page.layout._key)
         page.layout = table_deep_merge(page.layout, git_layout) if git_layout.found
       else
-        page.layout = check_git_layout(db_name, 'page') -- use the default one
+        page.layout = check_git_layout(db_name, page_settings.layout or 'page')
 
   else
     ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
@@ -142,8 +143,10 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
 
       page = table_deep_merge(page, page_settings)
       if uselayout
+        print(to_json(page_settings))
+        print(page_settings.layout)
         page.layout = check_git_layout(db_name, page_settings.layout or 'page')
-
+        print(to_json(page.layout))
   page
 --------------------------------------------------------------------------------
 page_info = (db_name, slug, lang)->

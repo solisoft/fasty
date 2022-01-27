@@ -123,7 +123,6 @@ var check_json = function(json, folder, fullname, only) {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
       }
       if (k == "widgets") {
-        console.log(obj)
         fs.writeFileSync(endpathname + "/" + obj.name + ".etlua", header + " partial\n" + obj.partial)
         fs.writeFileSync(endpathname + "/" + obj.name + ".json", header + " model\n" + obj.model)
       }
@@ -262,9 +261,9 @@ if (argv._.length == 0) {
   console.log(tw_files)
   _.each(tw_files, (file) => {
     const tw = spawn("tailwind", ["-i", file, "-o", file.replace("_tw_src", ""), "-w", "--minify"])
-    tw.stdout.on('data', (data) => { if(data && data != "") console.log(data) })
+    tw.stdout.on('data', (data) => { if(data && data != "") console.log(data.toString().trim()) })
 
-    tw.stderr.on('data', (data) => { if(data && data != "") console.error(data) })
+    tw.stderr.on('data', (data) => { if(data && data != "") console.error(data.toString().trim()) })
 
     tw.on('close', (code) => {
       console.log(`child process exited with code ${code}`)
