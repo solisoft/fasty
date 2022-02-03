@@ -109,8 +109,10 @@ class FastyAssets extends lapis.Application
         ",
         { 'key': "#{@params.layout}" }
       )[1]
-
-      content = sass.compile(layout.scss, 'compressed')
+      if layout.compiled_css
+        content = layout.compiled_css
+      else
+        content = sass.compile(layout.scss, 'compressed')
     else
       ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
       content = ret.body if ret.status == 200
