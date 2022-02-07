@@ -46,6 +46,19 @@ to_timestamp = (d)->
   d1 = date(d)
   date.diff(d1, date.epoch!)\spanseconds!
 --------------------------------------------------------------------------------
+time_ago = (date, parts=1, lang="fr") ->
+  d = time_ago_in_words(date, parts)
+  if lang == "fr"
+    d = d\gsub("years", "ans")\gsub("year", "an")
+    d = d\gsub("months", "mois")\gsub("month", "mois")
+    d = d\gsub("days", "jours")\gsub("day", "jour")
+    d = d\gsub("hours", "heures")\gsub("hour", "heure")
+    -- d = d\gsub("minutes", "minutes")\gsub("minute", "minute")
+    d = d\gsub("seconds", "secondes")\gsub("seconde", "seconde")
+    d = d\gsub("ago", "")
+
+    "Il y a " .. d
+--------------------------------------------------------------------------------
 last_element = (str, pattern)->
   splitted = stringy.split(str, pattern)
   splitted[table.getn(splitted)]
@@ -130,4 +143,5 @@ define_content_type = (slug)->
 --------------------------------------------------------------------------------
 -- expose methods
 { :table_merge, :table_deep_merge, :table_index, :check_valid_lang, :map,
-  :to_timestamp, :uuid, :define_content_type, :last_element, :get_nested }
+  :to_timestamp, :uuid, :define_content_type, :last_element, :get_nested,
+  :time_ago }
