@@ -109,7 +109,7 @@ class FastyAssets extends lapis.Application
         ",
         { 'key': "#{@params.layout}" }
       )[1]
-      if layout.compiled_css
+      if type(layout.compiled_css) ~= "userdata"
         content = layout.compiled_css
       else
         content = sass.compile(layout.scss, 'compressed')
