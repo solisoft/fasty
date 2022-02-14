@@ -452,7 +452,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         spa = load_document_by_slug(db_name, item, 'spas', 'html').item
         if spa
           output = spa.html
-          output ..="<script src=\"/#{params.lang}/#{item}/spa/#{spa._rev}.js\"></script>"
+          output ..="<script src=\"/#{params.lang}/#{spa._key}/spa/#{spa._rev}.js\"></script>"
           output = dynamic_replace(db_name, output, global_data, {}, params)
 
     -- {{ aql | slug }} -- Run an AQL request
