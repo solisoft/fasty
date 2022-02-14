@@ -451,9 +451,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         history[widget] = true
         spa = load_document_by_slug(db_name, item, 'spas', 'html').item
         if spa
-          spa.js = ngx.location.capture("/git/#{db_name}/app/spas/#{item}.js").body unless spa.js
           output = spa.html
-          output ..="<script>#{spa.js}</script>"
+          output ..="<script src=\"/#{params.lang}/#{item}/spa/#{spa._rev}.js\"></script>"
           output = dynamic_replace(db_name, output, global_data, {}, params)
 
     -- {{ aql | slug }} -- Run an AQL request
