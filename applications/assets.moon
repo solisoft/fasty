@@ -96,6 +96,27 @@ class FastyAssets extends lapis.Application
       content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
 
   ------------------------------------------------------------------------------
+  [js_spa: '/:lang/:key/spa/:rev.js']: =>
+    load_settings(@)
+
+    content = ''
+    if @params.key\match("^[%d\\-]+$")
+      content = aql(
+        "db_#{sub_domain}",
+        "FOR doc in spas FILTER doc._key == @key RETURN doc.js",
+        { 'key': "#{@params.key}" }
+      )[1]
+    else
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/spas/#{@params.key\gsub("@", "/")}.js")
+      content = ret.body if ret.status == 200
+
+    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: 'application/javascript', content
+    else
+      content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
+
+  ------------------------------------------------------------------------------
   [css: '/:lang/:layout/css/:rev.css']: =>
     load_settings(@)
     content = ''
