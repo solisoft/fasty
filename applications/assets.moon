@@ -110,7 +110,7 @@ class FastyAssets extends lapis.Application
       ret = ngx.location.capture("/git/db_#{sub_domain}/app/spas/#{@params.key\gsub("@", "/")}.js")
       content = ret.body if ret.status == 200
 
-    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'application/javascript', content
     else
