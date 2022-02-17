@@ -11,8 +11,9 @@ const notifier = require("node-notifier")
 var yaml = require("js-yaml")
 var socket = null
 const fs = require("fs")
+const path = require('path')
 var sass = require('node-sass');
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const { minify } = require("terser")
 const { compile } = require("@riotjs/compiler")
 var dirname = process.cwd()
@@ -22,7 +23,25 @@ var domain = null
 var sync = null
 var updated_by_users = []
 var tokens = {}
-console.log("fasty@0.0.32")
+console.log("fasty@0.0.35")
+
+function findFilesInDir(startPath,filter){
+
+  var results = [];
+
+  var files=fs.readdirSync(startPath);
+  for(var i=0;i<files.length;i++){
+      var filename=path.join(startPath,files[i]);
+      var stat = fs.lstatSync(filename);
+      if (stat.isDirectory()){
+        results = results.concat(findFilesInDir(filename,filter)); //recurse
+      }
+      else if (filename.indexOf(filter)>=0) {
+        results.push(filename);
+      }
+  }
+  return results;
+}
 
 var check_json = function(json, folder, fullname, only) {
   _.each(json, function (v, k) {
@@ -104,7 +123,6 @@ var check_json = function(json, folder, fullname, only) {
         fs.writeFileSync(endpathname + "/" + obj.name + ".html", header + " html\n" + obj.html)
       }
       if (k == "widgets") {
-        console.log(obj)
         fs.writeFileSync(endpathname + "/" + obj.name + ".etlua", header + " partial\n" + obj.partial)
         fs.writeFileSync(endpathname + "/" + obj.name + ".json", header + " model\n" + obj.model)
       }
@@ -238,10 +256,23 @@ var check_json = function(json, folder, fullname, only) {
 }
 
 if (argv._.length == 0) {
+  console.log("Searching for tailwind css files ...")
+  let tw_files = findFilesInDir(".", "_tw_src")
+  console.log(tw_files)
+  _.each(tw_files, (file) => {
+    const tw = spawn("tailwind", ["-i", file, "-o", file.replace("_tw_src", ""), "-w", "--minify", "-c", file.split("/")[0] + "/tailwind.config.js"])
+    //tw.stdout.on('data', (data) => { if(data && data != "") console.log(file, "compiled") })
+
+    tw.stderr.on('data', (data) => { if(data && data != "" && data.toString().indexOf("Rebuilding") < 0) console.error(file, data.toString().trim()) })
+
+    tw.on('close', (code) => {
+      console.log(`child process exited with code ${code}`)
+    })
+  })
   console.log("Watching folder.", dirname)
   chokidar.watch(dirname, { ignored: /(^|[\/\\])\../ }).on("all", (event, path) => {
     if (event == "change") {
-      console.log("change : ", path)
+      //console.log("change : ", path)
       const original_path = path
       path = path.replace(dirname, "").split("/").slice(1)
       const file_path = _.slice(path, 0, -1).join("/")
@@ -271,6 +302,20 @@ if (argv._.length == 0) {
                 console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
               })
             }
+          } else {
+            const src = fs.readFileSync(original_path, "utf8")
+              var t1 = +new Date()
+              const { code, map } = compile(src, { format: "umd" })
+              minify(code).then(compiled_code => {
+                var tag = compiled_code.code.replace(
+                  'export default',
+                  'var '+file_name+'='
+                )
+                var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
+                fs.writeSync(file, tag)
+                fs.closeSync(file)
+                console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
+              })
           }
         }
       }
@@ -285,7 +330,7 @@ if (argv._.length == 0) {
       // if path is */app/apis/**
       // install service
 
-      if (_.last(_.last(path).split(".")) == "scss" && original_path.indexOf("_tailwind_src") < 0) {
+      if (_.last(_.last(path).split(".")) == "scss" && original_path.indexOf("_tw_src") < 0) {
 
         var t1 = +new Date()
         console.log("Compiling " + original_path)
@@ -303,6 +348,10 @@ if (argv._.length == 0) {
       // compile to css
       // check for tailwindcss
 
+      if (_.last(_.last(path).split(".")) == "css" && original_path.indexOf("_tw_src") >= 0) {
+        //var input = path.join("/")
+        //execSync("tailwind -i " + input + " -o " + input.replace("_tw_src", "") + " --minify")
+      }
 
     }
   })

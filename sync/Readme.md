@@ -1,7 +1,5 @@
 # fasty cli
 
-You need first a valid soliCMS account to use this tool.
-
 ## Installation
 
 `npm install -g fasty-cli`

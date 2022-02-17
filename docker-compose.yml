@@ -19,13 +19,13 @@ services:
       frontend:
 
   cms:
-    build: .
-    #image: solisoft/fasty
+    #build: .
+    image: solisoft/fasty
     command: /bin/bash -c "cd /var/www && lapis server"
     ports:
       - 8080:8080
     volumes:
-      - ./:/var/www
+      - ./:/var/www:delegated
     depends_on:
       - arangodb
       - foxxy
@@ -36,14 +36,14 @@ services:
         ipv4_address: 12.12.0.7
 
   cms_prod:
-    build: .
+    #build: .
     image: solisoft/fasty
     restart: always
     command: /bin/bash -c "cd /var/www && moonc *.moon && moonc **/*.moon && lapis server production"
     ports:
       - 9090:80
     volumes:
-      - ./:/var/www
+      - ./:/var/www:delegated
     depends_on:
       - arangodb
     links:
@@ -53,7 +53,8 @@ services:
         ipv4_address: 12.12.0.8
 
   arangodb:
-    image: arangodb/arangodb:3.8.1
+    image: arangodb:3.8.5
+    platform: linux/x86_64
     restart: always
     environment:
       ARANGO_ROOT_PASSWORD: password

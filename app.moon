@@ -84,7 +84,7 @@ class extends lapis.Application
   @include 'applications.services'
   @include 'applications.assets'
 
-  lua_files(@, "git")
+  lua_files(@, "git/lua") if os.rename("git/lua", "git/lua")
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   ------------------------------------------------------------------------------

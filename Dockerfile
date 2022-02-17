@@ -1,15 +1,13 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 LABEL Olivier Bonnaure <olivier@solisoft.net>
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libncurses5-dev libpcre3-dev libssl-dev gcc perl make git-core \
     libsass-dev glib2.0-dev libexpat1-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget \
-    libde265-dev autoconf cmake
+    libx265-dev libde265-dev libheif-dev autoconf cmake build-essential
 
-ARG VIPS_VERSION=8.11.4
-
-#RUN git clone https://aomedia.googlesource.com/aom \
-#    && mkdir aombuild && cd aombuild && cmake ../aom
+ARG VIPS_VERSION=8.12.1
 
 RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
     && tar -xf vips-${VIPS_VERSION}.tar.gz \
@@ -36,7 +34,7 @@ RUN wget https://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz \
     && ./configure && make \
     && make install && cd .. && rm -Rf luarocks-*
 
-ARG LAPIS_VERSION=1.8.3
+ARG LAPIS_VERSION=1.9.0
 RUN luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis $LAPIS_VERSION
 RUN luarocks install moonscript
 RUN luarocks install lapis-console
@@ -65,7 +63,7 @@ RUN npm install -g yarn@1.22.11 \
     @riotjs/cli@6.0.5 \
     @babel/core@7.15.5 \
     terser@5.7.2 \
-    tailwindcss@2.2.14 \
+    tailwindcss@3.0.1 \
     autoprefixer@10.3.4 \
     postcss@8.3.6
 

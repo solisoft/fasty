@@ -5,7 +5,7 @@ config    = require('lapis.config').get!
 db_config = require('lapis.config').get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
-import from_json from require 'lapis.util'
+import from_json, unescape from require 'lapis.util'
 import compile_riotjs from require 'lib.service'
 import dynamic_replace from require 'lib.concerns'
 import define_content_type from require 'lib.utils'
@@ -96,6 +96,27 @@ class FastyAssets extends lapis.Application
       content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
 
   ------------------------------------------------------------------------------
+  [js_spa: '/:lang/:key/spa/:rev.js']: =>
+    load_settings(@)
+
+    content = ''
+    if @params.key\match("^[%d\\-]+$")
+      content = aql(
+        "db_#{sub_domain}",
+        "FOR doc in spas FILTER doc._key == @key RETURN doc.js",
+        { 'key': "#{@params.key}" }
+      )[1]
+    else
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/spas/#{@params.key\gsub("@", "/")}.js")
+      content = ret.body if ret.status == 200
+
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
+    if @req.headers['x-forwarded-host'] != nil then
+      content_type: 'application/javascript', content
+    else
+      content_type: 'application/javascript', content, headers: { 'expires': expire_at! }
+
+  ------------------------------------------------------------------------------
   [css: '/:lang/:layout/css/:rev.css']: =>
     load_settings(@)
     content = ''
@@ -109,8 +130,10 @@ class FastyAssets extends lapis.Application
         ",
         { 'key': "#{@params.layout}" }
       )[1]
-
-      content = sass.compile(layout.scss, 'compressed')
+      if type(layout.compiled_css) ~= "userdata"
+        content = layout.compiled_css
+      else
+        content = sass.compile(layout.scss, 'compressed')
     else
       ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
       content = ret.body if ret.status == 200
@@ -151,7 +174,7 @@ class FastyAssets extends lapis.Application
           { 'key': "#{key}" }
         )[1] .. "\n"
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.riot")
+      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key\gsub("@", "/")}.riot")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
@@ -162,17 +185,17 @@ class FastyAssets extends lapis.Application
   ------------------------------------------------------------------------------
   [componentjs: '/:lang/:key/component/:rev.js']: =>
     load_settings(@)
-
     content = ''
     if @params.key\match("^[%d\\-]+$")
-      for i, key in pairs(stringy.split(@params.key, '|'))
+      for i, key in pairs(stringy.split(unescape(@params.key), '|'))
         content ..= aql(
           "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.javascript",
           { 'key': "#{key}" }
         )[1] .. "\n"
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key}.js")
-      content = ret.body if ret.status == 200
+      for i, key in pairs(stringy.split(unescape(@params.key), '|'))
+        ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{key\gsub("@", "/")}.js")
+        content ..= ret.body .. "\n" if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
