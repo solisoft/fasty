@@ -143,10 +143,8 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
 
       page = table_deep_merge(page, page_settings)
       if uselayout
-        print(to_json(page_settings))
-        print(page_settings.layout)
         page.layout = check_git_layout(db_name, page_settings.layout or 'page')
-        print(to_json(page.layout))
+
   page
 --------------------------------------------------------------------------------
 page_info = (db_name, slug, lang)->
@@ -330,8 +328,6 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         output = "{{ partial | #{helper.partial} | arango | req##{helper.aql}#{dataset} }}"
         output = dynamic_replace(db_name, output, global_data, history, params)
       else
-        print to_json(helpers)
-        print to_json(item)
         output = "Helper not found !?"
     -- {{ partial | slug | <dataset> | <args> }}
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}

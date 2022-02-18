@@ -51,9 +51,9 @@ RUN luarocks --server=http://rocks.moonscript.org install lyaml
 RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
     chmod +x n && mv n /usr/bin/n && n lts
 
-RUN wget https://download.arangodb.com/arangodb37/DEBIAN/Release.key && \
+RUN wget https://download.arangodb.com/arangodb38/DEBIAN/Release.key && \
     apt-key add - < Release.key && \
-    echo 'deb https://download.arangodb.com/arangodb37/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
+    echo 'deb https://download.arangodb.com/arangodb38/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
     apt-get update && \
     apt-get install apt-transport-https && \
     apt-get install arangodb3-client
@@ -63,9 +63,13 @@ RUN npm install -g yarn@1.22.11 \
     @riotjs/cli@6.0.5 \
     @babel/core@7.15.5 \
     terser@5.7.2 \
-    tailwindcss@3.0.1 \
+    tailwindcss@3.0.23 \
     autoprefixer@10.3.4 \
     postcss@8.3.6
+
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+RUN apt-get -qqy install ./wkhtmltox_0.12.6-1.focal_amd64.deb
+RUN rm wkhtmltox_0.12.6-1.focal_amd64.deb
 
 WORKDIR /var/www
 

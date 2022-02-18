@@ -19,8 +19,8 @@ services:
       frontend:
 
   cms:
-    #build: .
-    image: solisoft/fasty
+    build: .
+    #image: solisoft/fasty
     command: /bin/bash -c "cd /var/www && lapis server"
     ports:
       - 8080:8080

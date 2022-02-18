@@ -12,8 +12,8 @@ write_content = (filename, content)->
   io.write(content)
   io.close(file)
 --------------------------------------------------------------------------------
-read_file = (filename)->
-  file = io.open(filename, 'r')
+read_file = (filename, mode='r')->
+  file = io.open(filename, mode)
   io.input(file)
   data = io.read('*all')
   io.close(file)
@@ -182,4 +182,5 @@ compile_tailwindcss = (sub_domain, layout_id, field)->
 
 --------------------------------------------------------------------------------
 -- expose methods
-{ :install_service, :install_script, :deploy_site, :compile_riotjs, :compile_tailwindcss }
+{ :install_service, :install_script, :deploy_site, :compile_riotjs,
+  :compile_tailwindcss, :write_content, :read_file }

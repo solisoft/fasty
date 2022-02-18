@@ -9,9 +9,10 @@ config      = app_config.get!
 db_config   = app_config.get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
-import check_valid_lang, define_content_type, table_deep_merge from require 'lib.utils'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import after_dispatch from require 'lapis.nginx.context'
+import write_content, read_file from require 'lib.service'
+import uuid, check_valid_lang, define_content_type, table_deep_merge from require 'lib.utils'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import trim, from_json, to_json, unescape from require 'lapis.util'
 import dynamic_replace, dynamic_page, page_info, splat_to_table
@@ -96,6 +97,7 @@ class extends lapis.Application
       render: "error_#{status}" , status: status, headers: headers
   ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200)=>
+    print "Loading page !!!"
     db_name           = "db_#{sub_domain}"
     asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
     if asset.status == 200
@@ -103,6 +105,8 @@ class extends lapis.Application
     else
       slug              = @params.slug if slug == nil
       slug              = unescape(slug)
+      page_content_type = define_content_type(slug)
+      slug = slug\gsub(".pdf", "") if page_content_type == "application/pdf"
       @params.lang      = check_valid_lang(settings[sub_domain].langs, @params.lang)
       @session.lang     = @params.lang
       redirection       = load_redirection(db_name, @params)
@@ -116,8 +120,6 @@ class extends lapis.Application
         used_lang = stringy.split(settings[sub_domain].langs, ',')[1]
         infos = page_info(db_name, @params.slug, used_lang)
         current_page = load_page_by_slug(db_name, slug, used_lang)
-
-      page_content_type = define_content_type(slug)
 
       html = ''
 
@@ -148,7 +150,16 @@ class extends lapis.Application
       basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
       if is_auth(@, settings[sub_domain], infos)
         if html ~= 'null' and trim(html) != '' then
-          content_type: page_content_type, html, status: status
+          if page_content_type ~= "application/pdf" then
+            content_type: page_content_type, html, status: status
+          else -- convert html data to pdf
+            filename = "#{uuid!}.html"
+            write_content "print/#{filename}", html
+            shell.run "wkhtmltopdf print/#{filename} print/#{filename}.pdf"
+            pdf = read_file "print/#{filename}.pdf", "rb"
+            shell.run "rm print/#{filename}"
+            shell.run "rm print/#{filename}.pdf"
+            content_type: "application/pdf", pdf, status: status
         else
           display_error_page(@, 404)
       else
