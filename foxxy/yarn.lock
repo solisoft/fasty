@@ -42,8 +42,8 @@ acorn@^5.0.0, acorn@^5.2.1, acorn@^5.5.3:
   resolved "https://registry.npmjs.org/acorn/-/acorn-5.7.4.tgz"
 
 ajv@^6.5.5:
-  version "6.12.2"
-  resolved "https://registry.npmjs.org/ajv/-/ajv-6.12.2.tgz"
+  version "6.12.6"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.6.tgz#baf5a62e802b07d977034586f8c3baf5adf26df4"
   dependencies:
     fast-deep-equal "^3.1.1"
     fast-json-stable-stringify "^2.0.0"
@@ -1390,12 +1390,12 @@ extsprintf@1.3.0, extsprintf@^1.2.0:
   resolved "https://registry.npmjs.org/extsprintf/-/extsprintf-1.3.0.tgz"
 
 fast-deep-equal@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.1.tgz"
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
 
 fast-json-stable-stringify@^2.0.0:
   version "2.1.0"
-  resolved "https://registry.npmjs.org/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz#874bf69c6f404c2b5d99c481341399fd55892633"
 
 fast-levenshtein@^1.1.3:
   version "1.1.4"
@@ -1902,8 +1902,8 @@ https-browserify@~0.0.1:
   resolved "https://registry.npmjs.org/https-browserify/-/https-browserify-0.0.1.tgz"
 
 i@^0.3.6:
-  version "0.3.6"
-  resolved "https://registry.npmjs.org/i/-/i-0.3.6.tgz"
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/i/-/i-0.3.7.tgz#2a7437a923d59c14b17243dc63a549af24d85799"
 
 iconv-lite@0.4.24, iconv-lite@^0.4.17:
   version "0.4.24"
@@ -2257,7 +2257,7 @@ jsesc@~0.5.0:
 
 json-schema-traverse@^0.4.1:
   version "0.4.1"
-  resolved "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz"
+  resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz#69f6a87d9513ab8bb8fe63bdb0979c448e684660"
 
 json-schema@0.2.3:
   version "0.2.3"
@@ -2431,8 +2431,8 @@ lodash.union@^4.6.0:
   resolved "https://registry.npmjs.org/lodash.union/-/lodash.union-4.6.0.tgz"
 
 lodash@^4.0.0, lodash@^4.17.14, lodash@^4.17.4, lodash@^4.3.0, lodash@~4.17.12:
-  version "4.17.19"
-  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.19.tgz"
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
 
 loggy@^1, loggy@^1.0.3, loggy@~1.0.3:
   version "1.0.8"
@@ -2662,8 +2662,8 @@ mkdirp@0.5.1:
     minimist "^1.2.5"
 
 mout@^1.0.0:
-  version "1.2.2"
-  resolved "https://registry.npmjs.org/mout/-/mout-1.2.2.tgz"
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/mout/-/mout-1.2.3.tgz#bd1477d8c7f2db5fcf43c91de30b6cc746b78e10"
 
 ms@2.0.0:
   version "2.0.0"
@@ -3103,8 +3103,8 @@ path-type@^1.0.0:
     pinkie-promise "^2.0.0"
 
 pathval@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/pathval/-/pathval-1.1.0.tgz"
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.1.tgz#8534e77a77ce7ac5a2512ea21e0fdb8fcf6c3d8d"
 
 pbkdf2@^3.0.3:
   version "3.0.17"
@@ -4365,8 +4365,8 @@ upper-case@^1.1.1:
   resolved "https://registry.npmjs.org/upper-case/-/upper-case-1.1.3.tgz"
 
 uri-js@^4.2.2:
-  version "4.2.2"
-  resolved "https://registry.npmjs.org/uri-js/-/uri-js-4.2.2.tgz"
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.4.1.tgz#9b1a52595225859e55f669d928f88c6c57f2a77e"
   dependencies:
     punycode "^2.1.0"
 
@@ -4531,8 +4531,8 @@ xtend@^4.0.0:
   resolved "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz"
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.npmjs.org/y18n/-/y18n-3.2.1.tgz"
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
 
 "y18n@^3.2.1 || ^4.0.0", y18n@^4.0.0:
   version "4.0.0"
