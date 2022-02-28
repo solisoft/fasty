@@ -2,7 +2,7 @@
 
 # This file must be created on your app folder
 
-# /home/apps/solicms
+# /home/apps/fasty
 # deploy.sh             -- the deployment file
 # shared/               -- shared folder
 #   config.lua          -- config file (lua format)
@@ -10,7 +10,7 @@
 #   docker-compose.yml  -- docker-compose.yml file (update credentials)
 #   nginx.conf          -- nginx.conf
 
-cd solicms
+cd fasty
 git reset --hard
 git pull
 cp ../shared/config.* .
@@ -20,7 +20,7 @@ cp ../shared/nginx.conf .
 rm -Rf static/admin
 mv foxxy/dist static/admin
 
-docker exec -it solicms_cms_prod_1 cp -Rf /var/www/patch/lapis /usr/local/share/lua/5.1/
-docker exec -it solicms_cms_prod_1 moonc *.moon
-docker exec -it solicms_cms_prod_1 moonc **/*.moon
-docker exec -it solicms_cms_prod_1 lapis build production
+docker exec -it fasty_cms_prod_1 cp -Rf /var/www/patch/lapis /usr/local/share/lua/5.1/
+docker exec -it fasty_cms_prod_1 moonc *.moon
+docker exec -it fasty_cms_prod_1 moonc **/*.moon
+docker exec -it fasty_cms_prod_1 lapis build production

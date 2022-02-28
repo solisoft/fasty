@@ -24,7 +24,7 @@ RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && make -j2 \
     && make install && cd .. && rm -Rf openresty-*
 
-ARG LUAROCKS_VERSION=3.5.0
+ARG LUAROCKS_VERSION=3.8.0
 
 RUN apt-get -qqy install lua5.1 liblua5.1-0-dev unzip zip
 

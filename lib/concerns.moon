@@ -93,7 +93,7 @@ load_document_by_slug = (db_name, slug, object, ext = 'html')->
     {
       item: {
        html: ret.body, _key: "#{slug}",
-       _rev: ret.header.ETag\gsub('"', '')\gsub("-", "")
+       _rev: "#{ret.header.ETag\gsub('"', '')\gsub("-", "")}"
       }
     }
   else
@@ -448,7 +448,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         spa = load_document_by_slug(db_name, item, 'spas', 'html').item
         if spa
           output = spa.html
-          output ..="<script src=\"/#{params.lang}/#{spa._key}/spa/#{spa._rev}.js\"></script>"
+          t = "#{os.clock!}"
+          output ..="<script src=\"/#{params.lang}/#{spa._key}/spa/#{spa._rev}.js?t=#{t}\"></script>"
           output = dynamic_replace(db_name, output, global_data, {}, params)
 
     -- {{ aql | slug }} -- Run an AQL request

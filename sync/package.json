@@ -1,6 +1,6 @@
 {
   "name": "fasty-cli",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "description": "CLI for Fasty",
   "main": "index.js",
   "scripts": {
@@ -12,16 +12,16 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@riotjs/compiler": "^5.2.0",
-    "chokidar": "^3.4.0",
-    "colors": "^1.1.2",
-    "js-yaml": "^3.12.0",
-    "lodash": "^4.17.10",
-    "node-notifier": "^8.0.1",
+    "@riotjs/compiler": "^5.4.2",
+    "chokidar": "^3.5.3",
+    "colors": "^1.4.0",
+    "js-yaml": "^3.14.1",
+    "lodash": "^4.17.21",
+    "node-notifier": "^8.0.2",
     "node-sass": "^6.0.1",
-    "request": "^2.88.0",
-    "socket.io": "^2.2.0",
-    "terser": "^5.5.1",
+    "request": "^2.88.2",
+    "socket.io": "^2.4.1",
+    "terser": "^5.11.0",
     "yargs": "^17.2.0"
   }
 }

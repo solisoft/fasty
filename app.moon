@@ -97,7 +97,6 @@ class extends lapis.Application
       render: "error_#{status}" , status: status, headers: headers
   ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200)=>
-    print "Loading page !!!"
     db_name           = "db_#{sub_domain}"
     asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
     if asset.status == 200
