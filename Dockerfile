@@ -7,7 +7,7 @@ RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget \
     libx265-dev libde265-dev libheif-dev autoconf cmake build-essential
 
-ARG VIPS_VERSION=8.12.1
+ARG VIPS_VERSION=8.12.2
 
 RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
     && tar -xf vips-${VIPS_VERSION}.tar.gz \

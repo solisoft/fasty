@@ -90,12 +90,10 @@ etlua2html = (json, partial, params, global_data)->
 load_document_by_slug = (db_name, slug, object, ext = 'html')->
   ret = ngx.location.capture("/git/#{db_name}/app/#{object}/#{slug}.#{ext}")
   if ret.status == 200
-    {
-      item: {
-       html: ret.body, _key: "#{slug}",
-       _rev: "#{ret.header.ETag\gsub('"', '')\gsub("-", "")}"
-      }
-    }
+    _rev = "#{ret.header.ETag\gsub('"', '')\gsub("-", "")}"
+    ret_u = ngx.location.capture("/git/.lastupdate")
+    _rev = ret_u.body if ret_u.status == 200
+    { item: { html: ret.body, _key: "#{slug}", _rev: _rev } }
   else
     request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
     aql(db_name, request, { slug: slug })[1]
