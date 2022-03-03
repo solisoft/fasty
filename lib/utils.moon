@@ -57,7 +57,8 @@ time_ago = (date, parts=1, lang="fr") ->
     d = d\gsub("seconds", "secondes")\gsub("seconde", "seconde")
     d = d\gsub("ago", "")
 
-    "Il y a " .. d
+    d = "Il y a " .. d
+  d
 --------------------------------------------------------------------------------
 last_element = (str, pattern)->
   splitted = stringy.split(str, pattern)
