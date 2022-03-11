@@ -6,6 +6,8 @@ executors:
   fasty:
     docker:
       - image: solisoft/fasty:latest
+        environment:
+          DEBIAN_FRONTEND: noninteractive
       - image: arangodb/arangodb:latest
         environment:
           ARANGO_ROOT_PASSWORD: password
