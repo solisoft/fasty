@@ -14,6 +14,10 @@ escape_pattern = (text)->
   str, _ = tostring(text)\gsub('([%[%]%(%)%+%-%*%%])', '%%%1')
   str
 --------------------------------------------------------------------------------
+capture = (url)->
+  ret = ngx.location.capture(url)
+  ret.body if ret.status == 200
+--------------------------------------------------------------------------------
 check_git_layout = (db_name, slug, key)->
   layout = { _key: key, html: "@raw_yield@yield" }
   ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
@@ -26,14 +30,10 @@ check_git_layout = (db_name, slug, key)->
       page_settings = lyaml.load(ret.body)
       layout.page_builder = page_settings.builder
 
-    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
-    layout.i_js = ret.body if ret.status == 200
-    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/vendor.css")
-    layout.i_css = ret.body if ret.status == 200
-    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/css.css")
-    layout.scss = ret.body if ret.status == 200
-    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/js.js")
-    layout.javascript = ret.body if ret.status == 200
+    layout.i_js       = capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
+    layout.i_css      = capture("/git/#{db_name}/app/layouts/#{slug}/vendor.css")
+    layout.scss       = capture("/git/#{db_name}/app/layouts/#{slug}/css.css")
+    layout.javascript = capture("/git/#{db_name}/app/layouts/#{slug}/js.js")
 
   layout
 --------------------------------------------------------------------------------
@@ -500,7 +500,12 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
       output = "Missing translation <em style='color:red'>#{item}</em>" if output == ''
     -- {{ external | url }}
-    output = http_get(item) if action == 'external'
+
+    if action == 'external'
+      if string.find(item, "://") == nil
+        output = capture("/git/#{db_name}/public/#{item}")
+      else
+        output = http_get(item)
     -- {{ json | url | field }}
     if action == 'json'
       output = from_json(http_get(item))

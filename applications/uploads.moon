@@ -143,6 +143,57 @@ class FastyImages extends lapis.Application
       else
         status: 401, 'Not authorized'
   }
+
+  [file_upload: '/file/upload/ckeditor']: respond_to {
+    POST: =>
+      print(to_json(@params))
+      load_settings(@)
+      if @req.headers['X-Session-Id'] and is_valid_jwt(@req.headers['X-Session-Id'])
+        if file = @params.upload
+          arr = stringy.split(file.filename, '.')
+          ext = arr[table.getn(arr)]
+
+          date = os.date('%y/%m/%d', os.time())
+          path = "static/assets/#{sub_domain}/#{date}"
+          _uuid = uuid()
+          filename = "#{_uuid}.#{ext}"
+
+          shell.run("mkdir -p #{path}")
+          content = file.content
+          write_content "#{path}/#{filename}", content, true
+
+          url = "/asset/o/#{_uuid}"
+          google_url = ''
+          if bucket
+            if storage
+              status = storage\put_file_string(bucket, "#{path}/#{filename}", content)
+              google_url = "https://storage.googleapis.com/#{bucket}/#{path}/#{filename}" if status == 200
+
+          upload = {
+            'uuid': _uuid, 'root': path, 'filename': file.filename, 'path': path .. '/' .. filename,
+            'length': #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
+          }
+
+          if @params.id
+            upload["object_id"] = @params.collection .. '/' .. @params.id
+            upload["pos"] = 10000
+            upload["field"] = @params.field
+
+          doc_key = document_post("db_#{sub_domain}", 'uploads', upload)._key
+
+          to_json({
+            urls: {
+              "default": '/asset/o/' .. _uuid,
+              "800": '/asset/r/' .. _uuid .. '/800',
+              "1024": '/asset/r/' .. _uuid .. '/1024',
+              "1920": '/asset/r/' .. _uuid .. '/1920'
+            }
+          })
+        else
+          status: 400, 'Bad parameters'
+      else
+        status: 401, 'Not authorized'
+  }
   ------------------------------------------------------------------------------
   [file_upload_http: '/file/upload_http']: respond_to {
     POST: =>
