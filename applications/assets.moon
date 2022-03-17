@@ -17,7 +17,7 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
-last_db_connect = os.clock!
+last_db_connect = os.time(os.date("!*t"))
 
 expire_at = () ->
   'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
@@ -27,9 +27,9 @@ define_subdomain = () =>
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
-  if (os.clock! - last_db_connect) * 10 > (config.db_ttl and config.db_ttl or 10)
+  if (os.clock! - last_db_connect) > (config.db_ttl and config.db_ttl or 10)
     jwt[sub_domain] = nil
-    last_db_connect = os.clock!
+    last_db_connect = os.time(os.date("!*t"))
 
   jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
   all_domains = list_databases! if all_domains == nil
