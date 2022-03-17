@@ -23,7 +23,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 var tokens = {}
-console.log("fasty@0.0.37")
+console.log("fasty@0.0.38")
 
 function findFilesInDir(startPath,filter){
 
@@ -257,7 +257,8 @@ var check_json = function(json, folder, fullname, only) {
 
 if (argv._.length == 0) {
   console.log("Searching for tailwind css files ...")
-  let tw_files = findFilesInDir(".", "_tw_src")
+
+  let tw_files = findFilesInDir(argv.tw || ".", "_tw_src")
   console.log(tw_files)
   _.each(tw_files, (file) => {
     const tw = spawn("tailwind", ["-i", file, "-o", file.replace("_tw_src", ""), "-w", "--minify", "-c", file.split("/")[0] + "/tailwind.config.js"])
@@ -269,6 +270,7 @@ if (argv._.length == 0) {
       console.log(`child process exited with code ${code}`)
     })
   })
+
   console.log("Watching folder.", dirname)
   chokidar.watch(dirname, { ignored: /(^|[\/\\])\../ }).on("all", (event, path) => {
     if (event == "change") {
