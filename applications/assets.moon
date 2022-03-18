@@ -27,7 +27,7 @@ define_subdomain = () =>
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
-  if (os.clock! - last_db_connect) > (config.db_ttl and config.db_ttl or 10)
+  if (os.time(os.date("!*t")) - last_db_connect) > (config.db_ttl and config.db_ttl or 10)
     jwt[sub_domain] = nil
     last_db_connect = os.time(os.date("!*t"))
 

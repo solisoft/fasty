@@ -84,7 +84,7 @@ define_subdomain = () =>
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
-  if (os.clock! - last_db_connect) > (config.db_ttl and config.db_ttl or 10)
+  if (os.time(os.date("!*t")) - last_db_connect) > (config.db_ttl and config.db_ttl or 10)
     jwt[sub_domain] = nil
     last_db_connect = os.time(os.date("!*t"))
 
@@ -126,6 +126,7 @@ class FastyImages extends lapis.Application
               google_url = "https://storage.googleapis.com/#{bucket}/#{path}/#{filename}" if status == 200
 
           upload = {
+            'c_at': os.time(os.date("!*t")) * 1000,
             'uuid': _uuid, 'root': path, 'filename': file.filename, 'path': path .. '/' .. filename,
             'length': #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
           }
@@ -170,6 +171,7 @@ class FastyImages extends lapis.Application
               google_url = "https://storage.googleapis.com/#{bucket}/#{path}/#{filename}" if status == 200
 
           upload = {
+            'c_at': os.time(os.date("!*t")) * 1000,
             'uuid': _uuid, 'root': path, 'filename': file.filename, 'path': path .. '/' .. filename,
             'length': #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
           }
@@ -225,6 +227,7 @@ class FastyImages extends lapis.Application
               google_url = "https://storage.googleapis.com/#{bucket}#{filename}" if status == 200
 
           upload = {
+            c_at: os.time(os.date("!*t")) * 1000,
             uuid: _uuid, root: path, filename: file, path: path .. '/' .. filename,
             length: #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
           }
