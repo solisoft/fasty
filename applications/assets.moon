@@ -147,7 +147,6 @@ class FastyAssets extends lapis.Application
   [css_vendors: '/:lang/:layout/vendors/:rev.css']: =>
     load_settings(@)
     content = ''
-
     if @params.layout\match("^[%d\\-]+$")
       content = aql(
         "db_#{sub_domain}",
@@ -159,6 +158,7 @@ class FastyAssets extends lapis.Application
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'text/css', content
     else
@@ -198,6 +198,7 @@ class FastyAssets extends lapis.Application
         content ..= ret.body .. "\n" if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
+
     if @req.headers['x-forwarded-host'] != nil then
       content, headers: { 'Content-Type': 'text/javascript' }
     else
