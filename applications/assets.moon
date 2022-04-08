@@ -17,6 +17,7 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+git_folder = {}
 last_db_connect = os.time(os.date("!*t"))
 
 expire_at = () ->
@@ -27,6 +28,7 @@ define_subdomain = () =>
 --------------------------------------------------------------------------------
 load_settings = () =>
   define_subdomain(@)
+
   if (os.time(os.date("!*t")) - last_db_connect) > (config.db_ttl and config.db_ttl or 10)
     jwt[sub_domain] = nil
     last_db_connect = os.time(os.date("!*t"))
@@ -40,6 +42,9 @@ load_settings = () =>
     global_data[sub_domain]['partials'] = {}
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
+    site_settings = from_json(settings[sub_domain].home)
+    git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or "git"
+
   bucket = from_json(settings[sub_domain].home).cloud_storage_bucket
 
 class FastyAssets extends lapis.Application
@@ -66,7 +71,7 @@ class FastyAssets extends lapis.Application
         { 'key': "#{@params.layout}" }
       )[1]
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/js.js")
+      ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/js.js")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
@@ -86,7 +91,7 @@ class FastyAssets extends lapis.Application
         { 'key': "#{@params.layout}" }
       )[1]
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.js")
+      ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.js")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
@@ -107,7 +112,7 @@ class FastyAssets extends lapis.Application
         { 'key': "#{@params.key}" }
       )[1]
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/spas/#{@params.key\gsub("@", "/")}.js")
+      ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/spas/#{@params.key\gsub("@", "/")}.js")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
@@ -135,7 +140,7 @@ class FastyAssets extends lapis.Application
       else
         content = sass.compile(layout.scss, 'compressed')
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
+      ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
@@ -154,7 +159,7 @@ class FastyAssets extends lapis.Application
         { 'key': "#{@params.layout}" }
       )[1]
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.css")
+      ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.css")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
@@ -174,7 +179,7 @@ class FastyAssets extends lapis.Application
           { 'key': "#{key}" }
         )[1] .. "\n"
     else
-      ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{@params.key\gsub("@", "/")}.riot")
+      ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/components/#{@params.key\gsub("@", "/")}.riot")
       content = ret.body if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
@@ -194,7 +199,7 @@ class FastyAssets extends lapis.Application
         )[1] .. "\n"
     else
       for i, key in pairs(stringy.split(unescape(@params.key), '|'))
-        ret = ngx.location.capture("/git/db_#{sub_domain}/app/components/#{key\gsub("@", "/")}.js")
+        ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/components/#{key\gsub("@", "/")}.js")
         content ..= ret.body .. "\n" if ret.status == 200
 
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)

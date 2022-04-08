@@ -15,7 +15,6 @@ api_url = (db_name, path)->
   "#{db_config.url}/_db/#{db_name}/_api#{path}"
 --------------------------------------------------------------------------------
 api_run = (db_name, path, method, params={}, headers={})->
-  t1 = os.clock!
   body, status_code, h = http_request(
     api_url(db_name, path), method,
     to_json(params), table_merge({ Authorization: "bearer #{jwt}" }, headers)

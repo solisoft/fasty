@@ -18,22 +18,22 @@ capture = (url)->
   ret = ngx.location.capture(url)
   ret.body if ret.status == 200
 --------------------------------------------------------------------------------
-check_git_layout = (db_name, slug, key)->
+check_git_layout = (git_folder, db_name, slug, key)->
   layout = { _key: key, html: "@raw_yield@yield" }
-  ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/index.html")
+  ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/layouts/#{slug}/index.html")
   if ret.status == 200
     layout.found = true
     layout.html = ret.body
     layout._key = slug
-    ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{slug}/settings.yml")
+    ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/layouts/#{slug}/settings.yml")
     if ret.status == 200
       page_settings = lyaml.load(ret.body)
       layout.page_builder = page_settings.builder
 
-    layout.i_js       = capture("/git/#{db_name}/app/layouts/#{slug}/vendor.js")
-    layout.i_css      = capture("/git/#{db_name}/app/layouts/#{slug}/vendor.css")
-    layout.scss       = capture("/git/#{db_name}/app/layouts/#{slug}/css.css")
-    layout.javascript = capture("/git/#{db_name}/app/layouts/#{slug}/js.js")
+    layout.i_js       = capture("/#{git_folder}/#{db_name}/app/layouts/#{slug}/vendor.js")
+    layout.i_css      = capture("/#{git_folder}/#{db_name}/app/layouts/#{slug}/vendor.css")
+    layout.scss       = capture("/#{git_folder}/#{db_name}/app/layouts/#{slug}/css.css")
+    layout.javascript = capture("/#{git_folder}/#{db_name}/app/layouts/#{slug}/js.js")
 
   layout
 --------------------------------------------------------------------------------
@@ -87,23 +87,23 @@ etlua2html = (json, partial, params, global_data)->
   )
   data
 --------------------------------------------------------------------------------
-load_document_by_slug = (db_name, slug, object, ext = 'html')->
-  ret = ngx.location.capture("/git/#{db_name}/app/#{object}/#{slug}.#{ext}")
+load_document_by_slug = (git_folder, db_name, slug, object, ext = 'html')->
+  ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/#{object}/#{slug}.#{ext}")
   if ret.status == 200
     _rev = "#{ret.header.ETag\gsub('"', '')\gsub("-", "")}"
-    ret_u = ngx.location.capture("/git/.lastupdate")
+    ret_u = ngx.location.capture("/#{git_folder}/.lastupdate")
     _rev = ret_u.body if ret_u.status == 200
     { item: { html: ret.body, _key: "#{slug}", _rev: _rev } }
   else
     request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
     aql(db_name, request, { slug: slug })[1]
 --------------------------------------------------------------------------------
-load_page_by_slug = (db_name, slug, lang, uselayout = true)->
+load_page_by_slug = (git_folder, db_name, slug, lang, uselayout = true)->
   request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
   page = aql(db_name, request, { slug: slug, lang: lang })[1]
 
   page_settings = {}
-  ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+  ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/pages/#{slug}.yml")
   if ret.status == 200
     page_settings = lyaml.load(ret.body)
 
@@ -111,7 +111,7 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
     publication = document_get(db_name, 'publications/pages_' .. page.item._key)
     page.item = publication.data if publication.code == 200
 
-    ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
+    ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/pages/#{slug}_#{lang}.html")
     page.item.raw_html[lang] = ret.body if ret.status == 200
 
     if uselayout
@@ -123,30 +123,30 @@ load_page_by_slug = (db_name, slug, lang, uselayout = true)->
         -- then override if it exists on disk
         layout_name = page_settings.layout or layout_name
 
-        git_layout = check_git_layout(db_name, layout_name, page.layout._key)
+        git_layout = check_git_layout(git_folder, db_name, layout_name, page.layout._key)
         page.layout = table_deep_merge(page.layout, git_layout) if git_layout.found
       else
-        page.layout = check_git_layout(db_name, page_settings.layout or 'page')
+        page.layout = check_git_layout(git_folder, db_name, page_settings.layout or 'page')
 
   else
-    ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}_#{lang}.html")
+    ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/pages/#{slug}_#{lang}.html")
     if ret.status == 200
       page = { item: { html: {}, raw_html: {} }, layout: { html: "@raw_yield@yield" } }
       page.item.html[lang] = ""
       page.item.raw_html[lang] = ret.body
 
       page_settings = {}
-      ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+      ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/pages/#{slug}.yml")
       page_settings = lyaml.load(ret.body) if ret.status == 200
 
       page = table_deep_merge(page, page_settings)
       if uselayout
-        page.layout = check_git_layout(db_name, page_settings.layout or 'page')
+        page.layout = check_git_layout(git_folder, db_name, page_settings.layout or 'page')
 
   page
 --------------------------------------------------------------------------------
-page_info = (db_name, slug, lang)->
-  ret = ngx.location.capture("/git/#{db_name}/app/pages/#{slug}.yml")
+page_info = (git_folder, db_name, slug, lang)->
+  ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/pages/#{slug}.yml")
   if ret.status == 200
     { page: lyaml.load(ret.body), folder: {} }
   else
@@ -182,10 +182,11 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
 --------------------------------------------------------------------------------
 -- dynamic_page : check all {{ .* }} and load layout
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
+  git_folder = global_data.git_folder or 'git'
   html = to_json(data)
   if data
     page_builder = (data.layout and data.layout.page_builder) or 'page'
-    page_partial = load_document_by_slug(db_name, page_builder, 'partials')
+    page_partial = load_document_by_slug(git_folder, db_name, page_builder, 'partials')
     global_data.page_partial = page_partial
 
     json = data.item.html.json
@@ -249,12 +250,14 @@ prepare_bindvars = (splat, aql_request, locale = nil)->
 --------------------------------------------------------------------------------
 dynamic_replace = (db_name, html, global_data, history, params)->
   translations = global_data.trads
+  app_settings = {}
+  app_settings = from_json(global_data.settings[1].home) if global_data.settings
+
+  git_folder = app_settings.git_folder and app_settings.git_folder or 'git'
   aqls = global_data.aqls
   helpers = global_data.helpers
   splat = {}
   splat = splat_to_table(params.splat) if params.splat
-  app_settings = {}
-  app_settings = from_json(global_data.settings[1].home) if global_data.settings
 
   -- {{ lang }}
   html = html\gsub('{{ lang }}', params.lang)
@@ -303,7 +306,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         if dataset == ''
           page_html = dynamic_page(
             db_name,
-            load_page_by_slug(db_name, unescape(item), params.lang, false),
+            load_page_by_slug(git_folder, db_name, unescape(item), params.lang, false),
             params, global_data, history, false
           )
         else
@@ -331,7 +334,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      partial = load_document_by_slug(db_name, unescape(item), 'partials', 'etlua')
+      partial = load_document_by_slug(git_folder, db_name, unescape(item), 'partials', 'etlua')
 
       if partial
         db_data = { "page": 1 }
@@ -393,7 +396,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         history[widget] = true
         data = { ids: {}, revisions: {}, names: {} }
         for i, k in pairs(stringy.split(item, '#'))
-          component = load_document_by_slug(db_name, k, 'components', 'riot').item
+          component = load_document_by_slug(git_folder, db_name, k, 'components', 'riot').item
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
@@ -417,7 +420,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         output = ''
         for i, k in pairs(stringy.split(item, '#'))
           name = stringy.split(k, "/")[#stringy.split(k, "/")]
-          component = load_document_by_slug(db_name, k, 'components', 'js').item
+          component = load_document_by_slug(git_folder, db_name, k, 'components', 'js').item
           content = component.javascript or component.html
           table.insert(data.ids, component._key)
           table.insert(data.revisions, component._rev)
@@ -446,7 +449,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'spa'
       if history[widget] == nil -- prevent stack level too deep
         history[widget] = true
-        spa = load_document_by_slug(db_name, item, 'spas', 'html').item
+        spa = load_document_by_slug(git_folder, db_name, item, 'spas', 'html').item
         if spa
           output = spa.html
           t = "#{os.clock!}"
@@ -456,7 +459,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     -- {{ aql | slug }} -- Run an AQL request
     -- e.g. {{ aql | activate_account }}
     if action == 'aql'
-      aql_request = load_document_by_slug(db_name, item, 'aqls', 'aql').item
+      aql_request = load_document_by_slug(git_folder, db_name, item, 'aqls', 'aql').item
       if aql_request
         options = {}
         options = from_json(aql_request.options) if aql_request.options
@@ -506,7 +509,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
     if action == 'external'
       if string.find(item, "://") == nil
-        output = capture("/git/#{db_name}/public/#{item}")
+        output = capture("/#{git_folder}/#{db_name}/public/#{item}")
       else
         output = http_get(item)
     -- {{ json | url | field }}
@@ -541,13 +544,13 @@ dynamic_replace = (db_name, html, global_data, history, params)->
       object = aql(db_name, aql_request, { slug: item })[1]
 
       if object
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.js")
+        ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/layouts/#{params.slug}/vendor.js")
         object.i_js = ret.body if ret.status == 200
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/vendor.scss")
+        ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/layouts/#{params.slug}/vendor.scss")
         object.i_css = ret.body if ret.status == 200
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/js.js")
+        ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/layouts/#{params.slug}/js.js")
         object.javascript = ret.body if ret.status == 200
-        ret = ngx.location.capture("/git/#{db_name}/app/layouts/#{params.slug}/scss.scss")
+        ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/layouts/#{params.slug}/scss.scss")
         object.scss = ret.body if ret.status == 200
 
         js_vendor_hmac = stringy.split(encode_with_secret(object.i_js, ''), '.')[2]\gsub('/', '-')
