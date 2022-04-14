@@ -56,7 +56,7 @@ class FastyAssets extends lapis.Application
       "FOR doc IN datasets FILTER doc._key == @key RETURN doc.@field",
       { "key": "#{@params.key}", 'field': @params.field }
     )[1]
-    content = dynamic_replace("db_#{sub_domain}", data, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", data, global_data[sub_domain], {}, @params)
 
     content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
   ------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ class FastyAssets extends lapis.Application
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/js.js")
       content = ret.body if ret.status == 200
 
-    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'application/javascript', content
     else
@@ -94,7 +94,7 @@ class FastyAssets extends lapis.Application
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.js")
       content = ret.body if ret.status == 200
 
-    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'application/javascript', content
     else
@@ -143,7 +143,7 @@ class FastyAssets extends lapis.Application
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/css.css")
       content = ret.body if ret.status == 200
 
-    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'text/css', content
     else
@@ -162,7 +162,7 @@ class FastyAssets extends lapis.Application
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/db_#{sub_domain}/app/layouts/#{@params.layout}/vendor.css")
       content = ret.body if ret.status == 200
 
-    content = dynamic_replace("db_#{sub_domain}", content, {}, {}, @params)
+    content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
 
     if @req.headers['x-forwarded-host'] != nil then
       content_type: 'text/css', content
