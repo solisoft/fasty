@@ -16,6 +16,7 @@
     "mocha-multi-reporters": "^1.1.4"
   },
   "dependencies": {
-    "arangojs": "^7.2.0"
+    "arangojs": "^7.2.0",
+    "tailwindcss-empty": "^1.0.0"
   }
 }

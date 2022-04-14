@@ -24,10 +24,13 @@ all_domains = nil
 settings = {}
 no_db = {}
 sub_domain = ''
+git_folder = {}
 last_db_connect = os.time(os.date("!*t"))
 
 app_config "development", -> measure_performance true
 
+expire_at = () ->
+  'Expires: ' .. os.date('%a, %d %b %Y %H:%M:%S GMT', os.time() + 60*60*24*365)
 --------------------------------------------------------------------------------
 define_subdomain = ()=>
   sub_domain = @req.headers['x-app'] or stringy.split(@req.headers.host, '.')[1]
@@ -46,6 +49,8 @@ load_settings = ()=>
     global_data[sub_domain]['partials'] = {}
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
+    site_settings = from_json(settings[sub_domain].home)
+    git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or 'git'
 --------------------------------------------------------------------------------
 lua_files = (path)=>
   for file in lfs.dir(path) do
@@ -85,7 +90,7 @@ class extends lapis.Application
   @include 'applications.services'
   @include 'applications.assets'
 
-  lua_files(@, "git/lua") if os.rename("git/lua", "git/lua")
+  lua_files(@, "#{git_folder[sub_domain]}/lua") if os.rename("#{git_folder[sub_domain]}/lua", "#{git_folder[sub_domain]}/lua")
 
   layout: false -- we don't need a layout, it will be loaded dynamically
   ------------------------------------------------------------------------------
@@ -98,9 +103,9 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200)=>
     db_name           = "db_#{sub_domain}"
-    asset = ngx.location.capture("/git/#{db_name}/public/#{@req.parsed_url.path}")
+    asset = ngx.location.capture("/#{git_folder[sub_domain]}/#{db_name}/public/#{@req.parsed_url.path}")
     if asset.status == 200
-      content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body
+      content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body, headers: { 'expires': expire_at! }
     else
       slug              = @params.slug if slug == nil
       slug              = unescape(slug)
@@ -109,16 +114,16 @@ class extends lapis.Application
       @params.lang      = check_valid_lang(settings[sub_domain].langs, @params.lang)
       @session.lang     = @params.lang
       redirection       = load_redirection(db_name, @params)
-      current_page      = load_page_by_slug(db_name, slug, @params.lang)
+      current_page      = load_page_by_slug(git_folder[sub_domain], db_name, slug, @params.lang)
 
       used_lang         = @params.lang
 
-      infos = page_info(db_name, @params.slug, @params.lang)
+      infos = page_info(git_folder[sub_domain], db_name, @params.slug, @params.lang)
 
       if current_page == nil then
         used_lang = stringy.split(settings[sub_domain].langs, ',')[1]
-        infos = page_info(db_name, @params.slug, used_lang)
-        current_page = load_page_by_slug(db_name, slug, used_lang)
+        infos = page_info(git_folder[sub_domain], db_name, @params.slug, used_lang)
+        current_page = load_page_by_slug(git_folder[sub_domain], db_name, slug, used_lang)
 
       html = ''
 
