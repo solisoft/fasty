@@ -23,7 +23,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 var tokens = {}
-console.log("fasty@0.0.38")
+console.log("fasty@0.0.39")
 
 function findFilesInDir(startPath,filter){
 
@@ -284,75 +284,80 @@ if (argv._.length == 0) {
       // <db_name>/app/<component>/<file_path>
       // if path is */app/components/** .riot
       // check if it needs to be compiled
-      if (path[2] == "components") {
-        if(file_ext == "riot") {
-          let yml = file_path + "/" + file_name + ".yml"
-          if(fs.existsSync(yml)) {
-            yml = yaml.safeLoad(fs.readFileSync(yml, "utf8"))
-            if (yml.compiler == "riot5") {
+      var watch_path = argv.tw || "."
+
+      if(watch_path == "." || watch_path == path[1]) {
+
+        if (path[2] == "components") {
+          if(file_ext == "riot") {
+            let yml = file_path + "/" + file_name + ".yml"
+            if(fs.existsSync(yml)) {
+              yml = yaml.safeLoad(fs.readFileSync(yml, "utf8"))
+              if (yml.compiler == "riot5") {
+                const src = fs.readFileSync(original_path, "utf8")
+                var t1 = +new Date()
+                const { code, map } = compile(src, { format: "umd" })
+                minify(code).then(compiled_code => {
+                  var tag = compiled_code.code.replace(
+                    'export default',
+                    'var '+file_name+'='
+                  )
+                  var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
+                  fs.writeSync(file, tag)
+                  fs.closeSync(file)
+                  console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
+                })
+              }
+            } else {
               const src = fs.readFileSync(original_path, "utf8")
-              var t1 = +new Date()
-              const { code, map } = compile(src, { format: "umd" })
-              minify(code).then(compiled_code => {
-                var tag = compiled_code.code.replace(
-                  'export default',
-                  'var '+file_name+'='
-                )
-                var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
-                fs.writeSync(file, tag)
-                fs.closeSync(file)
-                console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
-              })
+                var t1 = +new Date()
+                const { code, map } = compile(src, { format: "umd" })
+                minify(code).then(compiled_code => {
+                  var tag = compiled_code.code.replace(
+                    'export default',
+                    'var '+file_name+'='
+                  )
+                  var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
+                  fs.writeSync(file, tag)
+                  fs.closeSync(file)
+                  console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
+                })
             }
-          } else {
-            const src = fs.readFileSync(original_path, "utf8")
-              var t1 = +new Date()
-              const { code, map } = compile(src, { format: "umd" })
-              minify(code).then(compiled_code => {
-                var tag = compiled_code.code.replace(
-                  'export default',
-                  'var '+file_name+'='
-                )
-                var file = fs.openSync(file_path + "/" + file_name + ".js", "w+")
-                fs.writeSync(file, tag)
-                fs.closeSync(file)
-                console.log("tag " + file_name + ".js compiled in " +(+new Date() - t1) +"ms")
-              })
           }
         }
-      }
 
-      if (path[2] == "apis" && path[4] != "package-lock.json") {
-        console.log("Upgrading API endpoint /" + path[3])
-        execSync("cd " + path.slice(0, 4).join("/") + " && npm i")
-        execSync("foxx uninstall --database "+ path[0] +" --server fasty /" + path[3])
-        execSync("foxx install --database "+ path[0] +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
-        console.log("Done")
-      }
-      // if path is */app/apis/**
-      // install service
+        if (path[1] == watch_path && path[2] == "apis" && path[4] != "package-lock.json") {
+          console.log("Upgrading API endpoint /" + path[3])
+          execSync("cd " + path.slice(0, 4).join("/") + " && npm i")
+          execSync("foxx uninstall --database "+ path[0] +" --server fasty /" + path[3])
+          execSync("foxx install --database "+ path[0] +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
+          console.log("Done")
+        }
+        // if path is */app/apis/**
+        // install service
 
-      if (_.last(_.last(path).split(".")) == "scss" && original_path.indexOf("_tw_src") < 0) {
+        if (_.last(_.last(path).split(".")) == "scss" && original_path.indexOf("_tw_src") < 0) {
 
-        var t1 = +new Date()
-        console.log("Compiling " + original_path)
-        var result = sass.renderSync({
-          data: fs.readFileSync(original_path, "utf8"),
-          outputStyle: "compressed"
-        });
+          var t1 = +new Date()
+          console.log("Compiling " + original_path)
+          var result = sass.renderSync({
+            data: fs.readFileSync(original_path, "utf8"),
+            outputStyle: "compressed"
+          });
 
-        var file = fs.openSync(file_path + "/" + file_name + ".css", "w+")
-        fs.writeSync(file, result.css)
-        fs.closeSync(file)
-        console.log(file_name + ".css compiled in " +(+new Date() - t1) +"ms")
-      }
-      // **/*.scss
-      // compile to css
-      // check for tailwindcss
+          var file = fs.openSync(file_path + "/" + file_name + ".css", "w+")
+          fs.writeSync(file, result.css)
+          fs.closeSync(file)
+          console.log(file_name + ".css compiled in " +(+new Date() - t1) +"ms")
+        }
+        // **/*.scss
+        // compile to css
+        // check for tailwindcss
 
-      if (_.last(_.last(path).split(".")) == "css" && original_path.indexOf("_tw_src") >= 0) {
-        //var input = path.join("/")
-        //execSync("tailwind -i " + input + " -o " + input.replace("_tw_src", "") + " --minify")
+        if (_.last(_.last(path).split(".")) == "css" && original_path.indexOf("_tw_src") >= 0) {
+          //var input = path.join("/")
+          //execSync("tailwind -i " + input + " -o " + input.replace("_tw_src", "") + " --minify")
+        }
       }
 
     }
