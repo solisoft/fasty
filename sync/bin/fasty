@@ -285,9 +285,7 @@ if (argv._.length == 0) {
       // if path is */app/components/** .riot
       // check if it needs to be compiled
       var watch_path = argv.tw || "."
-
-      if(watch_path == "." || watch_path == path[1]) {
-
+      if(watch_path == "." || watch_path == path[0]) {
         if (path[2] == "components") {
           if(file_ext == "riot") {
             let yml = file_path + "/" + file_name + ".yml"
@@ -326,7 +324,7 @@ if (argv._.length == 0) {
           }
         }
 
-        if (path[1] == watch_path && path[2] == "apis" && path[4] != "package-lock.json") {
+        if (path[2] == "apis" && path[4] != "package-lock.json") {
           console.log("Upgrading API endpoint /" + path[3])
           execSync("cd " + path.slice(0, 4).join("/") + " && npm i")
           execSync("foxx uninstall --database "+ path[0] +" --server fasty /" + path[3])
