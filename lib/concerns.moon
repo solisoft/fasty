@@ -345,7 +345,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
           if args['req']
             aql_request = aqls[args['req']]
             unless aql_request
-              ret = ngx.location.capture("/git/#{db_name}/app/aqls/#{args['req']}.aql")
+              ret = ngx.location.capture("/#{git_folder}/#{db_name}/app/aqls/#{args['req']}.aql")
               aql_request = ret.body if ret.status == 200
             args['aql'] = aql_request\gsub('{{ lang }}', params.lang)
             aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""

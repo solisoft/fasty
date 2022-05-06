@@ -1,6 +1,6 @@
 {
   "name": "fasty-cli",
-  "version": "0.0.42",
+  "version": "0.0.43",
   "description": "CLI for Fasty",
   "main": "index.js",
   "scripts": {
