@@ -15,7 +15,7 @@ RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/v
     && ./configure \
     && make && make install && ldconfig && cd .. && rm -Rf vips-*
 
-ARG OPENRESTY_VERSION=1.19.9.1
+ARG OPENRESTY_VERSION=1.21.4.1
 
 RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar xf openresty-${OPENRESTY_VERSION}.tar.gz \
@@ -45,6 +45,7 @@ RUN luarocks install web_sanitize
 RUN luarocks install luasec
 RUN luarocks install cloud_storage
 RUN luarocks install lua-resty-jwt
+RUN luarocks install fun
 RUN apt-get -qqy install libyaml-dev
 RUN luarocks --server=http://rocks.moonscript.org install lyaml
 
@@ -53,7 +54,7 @@ RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
 
 RUN wget https://download.arangodb.com/arangodb38/DEBIAN/Release.key && \
     apt-key add - < Release.key && \
-    echo 'deb https://download.arangodb.com/arangodb38/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
+    echo 'deb https://download.arangodb.com/arangodb39/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
     apt-get update && \
     apt-get install apt-transport-https && \
     apt-get install arangodb3-client

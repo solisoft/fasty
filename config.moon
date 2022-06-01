@@ -20,13 +20,13 @@ config "db_development", ->
   url "http://12.12.0.6:8529/"
   name "cms"
   login "root"
-  pass  "Bl4z1ngF4st!"
+  pass  "password"
 
 config "db_production", ->
   url "http://12.12.0.6:8529/"
   name "cms"
   login "root"
-  pass  "Bl4z1ngF4st!"
+  pass  "password"
 
 -- for test purpose
 config "db_test", ->
