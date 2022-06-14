@@ -1,9 +1,13 @@
 import encode_base64 from require 'lapis.util.encoding'
+import uuid from require 'lib.utils'
 --------------------------------------------------------------------------------
 isempty = (s)-> s == nil or s == ''
 --------------------------------------------------------------------------------
 settings_basic_auth = (item)->
-  'Basic ' .. encode_base64("#{item.ba_login}:#{item.ba_pass}")
+  if not isempty(item.ba_login) and not isempty(item.ba_pass) then
+    'Basic ' .. encode_base64("#{item.ba_login}:#{item.ba_pass}")
+  else
+    uuid!
 --------------------------------------------------------------------------------
 basic_auth = (app, setting, page_info)->
   if app.req.headers['authorization']
