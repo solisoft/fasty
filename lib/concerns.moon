@@ -317,9 +317,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             params, global_data, history, false
           )
 
-        output ..= dynamic_replace(db_name OR      )
-
-        output ..= dyna_mic_replace(db_name, page_html, global_data, history, params)
+        output ..= dynamic_replace(db_name , page_html, global_data, history, params)
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
