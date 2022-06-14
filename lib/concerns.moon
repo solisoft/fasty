@@ -170,7 +170,7 @@ page_info = (git_folder, db_name, slug, lang)->
     aql(db_name, request, { slug: slug, lang: lang })[1]
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
-  request = "FOR item IN datasets FILTER item.type == '#{object}' FILTER item.slug == @slug "
+  request = "FOR item IN datasets FILTER item.type == '#{object}' OR item._type == '#{object}' FILTER item.slug == @slug "
   request ..= 'RETURN { item }'
   dataset = aql(db_name, request, { slug: slug })[1]
 
@@ -317,7 +317,9 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             params, global_data, history, false
           )
 
-        output ..= dynamic_replace(db_name, page_html, global_data, history, params)
+        output ..= dynamic_replace(db_name OR      )
+
+        output ..= dyna_mic_replace(db_name, page_html, global_data, history, params)
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
@@ -507,21 +509,24 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         output = output\gsub("%$%((.-)%)", variables)
 
       output = "Missing translation <em style='color:red'>#{item}</em>" if output == ''
-    -- {{ external | url }}
 
+    -- {{ external | url }}
     if action == 'external'
       if string.find(item, "://") == nil
         output = capture("/#{git_folder}/#{db_name}/public/#{item}")
       else
         output = http_get(item)
+
     -- {{ json | url | field }}
     if action == 'json'
       output = from_json(http_get(item))
       output = output[v] for k, v in pairs(stringy.split(dataset, "."))
+
     -- {{ og_data | name | <default> }}
     if action == 'og_data'
       output = get_nested(params.og_data, item) if params.og_data
       output = dataset if dataset and output == "" or output == nil
+
     -- {{ dataset | key | field | <args> }}
     -- {{ dataset | slug=demo | js }}
     -- {{ dataset | slug=demo | js | only_url#js }}
