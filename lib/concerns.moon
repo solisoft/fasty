@@ -481,7 +481,6 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         value = key[3]
       key = key[1]
 
-
       unless translations[item]
         aql(
           db_name, 'INSERT { key: @key, value: { @lang: @value }, type: "trads" } IN trads',
