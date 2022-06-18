@@ -474,10 +474,18 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     -- e.g. with multi {{ tr | You have $(num) items in your cart | num/5 | multi#true }}
     if action == 'tr'
       output = ""
+      key = stringy.split(item, "@@")
+      value = item
+
+      if #key == 3
+        value = key[3]
+      key = key[1]
+
+
       unless translations[item]
         aql(
-          db_name, 'INSERT { key: @key, value: { @lang: @key }, type: "trads" } IN trads',
-          { key: item, lang: params.lang }
+          db_name, 'INSERT { key: @key, value: { @lang: @value }, type: "trads" } IN trads',
+          { key: item, lang: params.lang, value: value }
         )
         if args['multi']
           aql(
