@@ -439,8 +439,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..= dynamic_replace(db_name, content, global_data, history, params)
 
         if dataset == 'url'
-          output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"("[[", "{{")
-          output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"("]]", "}}")
+          output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"
+          output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"
         if dataset == 'tag'
           output = '<script type="module">'
           output ..= table.concat(data.js,"\n")
