@@ -428,6 +428,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
           table.insert(data.js, content)
 
           if dataset == 'mount'
+            content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
             output ..= '<script type="module">'
             output ..= dynamic_replace(db_name, content, global_data, history, params)
             output ..= "riot.register('#{name}', #{name});"
@@ -481,35 +482,35 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         value = key[3]
       key = key[1]
 
-      unless translations[item]
+      unless translations[key]
         aql(
           db_name, 'INSERT { key: @key, value: { @lang: @value }, type: "trads" } IN trads',
-          { key: item, lang: params.lang, value: value }
+          { key: key, lang: params.lang, value: value }
         )
         if args['multi']
           aql(
             db_name, 'INSERT { key: @key, value: { @lang: @value }, type: "trads" } IN trads',
-            { key: item .. " :0:", value: item, lang: params.lang }
+            { key: key .. " :0:", value: value, lang: params.lang }
           )
           aql(
             db_name, 'INSERT { key: @key, value: { @lang: @value }, type: "trads" } IN trads',
-            { key: item .. " :1:", value: item, lang: params.lang }
+            { key: key .. " :1:", value: value, lang: params.lang }
           )
 
-        output = item
+        output = value
 
       default_lang = stringy.split(global_data.settings[1].langs, ",")[1]
-      if translations[item]
-        output = translations[item][params.lang] or translations[item][default_lang] or ""
+      if translations[key]
+        output = translations[key][params.lang] or translations[key][default_lang] or ""
 
       if dataset
         variables = splat_to_table(dataset)
         if args['multi']
           _k, v =  next(variables) -- check a value
           if v == "0"
-            output = translations[item .. " :0:"][params.lang] or translations[item .. " :0:"][default_lang] or ""
+            output = translations[key .. " :0:"][params.lang] or translations[key .. " :0:"][default_lang] or ""
           if v == "1"
-            output = translations[item .. " :1:"][params.lang] or translations[item .. " :1:"][default_lang] or ""
+            output = translations[key .. " :1:"][params.lang] or translations[key .. " :1:"][default_lang] or ""
 
         output = output\gsub("%$%((.-)%)", variables)
 
