@@ -437,6 +437,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..='</script>'
 
           if dataset == 'source'
+            params.escape = true
             content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
             output ..= dynamic_replace(db_name, content, global_data, history, params)
 
