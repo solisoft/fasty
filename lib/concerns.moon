@@ -430,6 +430,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
           if dataset == 'mount'
             content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
             output ..= '<script type="module">'
+            params.escape = true
             output ..= dynamic_replace(db_name, content, global_data, history, params)
             output ..= "riot.register('#{name}', #{name});"
             output ..= "riot.mount('#{name}')"
@@ -513,6 +514,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output = translations[key .. " :1:"][params.lang] or translations[key .. " :1:"][default_lang] or ""
 
         output = output\gsub("%$%((.-)%)", variables)
+
+      output = output\gsub("'", "\\'") if params.escape
 
       output = "Missing translation <em style='color:red'>#{item}</em>" if output == ''
 
