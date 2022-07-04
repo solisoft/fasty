@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile_node
     command: /bin/bash -c "yarn && yarn start"
     ports:
-      - 4002:4001
+      - 4001:4001
     volumes:
       - ./foxxy/:/workspace
       - node_modules:/workspace/node_modules
@@ -16,14 +16,14 @@ services:
     links:
       - arangodb:arangodb
     networks:
-      brian:
+      frontend:
 
   cms:
     build: .
     #image: solisoft/fasty
     command: /bin/bash -c "cd /var/www && lapis server"
     ports:
-      - 8081:8080
+      - 8080:8080
     volumes:
       - ./:/var/www:delegated
     depends_on:
@@ -32,8 +32,8 @@ services:
     links:
       - arangodb:arangodb
     networks:
-      brian:
-        ipv4_address: 14.12.0.7
+      frontend:
+        ipv4_address: 12.12.0.7
 
   cms_prod:
     #build: .
@@ -41,7 +41,7 @@ services:
     restart: always
     command: /bin/bash -c "cd /var/www && moonc *.moon && moonc **/*.moon && lapis server production"
     ports:
-      - 9091:80
+      - 9090:80
     volumes:
       - ./:/var/www:delegated
     depends_on:
@@ -49,8 +49,8 @@ services:
     links:
       - arangodb:arangodb
     networks:
-      brian:
-        ipv4_address: 14.12.0.8
+      frontend:
+        ipv4_address: 12.12.0.8
 
   arangodb:
     image: arangodb:latest
@@ -59,14 +59,26 @@ services:
     environment:
       ARANGO_ROOT_PASSWORD: password
     networks:
-      brian:
-        ipv4_address: 14.12.0.6
+      frontend:
+        ipv4_address: 12.12.0.6
     ports:
-      - 8530:8529
+      - 8529:8529
     volumes:
       - arangodb-data:/var/lib/arangodb3
       - arangodb-app:/var/lib/arangodb3-apps
 
+  nginx:
+    image: nginx:1.17.3
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8000:80
+    links:
+      - cms
+    networks:
+      frontend:
+        ipv4_address: 12.12.0.10
 
 volumes:
   arangodb-data:
@@ -75,7 +87,7 @@ volumes:
   node_modules_resize:
 
 networks:
-  brian:
+  frontend:
     ipam:
       config:
-        - subnet: 14.12.0.0/24
+        - subnet: 12.12.0.0/24

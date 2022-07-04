@@ -31,6 +31,7 @@ list_databases = ()->
 --------------------------------------------------------------------------------
 auth_arangodb = (db_name, cfg)->
   db_config = cfg
+  print db_config.url
   body, status_code = http_request(
     "#{db_config.url}_open/auth", "POST",
     to_json({ username: db_config.login, password: db_config.pass })
