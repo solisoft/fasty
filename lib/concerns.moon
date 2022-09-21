@@ -518,7 +518,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
       output = output\gsub("'", "\\'") if params.escape
 
-      output = "Missing translation <em style=\"color:red\">#{item}</em>" if output == ''
+      output = "Missing translation <em>#{item}</em>" if output == ''
 
     -- {{ external | url }}
     if action == 'external'
