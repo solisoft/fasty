@@ -51,9 +51,8 @@ raw_aql = (db_name, stm)->
 
   while has_more
     body      = api_run(db_name, "/cursor/#{body["id"]}", 'PUT')
-    more      = from_json(body)
-    result    = table_merge(result,  more['result'])
-    has_more  = more['hasMore']
+    result    = table_merge(result,  body['result'])
+    has_more  = body['hasMore']
 
   result = {} if result == nil
   result

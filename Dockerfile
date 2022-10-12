@@ -43,6 +43,7 @@ RUN luarocks install busted
 RUN luarocks install sass
 RUN luarocks install web_sanitize
 RUN luarocks install luasec
+RUN luarocks install luaexpat 1.4.1-1
 RUN luarocks install cloud_storage
 RUN luarocks install lua-resty-jwt
 RUN luarocks install fun
