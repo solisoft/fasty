@@ -62,7 +62,7 @@ services:
       brian:
         ipv4_address: 14.12.0.6
     ports:
-      - 8530:8529
+      - 8529:8529
     volumes:
       - arangodb-data:/var/lib/arangodb3
       - arangodb-app:/var/lib/arangodb3-apps
