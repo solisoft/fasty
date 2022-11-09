@@ -18,7 +18,7 @@
     "js-yaml": "^3.14.1",
     "lodash": "^4.17.21",
     "node-notifier": "^8.0.2",
-    "node-sass": "^6.0.1",
+    "node-sass": "^7.0.0",
     "request": "^2.88.2",
     "socket.io": "^2.4.1",
     "terser": "^5.11.0",
