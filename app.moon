@@ -50,7 +50,8 @@ load_settings = ()=>
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
     site_settings = from_json(settings[sub_domain].home)
-    git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or 'git'
+    git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or "git/db_#{sub_domain}"
+    
 --------------------------------------------------------------------------------
 lua_files = (path)=>
   for file in lfs.dir(path) do
@@ -103,7 +104,8 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200)=>
     db_name           = "db_#{sub_domain}"
-    asset = ngx.location.capture("/#{git_folder[sub_domain]}/#{db_name}/public/#{@req.parsed_url.path}")
+    
+    asset = ngx.location.capture("/#{git_folder[sub_domain]}/public/#{@req.parsed_url.path}")
     if asset.status == 200
       content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body, headers: { 'expires': expire_at! }
     else

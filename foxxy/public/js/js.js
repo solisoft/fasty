@@ -631,6 +631,14 @@ var Common = {
 module.exports = Common;
 });
 
+require.register("js/config.js", function(exports, require, module) {
+var Config = {
+  ".fasty.ovh": "https://fasty.ovh/_db/"
+};
+
+module.exports = Config;
+});
+
 require.register("js/editor.js", function(exports, require, module) {
 /* jshint asi: true */
 (function ($) {
