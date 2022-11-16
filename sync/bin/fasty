@@ -309,7 +309,8 @@ if(argv.compile) {
     })
   }
 } else {
-  if (argv._.length == 0) {
+  if (argv._.length == 0 || argv.db) {
+
     console.log("Searching for tailwind css files ...")
 
     let tw_files = findFilesInDir(argv.tw || ".", "_tw_src")
@@ -356,11 +357,13 @@ if(argv.compile) {
             }
           }
 
+          var dbname = argv.db || path[0]
+
           if (path[2] == "apis" && path[4] != "package-lock.json") {
             console.log("Upgrading API endpoint /" + path[3])
             execSync("cd " + path.slice(0, 4).join("/") + " && npm i")
-            execSync("foxx uninstall --database "+ path[0] +" --server fasty /" + path[3])
-            execSync("foxx install --database "+ path[0] +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
+            execSync("foxx uninstall --database "+ dbname +" --server fasty /" + path[3])
+            execSync("foxx install --database "+ dbname +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
             console.log("Done")
           }
           // if path is */app/apis/**
