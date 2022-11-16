@@ -633,7 +633,9 @@ module.exports = Common;
 
 require.register("js/config.js", function(exports, require, module) {
 var Config = {
-  ".fasty.ovh": "https://fasty.ovh/_db/"
+  ".fasty.ovh": "/_db/",
+  ".whoistheboss.ovh": "/_db/",
+  ".inseytel.com": "/_db/",
 };
 
 module.exports = Config;
