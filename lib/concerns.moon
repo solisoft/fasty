@@ -182,11 +182,12 @@ load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
 --------------------------------------------------------------------------------
 -- dynamic_page : check all {{ .* }} and load layout
 dynamic_page = (db_name, data, params, global_data, history = {}, uselayout = true)->
-  git_folder = global_data.git_folder or 'git'
+  app_settings = from_json(global_data.settings[1].home)
+  git_folder = app_settings.git_folder or 'git'
   html = to_json(data)
   if data
     page_builder = (data.layout and data.layout.page_builder) or 'page'
-    page_partial = load_document_by_slug(git_folder, db_name, page_builder, 'partials')
+    page_partial = load_document_by_slug(git_folder, db_name, page_builder, 'partials', 'etlua')
     global_data.page_partial = page_partial
 
     json = data.item.html.json
