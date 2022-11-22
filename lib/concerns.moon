@@ -516,8 +516,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
         output = output\gsub("%$%((.-)%)", variables)
 
-      output = output\gsub("'", "\\'") if params.escape
-
+      output = output\gsub("'", "‘") if params.escape
+      
       output = "Missing translation <em>#{item}</em>" if output == ''
 
     -- {{ external | url }}
