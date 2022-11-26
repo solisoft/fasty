@@ -96,11 +96,11 @@ load_document_by_slug = (git_folder, db_name, slug, object, ext = 'html')->
     { item: { html: ret.body, _key: "#{slug}", _rev: _rev } }
   else
     request = "FOR item IN #{object} FILTER item.slug == @slug RETURN { item }"
-    aql(db_name, request, { slug: slug })[1]
+    aql(db_name, request, { slug: slug })['result'][1]
 --------------------------------------------------------------------------------
 load_page_by_slug = (git_folder, db_name, slug, lang, uselayout = true)->
   request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
-  page = aql(db_name, request, { slug: slug, lang: lang })[1]
+  page = aql(db_name, request, { slug: slug, lang: lang })['result'][1]
 
   page_settings = {}
   ret = ngx.location.capture("/#{git_folder}/app/pages/#{slug}.yml")
@@ -116,7 +116,7 @@ load_page_by_slug = (git_folder, db_name, slug, lang, uselayout = true)->
 
     if uselayout
       request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
-      layout = aql(db_name, request, { key: page.item.layout_id })[1]
+      layout = aql(db_name, request, { key: page.item.layout_id })['result'][1]
       if layout
         page.layout = layout
         layout_name = layout.name
@@ -167,12 +167,12 @@ page_info = (git_folder, db_name, slug, lang)->
         )[0]
 
         RETURN { page: UNSET(page, 'html'), folder: path == null ? folder : path }"
-    aql(db_name, request, { slug: slug, lang: lang })[1]
+    aql(db_name, request, { slug: slug, lang: lang })['result'][1]
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
   request = "FOR item IN datasets FILTER item.type == '#{object}' OR item._type == '#{object}' FILTER item.slug == @slug "
   request ..= 'RETURN { item }'
-  dataset = aql(db_name, request, { slug: slug })[1]
+  dataset = aql(db_name, request, { slug: slug })['result'][1]
 
   if dataset
     publication = document_get(db_name, 'publications/' .. object .. '_' .. dataset.item._key)
@@ -219,7 +219,7 @@ load_redirection = (db_name, params)->
     LET layout = (FOR l IN layouts FILTER l._id == r.layout_id RETURN l)[0]
     RETURN { item: r, spa_name: spa.name, layout }
   '
-  redirection = aql(db_name, request, { slug: params.slug })[1]
+  redirection = aql(db_name, request, { slug: params.slug })['result'][1]
 
   if redirection ~= nil then
 
@@ -291,7 +291,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
       if dataset ~= ''
         request = 'FOR item IN datasets FILTER item._id == @key '
         request ..= 'RETURN item'
-        object = aql(db_name, request, { key: 'datasets/' .. item })[1]
+        object = aql(db_name, request, { key: 'datasets/' .. item })['result'][1]
         output = etlua2html(object[dataset].json, global_data.page_partial, params, global_data)
       else
         if params.og_data
@@ -348,6 +348,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             unless aql_request
               ret = ngx.location.capture("/#{git_folder}/app/aqls/#{args['req']}.aql")
               aql_request = ret.body if ret.status == 200
+              ret = ngx.location.capture("/#{git_folder}/app/aqls/#{args['req']}.options")
+              aql_options = from_json(ret.body) if ret.status == 200
             args['aql'] = aql_request\gsub('{{ lang }}', params.lang)
             aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
 
@@ -374,8 +376,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
               args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
               args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
-          db_data = { results: aql(db_name, args['aql'], bindvar, aql_options) }
-          db_data = table_deep_merge(db_data, { _params: args })
+          req = aql(db_name, args['aql'], bindvar, aql_options)
+          db_data = { results: req['result'], extra: req['extra'], _params: args }
 
         if dataset == 'rest'
           db_data = from_json(http_get(args['url'], args['headers']))
@@ -469,7 +471,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
       if aql_request
         options = {}
         options = from_json(aql_request.options) if aql_request.options
-        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql), options)
+        aql(db_name, aql_request.aql, prepare_bindvars(splat, aql_request.aql), options)['result']
         output = "&nbsp;"
 
     -- {{ tr | slug (| keys/values | multi#true) }}
@@ -544,7 +546,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'dataset'
       item = stringy.split(item, '=')
       request = 'FOR item IN datasets FILTER item.@field == @value RETURN item'
-      object = aql(db_name, request, { field: item[1], value: item[2] })[1]
+      object = aql(db_name, request, { field: item[1], value: item[2] })['result'][1]
       if object
         if args['only_url']
           output = "/#{params.lang}/ds/#{object._key}/#{dataset}/#{object._rev}.#{args['only_url']}"
@@ -559,7 +561,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     -- fields are : js, css, js_vendor, css_vendor
     if action == 'layout'
       aql_request = 'FOR layout IN layouts FILTER layout.name == @slug RETURN layout'
-      object = aql(db_name, aql_request, { slug: item })[1]
+      object = aql(db_name, aql_request, { slug: item })['result'][1]
 
       if object
         ret = ngx.location.capture("/#{git_folder}/app/layouts/#{params.slug}/vendor.js")

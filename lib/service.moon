@@ -33,7 +33,7 @@ install_service = (sub_domain, name)->
       LET tests = (FOR t IN api_tests FILTER t.api_id == api._key RETURN t)
       LET libs = (FOR l IN api_libs FILTER l.api_id == api._key RETURN l)
       RETURN { api, routes, scripts, tests, libs }'
-    api = aql("db_#{sub_domain}", request, { 'name': name })[1]
+    api = aql("db_#{sub_domain}", request, { 'name': name })['result'][1]
 
     write_content("#{path}/APP/main.js", api.api.code)
     write_content("#{path}/APP/package.json", api.api.package)
@@ -61,7 +61,7 @@ install_script = (sub_domain, name)->
     path = "scripts/#{sub_domain}/#{name}"
     os.execute("mkdir -p #{path}")
     request = 'FOR script IN scripts FILTER script.name == @name RETURN script'
-    script = aql("db_#{sub_domain}", request, { 'name': name })[1]
+    script = aql("db_#{sub_domain}", request, { 'name': name })['result'][1]
     write_content("#{path}/package.json", script.package)
     os.execute("export PATH='$PATH:/usr/local/bin' && cd #{path} && yarn")
     write_content("#{path}/index.js", script.code)
@@ -74,7 +74,7 @@ deploy_site = (sub_domain, settings)->
   deploy_to = stringy.split(settings.deploy_secret, '#')
 
   request = 'FOR s IN settings LIMIT 1 RETURN s'
-  sub_domain_settings = aql(deploy_to[1], request)[1]
+  sub_domain_settings = aql(deploy_to[1], request)['result'][1]
 
   if deploy_to[2] == sub_domain_settings.secret
     os.execute("mkdir -p #{path}")
@@ -93,7 +93,7 @@ deploy_site = (sub_domain, settings)->
     --   install_script(deploy_to[1], item.name)
 
     -- Restart apis
-    apis = aql(deploy_to[1], 'FOR api IN apis RETURN api')
+    apis = aql(deploy_to[1], 'FOR api IN apis RETURN api')['result']
     for k, item in pairs apis
       install_service(deploy_to[1]\gsub('db_', ''), item.name)
 --------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ compile_riotjs = (sub_domain, name, id)->
 compile_tailwindcss = (sub_domain, layout_id, field)->
   subdomain = 'db_' .. sub_domain
   layout = document_get(subdomain, "layouts/" .. layout_id)
-  settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')[1]
+  settings = aql(subdomain, 'FOR s IN settings LIMIT 1 RETURN s')['result'][1]
   home_settings = from_json(settings.home)
   langs = stringy.split(settings.langs, ',')
 
@@ -135,16 +135,16 @@ compile_tailwindcss = (sub_domain, layout_id, field)->
       subdomain,
       'FOR page IN partials FILTER page.slug == @slug RETURN page.html',
       { slug: home_settings.tailwindcss_config }
-    )[1]
+    )['result'][1]
 
   write_content("#{path}/tailwind.config.js", config_file) if config_file
   -- Layouts
-  layouts = aql(subdomain, 'FOR doc IN layouts RETURN { html: doc.html }')
+  layouts = aql(subdomain, 'FOR doc IN layouts RETURN { html: doc.html }')['result']
   for k, item in pairs layouts
     write_content("#{path}/layout_#{k}.html", item.html)
 
   -- Pages
-  pages = aql(subdomain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')
+  pages = aql(subdomain, 'FOR doc IN pages RETURN { html: doc.html, raw_html: doc.raw_html }')['result']
   for k, item in pairs pages
     for k2, lang in pairs langs
       lang = stringy.strip(lang)
@@ -156,17 +156,17 @@ compile_tailwindcss = (sub_domain, layout_id, field)->
       write_content("#{path}/page_#{k}_#{lang}.html", html)
 
   -- Components
-  components = aql(subdomain, 'FOR doc IN components RETURN { html: doc.html }')
+  components = aql(subdomain, 'FOR doc IN components RETURN { html: doc.html }')['result']
   for k, item in pairs components
     write_content("#{path}/component_#{k}.html", item.html)
 
   -- Partials
-  partials = aql(subdomain, 'FOR doc IN partials RETURN { html: doc.html }')
+  partials = aql(subdomain, 'FOR doc IN partials RETURN { html: doc.html }')['result']
   for k, item in pairs partials
     write_content("#{path}/partial_#{k}.html", item.html)
 
   -- Widgets
-  partials = aql(subdomain, 'FOR doc IN widgets RETURN { html: doc.partial }')
+  partials = aql(subdomain, 'FOR doc IN widgets RETURN { html: doc.partial }')['result']
   for k, item in pairs partials
     write_content("#{path}/widget_#{k}.html", item.html)
 

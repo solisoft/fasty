@@ -55,7 +55,7 @@ class FastyAssets extends lapis.Application
       "db_#{sub_domain}",
       "FOR doc IN datasets FILTER doc._key == @key RETURN doc.@field",
       { "key": "#{@params.key}", 'field': @params.field }
-    )[1]
+    )['result'][1]
     content = dynamic_replace("db_#{sub_domain}", data, global_data[sub_domain], {}, @params)
 
     content_type: define_content_type(".#{@params.ext}"), content, headers: { "Service-Worker-Allowed": "/" }
@@ -69,7 +69,7 @@ class FastyAssets extends lapis.Application
         "db_#{sub_domain}",
         "FOR doc in layouts FILTER doc._key == @key RETURN doc.javascript",
         { 'key': "#{@params.layout}" }
-      )[1]
+      )['result'][1]
     else
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/layouts/#{@params.layout}/js.js")
       content = ret.body if ret.status == 200
@@ -89,7 +89,7 @@ class FastyAssets extends lapis.Application
         "db_#{sub_domain}",
         "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_js",
         { 'key': "#{@params.layout}" }
-      )[1]
+      )['result'][1]
     else
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/layouts/#{@params.layout}/vendor.js")
       content = ret.body if ret.status == 200
@@ -110,7 +110,7 @@ class FastyAssets extends lapis.Application
         "db_#{sub_domain}",
         "FOR doc in spas FILTER doc._key == @key RETURN doc.js",
         { 'key': "#{@params.key}" }
-      )[1]
+      )['result'][1]
     else
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/spas/#{@params.key\gsub("@", "/")}.js")
       content = ret.body if ret.status == 200
@@ -134,7 +134,7 @@ class FastyAssets extends lapis.Application
             RETURN { scss: doc.scss, compiled_css: doc.compiled_css }
         ",
         { 'key': "#{@params.layout}" }
-      )[1]
+      )['result'][1]
       if type(layout.compiled_css) ~= "userdata"
         content = layout.compiled_css
       else
@@ -157,7 +157,7 @@ class FastyAssets extends lapis.Application
         "db_#{sub_domain}",
         "FOR doc in layouts FILTER doc._key == @key RETURN doc.i_css",
         { 'key': "#{@params.layout}" }
-      )[1]
+      )['result'][1]
     else
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/layouts/#{@params.layout}/vendor.css")
       content = ret.body if ret.status == 200
@@ -177,7 +177,7 @@ class FastyAssets extends lapis.Application
         content ..= aql(
           "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
           { 'key': "#{key}" }
-        )[1] .. "\n"
+        )['result'][1] .. "\n"
     else
       ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/components/#{@params.key\gsub("@", "/")}.riot")
       content = ret.body if ret.status == 200
@@ -196,7 +196,7 @@ class FastyAssets extends lapis.Application
         content ..= aql(
           "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.javascript",
           { 'key': "#{key}" }
-        )[1] .. "\n"
+        )['result'][1] .. "\n"
     else
       for i, key in pairs(stringy.split(unescape(@params.key), '|'))
         ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/components/#{key\gsub("@", "/")}.js")

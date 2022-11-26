@@ -19,8 +19,9 @@ services:
       fasty:
 
   cms:
-    #build: .
-    image: solisoft/fasty
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: /bin/bash -c "cd /var/www && lapis server"
     ports:
       - 8081:8080

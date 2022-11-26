@@ -45,13 +45,13 @@ load_settings = ()=>
   if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true
   else
-    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
+    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)['result'][1]
     global_data[sub_domain]['partials'] = {}
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
     site_settings = from_json(settings[sub_domain].home)
     git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or "git/db_#{sub_domain}"
-    
+
 --------------------------------------------------------------------------------
 lua_files = (path)=>
   for file in lfs.dir(path) do
@@ -104,7 +104,7 @@ class extends lapis.Application
   ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200)=>
     db_name           = "db_#{sub_domain}"
-    
+
     asset = ngx.location.capture("/#{git_folder[sub_domain]}/public/#{@req.parsed_url.path}")
     if asset.status == 200
       content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body, headers: { 'expires': expire_at! }
@@ -141,7 +141,7 @@ class extends lapis.Application
         splat = {}
         splat = splat_to_table(@params.splat) if @params.splat
         bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
-        @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
+        @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)['result'][1]
 
       if redirection == nil then
         params_lang = @params.lang
