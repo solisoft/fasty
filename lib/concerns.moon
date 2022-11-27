@@ -377,6 +377,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
               args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
           req = aql(db_name, args['aql'], bindvar, aql_options)
+          print(to_json(req))
           db_data = { results: req['result'], extra: req['extra'], _params: args }
 
         if dataset == 'rest'
@@ -520,7 +521,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         output = output\gsub("%$%((.-)%)", variables)
 
       output = output\gsub("'", "‘") if params.escape
-      
+
       output = "Missing translation <em>#{item}</em>" if output == ''
 
     -- {{ external | url }}
