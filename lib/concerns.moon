@@ -82,7 +82,7 @@ etlua2html = (json, partial, params, global_data)->
       'dataset': json, 'to_json': to_json, 'web_sanitize': web_sanitize,
       'lang': params.lang, 'params': params, 'to_timestamp': to_timestamp,
       'settings': from_json(global_data.settings[1].home), 'unescape': unescape
-      'stringy': stringy
+      'stringy': stringy, 'splat_to_table': splat_to_table
     }
   )
   data
@@ -377,7 +377,6 @@ dynamic_replace = (db_name, html, global_data, history, params)->
               args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
           req = aql(db_name, args['aql'], bindvar, aql_options)
-          print(to_json(req))
           db_data = { results: req['result'], extra: req['extra'], _params: args }
 
         if dataset == 'rest'
