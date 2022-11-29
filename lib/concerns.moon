@@ -112,7 +112,9 @@ load_page_by_slug = (git_folder, db_name, slug, lang, uselayout = true)->
     page.item = publication.data if publication.code == 200
 
     ret = ngx.location.capture("/#{git_folder}/app/pages/#{slug}_#{lang}.html")
-    page.item.raw_html[lang] = ret.body if ret.status == 200
+    if ret.status == 200
+      page.item.raw_html = {} if page.item.raw_html == null
+      page.item.raw_html[lang] = ret.body 
 
     if uselayout
       request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
