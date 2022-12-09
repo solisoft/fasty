@@ -624,7 +624,6 @@
 
     ////////////////////////////////////////////////////////////////////////////
     filter(e) {
-      console.log("opts", opts)
       e.preventDefault()
       if(self.refs.term.value != "") {
         $(".uk-form-icon i").attr("class", "uk-icon-spin uk-icon-spinner")
