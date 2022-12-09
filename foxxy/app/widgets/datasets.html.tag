@@ -624,10 +624,11 @@
 
     ////////////////////////////////////////////////////////////////////////////
     filter(e) {
+      console.log(opts)
       e.preventDefault()
       if(self.refs.term.value != "") {
         $(".uk-form-icon i").attr("class", "uk-icon-spin uk-icon-spinner")
-        common.post(url + "/datasets/"+ this.opts.datatype +"/search/" + 1 + "/" + this.perpage, { term: self.refs.term.value }, function(d) {
+        common.post(url + "/datasets/"+ opts.datatype +"/search/" + 1 + "/" + this.perpage, { term: self.refs.term.value }, function(d) {
           self.data = d.data
           $(".uk-form-icon i").attr("class", "uk-icon-search")
           self.update()
