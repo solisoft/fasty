@@ -203,6 +203,7 @@ class FastyAssets extends lapis.Application
         ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/components/#{key\gsub("@", "/")}.js")
         content ..= ret.body .. "\n" if ret.status == 200
 
+    content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
 
     if @req.headers['x-forwarded-host'] != nil then
