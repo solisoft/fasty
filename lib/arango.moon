@@ -1,5 +1,5 @@
 cjson = require 'cjson.safe'
-
+http  = require 'lapis.nginx.http'
 import table_merge, table_deep_merge from require 'lib.utils'
 
 from_json = (str) -> cjson.decode(str)

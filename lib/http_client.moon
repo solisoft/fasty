@@ -1,4 +1,5 @@
 import from_json, to_json from require 'lapis.util'
+http = require 'lapis.nginx.http'
 --------------------------------------------------------------------------------
 http_request = (url, method, body, headers)->
   headers = { 'User-Agent': 'FastyCMS' } if headers == nil
