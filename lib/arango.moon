@@ -1,9 +1,6 @@
-cjson = require 'cjson.safe'
 http  = require 'lapis.nginx.http'
 import table_merge, table_deep_merge from require 'lib.utils'
-
-from_json = (str) -> cjson.decode(str)
-to_json   = (obj) -> cjson.encode(obj)
+import to_json, from_json from require 'lapis.util'
 
 jwt       = ""
 db_config = {}
