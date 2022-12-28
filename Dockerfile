@@ -7,7 +7,7 @@ RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget \
     libx265-dev libde265-dev libheif-dev autoconf cmake build-essential
 
-ARG VIPS_VERSION=8.12.2
+ARG VIPS_VERSION=8.13.3
 
 RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
     && tar -xf vips-${VIPS_VERSION}.tar.gz \
@@ -53,13 +53,6 @@ RUN luarocks --server=http://rocks.moonscript.org install lyaml
 RUN wget https://raw.githubusercontent.com/visionmedia/n/master/bin/n && \
     chmod +x n && mv n /usr/bin/n && n lts
 
-RUN wget https://download.arangodb.com/arangodb38/DEBIAN/Release.key && \
-    apt-key add - < Release.key && \
-    echo 'deb https://download.arangodb.com/arangodb38/DEBIAN/ /' | tee /etc/apt/sources.list.d/arangodb.list  && \
-    apt-get update && \
-    apt-get install apt-transport-https && \
-    apt-get install arangodb3-client
-
 RUN npm install -g yarn@1.22.11 \
     forever@4.0.1 \
     @riotjs/cli@6.0.5 \
@@ -72,6 +65,10 @@ RUN npm install -g yarn@1.22.11 \
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
 RUN apt-get -qqy install ./wkhtmltox_0.12.6-1.focal_amd64.deb
 RUN rm wkhtmltox_0.12.6-1.focal_amd64.deb
+
+RUN wget https://download.arangodb.com/arangodb310/Community/Linux/arangodb3-client_3.10.2-1_amd64.deb
+RUN apt-get -qqy install ./arangodb3-client_3.10.2-1_amd64.deb
+RUN rm arangodb3-client_3.10.2-1_amd64.deb
 
 WORKDIR /var/www
 

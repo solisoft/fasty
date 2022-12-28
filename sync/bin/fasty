@@ -23,7 +23,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 var tokens = {}
-console.log("fasty@0.0.48")
+console.log("fasty@0.0.49")
 
 function findFilesInDir(startPath,filter){
 
