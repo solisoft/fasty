@@ -2,8 +2,7 @@ http    = require 'lapis.nginx.http'
 stringy = require 'stringy'
 sass    = require 'sass'
 
-import map, table_index from require 'lib.utils'
-import from_json, to_json, trim from require 'lapis.util'
+import from_json from require 'lapis.util'
 import aql, document_get, foxx_upgrade from require 'lib.arango'
 --------------------------------------------------------------------------------
 write_content = (filename, content)->

@@ -12,10 +12,12 @@ var yaml = require("js-yaml")
 var socket = null
 const fs = require("fs")
 const path = require('path')
-var sass = require('node-sass');
-const { exec, execSync, spawn } = require('child_process');
+var sass = require('node-sass')
+const { exec, execSync, spawn } = require('child_process')
 const { minify } = require("terser")
 const { compile } = require("@riotjs/compiler")
+
+
 var dirname = process.cwd()
 var fullname = ""
 var webhook = null
@@ -23,7 +25,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 var tokens = {}
-console.log("fasty@0.0.48")
+console.log("fasty@0.0.49")
 
 function findFilesInDir(startPath,filter){
 
@@ -376,6 +378,16 @@ if(argv.compile) {
             execSync("foxx uninstall --database "+ dbname +" --server fasty /" + path[3])
             execSync("foxx install --database "+ dbname +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
             console.log("Done")
+            console.log("Running Tests")
+            execSync("foxx test --database "+ dbname +" --server fasty /" + path[3])
+
+            const test = spawn("foxx", ["test", "--database", dbname, "--server", "fasty", "/"+path[3]])
+            test.stdout.setEncoding('utf8');
+            test.stdout.on('data', function(data) {
+              console.log(data.toString().trim())
+            })
+
+            test.on('close', (code) => {})
           }
           // if path is */app/apis/**
           // install service
