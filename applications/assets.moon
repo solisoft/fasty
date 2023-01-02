@@ -172,16 +172,16 @@ class FastyAssets extends lapis.Application
   [component: '/:lang/:key/component/:rev.tag']: =>
     load_settings(@)
     content = ''
-    if @params.key\match("^[%d\\-]+$")
-      for i, key in pairs(stringy.split(@params.key, '-'))
+    for i, key in pairs(stringy.split(@params.key, '-'))
+      ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/components/#{key\gsub("@", "/")}.riot")
+      if ret.status == 200
+        content ..= ret.body  .. "\n"
+      else
         content ..= aql(
           "db_#{sub_domain}", "FOR doc in components FILTER doc._key == @key RETURN doc.html",
           { 'key': "#{key}" }
         )['result'][1] .. "\n"
-    else
-      ret = ngx.location.capture("/#{git_folder[sub_domain]}/app/components/#{@params.key\gsub("@", "/")}.riot")
-      content = ret.body if ret.status == 200
-
+    
     content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
     content = dynamic_replace("db_#{sub_domain}", content, global_data[sub_domain], {}, @params)
     if @req.headers['x-forwarded-host'] != nil then
