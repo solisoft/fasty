@@ -5,7 +5,7 @@ import http_get from require 'lib.http_client'
 import web_sanitize from require 'web_sanitize'
 import aql, document_get from require 'lib.arango'
 import encode_with_secret from require 'lapis.util.encoding'
-import from_json, to_json, trim, unescape from require 'lapis.util'
+import from_json, to_json, trim, unescape, slugify from require 'lapis.util'
 import table_deep_merge, to_timestamp, get_nested from require 'lib.utils'
 --------------------------------------------------------------------------------
 splat_to_table = (splat, sep = '/')-> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
@@ -114,7 +114,7 @@ load_page_by_slug = (git_folder, db_name, slug, lang, uselayout = true)->
     ret = ngx.location.capture("/#{git_folder}/app/pages/#{slug}_#{lang}.html")
     if ret.status == 200
       page.item.raw_html = {} if page.item.raw_html == null
-      page.item.raw_html[lang] = ret.body 
+      page.item.raw_html[lang] = ret.body
 
     if uselayout
       request = 'FOR layout IN layouts FILTER layout._id == @key RETURN layout'
@@ -172,9 +172,9 @@ page_info = (git_folder, db_name, slug, lang)->
     aql(db_name, request, { slug: slug, lang: lang })['result'][1]
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
-  request = "FOR item IN datasets FILTER item.type == '#{object}' OR item._type == '#{object}' FILTER item.slug == @slug "
+  request = "FOR item IN @@object FILTER item.type == @type OR item._type == @type FILTER item.slug[@lang] == @slug OR item.slug == @slug "
   request ..= 'RETURN { item }'
-  dataset = aql(db_name, request, { slug: slug })['result'][1]
+  dataset = aql(db_name, request, { "@object": object, type: slugify(object), slug: slug, lang: lang })['result'][1]
 
   if dataset
     publication = document_get(db_name, 'publications/' .. object .. '_' .. dataset.item._key)
@@ -309,7 +309,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         if dataset == ''
           page_html = dynamic_page(
             db_name,
-            load_page_by_slug(git_folder, db_name, unescape(item), params.lang, false),
+            load_page_by_slug(db_name, unescape(item), params.lang, false),
             params, global_data, history, false
           )
         else
@@ -406,7 +406,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
           table.insert(data.revisions, component._rev)
           table.insert(data.names, k)
 
-        output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
+        output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
         if dataset == 'url'
           output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag"
         if dataset == 'mount'
