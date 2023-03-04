@@ -1873,7 +1873,7 @@ html-minifier@3.5.21:
 
 html-pages-brunch@^2.3.1:
   version "2.8.0"
-  resolved "https://registry.npmjs.org/html-pages-brunch/-/html-pages-brunch-2.8.0.tgz"
+  resolved "https://registry.yarnpkg.com/html-pages-brunch/-/html-pages-brunch-2.8.0.tgz#a454586ee1ab9bf87f9d6cec859b3eb274ccf6c4"
   dependencies:
     front-matter "3.0.1"
     html-minifier "3.5.21"
