@@ -383,7 +383,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
       page_args = slugify(params.splat or "") if args['splat']
 
       if args['ttl']
-        cache = read_cache("/#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{slugify(params.splat or "")}-#{params.lang}.html", args)
+        cache = read_cache("/#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", args)
       if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
         output = cache.body
       else
