@@ -1,6 +1,9 @@
+require "lfs"
+date    = require 'date'
 etlua   = require 'etlua'
 lyaml   = require 'lyaml'
 stringy = require 'stringy'
+
 import http_get from require 'lib.http_client'
 import web_sanitize from require 'web_sanitize'
 import aql, document_get from require 'lib.arango'
@@ -17,6 +20,23 @@ escape_pattern = (text)->
 capture = (url)->
   ret = ngx.location.capture(url)
   ret.body if ret.status == 200
+--------------------------------------------------------------------------------
+write_cache = (filename, content, git_folder) ->
+  lfs.mkdir("#{git_folder}/cache")
+  file = io.open(filename , "w+")
+  io.output(file)
+  io.write(content)
+  io.close(file)
+--------------------------------------------------------------------------------
+read_cache = (filename, args) ->
+  cache = { status: 0 }
+  ttl = 0
+  if args['ttl']
+    cache = ngx.location.capture(filename)
+    cache_date = date(cache.header["Last-Modified"])
+    ttl = date.diff(os.date!, cache_date)\spanseconds()
+  cache.ttl = ttl
+  cache
 --------------------------------------------------------------------------------
 check_git_layout = (git_folder, db_name, slug, key)->
   layout = { _key: key, html: "@raw_yield@yield" }
@@ -99,7 +119,7 @@ load_document_by_slug = (git_folder, db_name, slug, object, ext = 'html')->
     aql(db_name, request, { slug: slug })['result'][1]
 --------------------------------------------------------------------------------
 load_page_by_slug = (git_folder, db_name, slug, lang, uselayout = true)->
-  request = "FOR item IN pages FILTER item.slug[@lang] == @slug RETURN { item }"
+  request = "FOR item IN pages FILTER item.slug[@lang] == @slug OR item.slug == @slug RETURN { item }"
   page = aql(db_name, request, { slug: slug, lang: lang })['result'][1]
 
   page_settings = {}
@@ -172,9 +192,22 @@ page_info = (git_folder, db_name, slug, lang)->
     aql(db_name, request, { slug: slug, lang: lang })['result'][1]
 --------------------------------------------------------------------------------
 load_dataset_by_slug = (db_name, slug, object, lang, uselayout = true)->
-  request = "FOR item IN @@object FILTER item.type == @type OR item._type == @type FILTER item.slug[@lang] == @slug OR item.slug == @slug "
-  request ..= 'RETURN { item }'
+  request = "
+    FOR item IN @@object FILTER item.type == @type OR item._type == @type
+    FILTER item.slug[@lang] == @slug OR item.slug == @slug
+    RETURN { item }
+  "
   dataset = aql(db_name, request, { "@object": object, type: slugify(object), slug: slug, lang: lang })['result'][1]
+
+  -- To preserve compatibility, check in datasets collection
+  -- if not found
+  unless dataset
+    request = "
+      FOR item IN datasets FILTER item.type == @type OR item._type == @type
+      FILTER item.slug[@lang] == @slug OR item.slug == @slug
+      RETURN { item }
+    "
+    dataset = aql(db_name, request, { type: slugify(object), slug: slug, lang: lang })['result'][1]
 
   if dataset
     publication = document_get(db_name, 'publications/' .. object .. '_' .. dataset.item._key)
@@ -303,24 +336,32 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     -- e.g. {{ page | set_a_slug_here }}
     -- e.g. {{ page | slug | posts }}
     if action == 'page'
-      if history[widget] == nil -- prevent stack level too deep
-        history[widget] = true
-        page_html = ''
-        if dataset == ''
-          page_html = dynamic_page(
-            db_name,
-            load_page_by_slug(db_name, unescape(item), params.lang, false),
-            params, global_data, history, false
-          )
-        else
-          if splat[item] then item = splat[item]
-          page_html = dynamic_page(
-            db_name,
-            load_dataset_by_slug(db_name, unescape(item), dataset, params.lang),
-            params, global_data, history, false
-          )
+      cache = { status: 0, ttl: 0 }
+      if args['ttl']
+        cache = read_cache("/#{git_folder}/cache/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", args)
+      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        output = cache.body
+      else
+        if history[widget] == nil -- prevent stack level too deep
+          history[widget] = true
+          page_html = ''
+          if dataset == ''
+            page_html = dynamic_page(
+              db_name,
+              load_page_by_slug(git_folder, db_name, unescape(item), params.lang, false),
+              params, global_data, history, false
+            )
+          else
+            if splat[item] then item = splat[item]
+            page_html = dynamic_page(
+              db_name,
+              load_dataset_by_slug(db_name, unescape(item), dataset, params.lang),
+              params, global_data, history, false
+            )
 
-        output ..= dynamic_replace(db_name , page_html, global_data, history, params)
+          output ..= dynamic_replace(db_name, page_html, global_data, history, params)
+          if args['ttl']
+            write_cache("#{git_folder}/cache/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, git_folder)
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
@@ -337,122 +378,145 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     -- e.g. {{ partial | demo | arango | aql#FOR doc IN pages RETURN doc }}
     -- params splat will be used to provide data if arango dataset
     if action == 'partial'
-      partial = load_document_by_slug(git_folder, db_name, unescape(item), 'partials', 'etlua')
+      cache = { status: 0, ttl: 0 }
+      if args['ttl']
+        cache = read_cache("/#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", args)
+      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        output = cache.body
+      else
+        partial = load_document_by_slug(git_folder, db_name, unescape(item), 'partials', 'etlua')
+        if partial
+          db_data = { "page": 1 }
+          if dataset == 'arango'
+            -- check if it's a stored procedure
+            aql_request = {}
+            aql_options = {}
+            if args['req']
+              aql_request = aqls[args['req']]
+              unless aql_request
+                ret = ngx.location.capture("/#{git_folder}/app/aqls/#{args['req']}.aql")
+                aql_request = ret.body if ret.status == 200
+                ret = ngx.location.capture("/#{git_folder}/app/aqls/#{args['req']}.options")
+                aql_options = from_json(ret.body) if ret.status == 200
+              args['aql'] = aql_request\gsub('{{ lang }}', params.lang)
+              aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
 
-      if partial
-        db_data = { "page": 1 }
-        if dataset == 'arango'
-          -- check if it's a stored procedure
-          aql_request = {}
-          aql_options = {}
-          if args['req']
-            aql_request = aqls[args['req']]
-            unless aql_request
-              ret = ngx.location.capture("/#{git_folder}/app/aqls/#{args['req']}.aql")
-              aql_request = ret.body if ret.status == 200
-              ret = ngx.location.capture("/#{git_folder}/app/aqls/#{args['req']}.options")
-              aql_options = from_json(ret.body) if ret.status == 200
-            args['aql'] = aql_request\gsub('{{ lang }}', params.lang)
-            aql_options = from_json(aql_request.options) if aql_request.options and aql_request.options ~= ""
+            -- prepare the bindvar variable with variable found in the request
+            -- but also on the parameters sent as args
+            bindvar = prepare_bindvars(table_deep_merge(splat, args), args['aql'])
 
-          -- prepare the bindvar variable with variable found in the request
-          -- but also on the parameters sent as args
-          bindvar = prepare_bindvars(table_deep_merge(splat, args), args['aql'])
+            -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
+            -- @bindvar must be present in the request
+            for str in string.gmatch(args['aql'], '__IF (%w-)__') do
+              unless splat[str] then
+                args['aql'] = args['aql']\gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
+              else
+                args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
+                args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')
 
-          -- handle conditions __IF <bindvar> __ .... __END <bindvar>__
-          -- @bindvar must be present in the request
-          for str in string.gmatch(args['aql'], '__IF (%w-)__') do
-            unless splat[str] then
-              args['aql'] = args['aql']\gsub('__IF ' .. str .. '__.-__END ' .. str .. '__', '')
-            else
-              args['aql'] = args['aql']\gsub('__IF ' .. str .. '__', '')
-              args['aql'] = args['aql']\gsub('__END ' .. str .. '__', '')
+            -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
+            for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
+              if splat[str] then
+                args['aql'] = args['aql']\gsub(
+                  '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
+                )
+              else
+                args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
+                args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
 
-          -- handle strs __IF_NOT <bindvar> __ .... __END_NOT <bindvar>__
-          for str in string.gmatch(args['aql'], '__IF_NOT (%w-)__') do
-            if splat[str] then
-              args['aql'] = args['aql']\gsub(
-                '__IF_NOT ' .. str .. '__.-__END_NOT ' .. str .. '__', ''
-              )
-            else
-              args['aql'] = args['aql']\gsub('__IF_NOT ' .. str .. '__', '')
-              args['aql'] = args['aql']\gsub('__END_NOT ' .. str .. '__', '')
+            req = aql(db_name, args['aql'], bindvar, aql_options)
+            db_data = { results: req['result'], extra: req['extra'], _params: args }
 
-          req = aql(db_name, args['aql'], bindvar, aql_options)
-          db_data = { results: req['result'], extra: req['extra'], _params: args }
+          if dataset == 'rest'
+            db_data = from_json(http_get(args['url'], args['headers']))
+          if dataset == 'use_params' or args['use_params']
+            db_data = table_deep_merge(db_data, { _params: args })
 
-        if dataset == 'rest'
-          db_data = from_json(http_get(args['url'], args['headers']))
-        if dataset == 'use_params' or args['use_params']
-          db_data = table_deep_merge(db_data, { _params: args })
+          if dataset != 'do_not_eval'
+            output = etlua2html(db_data, partial, params, global_data)
+          else
+            output = partial.item.html
 
-        if dataset != 'do_not_eval'
-          output = etlua2html(db_data, partial, params, global_data)
-        else
-          output = partial.item.html
-
-        output = dynamic_replace(db_name, output, global_data, history, params)
+          output = dynamic_replace(db_name, output, global_data, history, params)
+          if args['ttl']
+            write_cache("#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, git_folder)
 
     -- {{ riot | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot | demo | mount }}
     -- e.g. {{ riot | demo#demo2 }}
     if action == 'riot'
-      if history[widget] == nil -- prevent stack level too deep
-        history[widget] = true
-        data = { ids: {}, revisions: {}, names: {} }
-        for i, k in pairs(stringy.split(item, '#'))
-          component = load_document_by_slug(git_folder, db_name, k, 'components', 'riot').item
-          table.insert(data.ids, component._key)
-          table.insert(data.revisions, component._rev)
-          table.insert(data.names, k)
+      cache = { status: 0, ttl: 0 }
+      if args['ttl']
+        cache = read_cache("/#{git_folder}/cache/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", args)
+      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        output = cache.body
+      else
+        if history[widget] == nil -- prevent stack level too deep
+          history[widget] = true
+          data = { ids: {}, revisions: {}, names: {} }
+          for i, k in pairs(stringy.split(item, '#'))
+            component = load_document_by_slug(git_folder, db_name, k, 'components', 'riot').item
+            table.insert(data.ids, component._key)
+            table.insert(data.revisions, component._rev)
+            table.insert(data.names, k)
 
-        output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
-        if dataset == 'url'
-          output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag"
-        if dataset == 'mount'
-          output ..= '<script>'
-          output ..= "document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
-          output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
-          output ..= '</script>'
+          output ..= "<script src='/#{params.lang}/#{table.concat(data.ids, "-")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.tag' type='riot/tag'></script>"
+          if dataset == 'url'
+            output = "/#{params.lang}/#{table.concat(data.ids, "-")}/component/#{table.concat(data.revisions, "-")}.tag"
+          if dataset == 'mount'
+            output ..= '<script>'
+            output ..= "document.addEventListener('DOMContentLoaded', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
+            output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
+            output ..= '</script>'
+          if args['ttl']
+            write_cache("#{git_folder}/cache/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, git_folder)
 
     -- {{ riot4 | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot4| demo | mount }}
     -- e.g. {{ riot4 | demo#demo2 }}
     if action == 'riot4'
-      if history[widget] == nil -- prevent stack level too deep
-        history[widget] = true
-        data = { ids: {}, revisions: {}, names: {}, js: {} }
-        output = ''
-        for i, k in pairs(stringy.split(item, '#'))
-          name = stringy.split(k, "/")[#stringy.split(k, "/")]
-          component = load_document_by_slug(git_folder, db_name, k, 'components', 'js').item
-          content = component.javascript or component.html
-          table.insert(data.ids, component._key)
-          table.insert(data.revisions, component._rev)
-          table.insert(data.names, k)
-          table.insert(data.js, content)
+      cache = { status: 0, ttl: 0 }
+      if args['ttl']
+        cache = read_cache("/#{git_folder}/cache/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", args)
+      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        output = cache.body
+      else
+        if history[widget] == nil -- prevent stack level too deep
+          history[widget] = true
+          data = { ids: {}, revisions: {}, names: {}, js: {} }
+          output = ''
+          for i, k in pairs(stringy.split(item, '#'))
+            name = stringy.split(k, "/")[#stringy.split(k, "/")]
+            component = load_document_by_slug(git_folder, db_name, k, 'components', 'js').item
+            content = component.javascript or component.html
+            table.insert(data.ids, component._key)
+            table.insert(data.revisions, component._rev)
+            table.insert(data.names, k)
+            table.insert(data.js, content)
 
-          if dataset == 'mount'
-            content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
-            output ..= '<script type="module">'
-            params.escape = true
-            output ..= dynamic_replace(db_name, content, global_data, history, params)
-            output ..= "riot.register('#{name}', #{name});"
-            output ..= "riot.mount('#{name}')"
+            if dataset == 'mount'
+              content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
+              output ..= '<script type="module">'
+              params.escape = true
+              output ..= dynamic_replace(db_name, content, global_data, history, params)
+              output ..= "riot.register('#{name}', #{name});"
+              output ..= "riot.mount('#{name}')"
+              output ..='</script>'
+
+            if dataset == 'source'
+              params.escape = true
+              content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
+              output ..= dynamic_replace(db_name, content, global_data, history, params)
+
+          if dataset == 'url'
+            output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"
+            output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"
+          if dataset == 'tag'
+            output = '<script type="module">'
+            output ..= table.concat(data.js,"\n")
             output ..='</script>'
-
-          if dataset == 'source'
-            params.escape = true
-            content = content\gsub("%[%[ (.-) %]%]", "{{ %1 }}")
-            output ..= dynamic_replace(db_name, content, global_data, history, params)
-
-        if dataset == 'url'
-          output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"
-          output = "/#{params.lang}/#{table.concat(data.ids, "|")\gsub("/", "@")}/component/#{table.concat(data.revisions, "-")}.js"
-        if dataset == 'tag'
-          output = '<script type="module">'
-          output ..= table.concat(data.js,"\n")
-          output ..='</script>'
+          if args['ttl']
+            write_cache("#{git_folder}/cache/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", output, git_folder)
 
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
@@ -588,6 +652,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     html = html\gsub(escape_pattern(widget), escape_pattern(output)) if output ~= ''
 
   html
+
 --------------------------------------------------------------------------------
 -- expose methods
 { :splat_to_table, :load_page_by_slug, :dynamic_page, :escape_pattern
