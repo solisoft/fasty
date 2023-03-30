@@ -380,7 +380,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'partial'
       cache = { status: 0, ttl: 0 }
       if args['ttl']
-        cache = read_cache("/#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{slugify(params.splat)}-#{params.lang}.html", args)
+        cache = read_cache("/#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{slugify(params.splat or "")}-#{params.lang}.html", args)
       if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
         output = cache.body
       else
@@ -439,7 +439,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
           output = dynamic_replace(db_name, output, global_data, history, params)
           if args['ttl']
-            write_cache("#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{slugify(params.splat)}—#{params.lang}.html", output, git_folder)
+            write_cache("#{git_folder}/cache/partial-#{slugify(item\gsub('/', '-'))}-#{slugify(params.splat or "")}—#{params.lang}.html", output, git_folder)
 
     -- {{ riot | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot | demo | mount }}
