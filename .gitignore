@@ -34,3 +34,4 @@ git*
 /Dockerfile_arm64
 /docker-compose.override.yml
 /arangodb_arm64.conf
+config.moon
