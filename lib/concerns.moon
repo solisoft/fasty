@@ -361,7 +361,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
           output ..= dynamic_replace(db_name, page_html, global_data, history, params)
           if args['ttl']
-            write_cache("cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name)
+            write_cache("static/cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name)
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
@@ -442,7 +442,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
           output = dynamic_replace(db_name, output, global_data, history, params)
           if args['ttl']
-            write_cache("cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", output, db_name)
+            write_cache("static/cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", output, db_name)
 
     -- {{ riot | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot | demo | mount }}
@@ -472,7 +472,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
             output ..= '</script>'
           if args['ttl']
-            write_cache("cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name)
+            write_cache("static/cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name)
 
     -- {{ riot4 | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot4| demo | mount }}
@@ -519,7 +519,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..= table.concat(data.js,"\n")
             output ..='</script>'
           if args['ttl']
-            write_cache("#{git_folder}/cache/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", output, git_folder)
+            write_cache("static/cache/#{db_name}/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", output, git_folder)
 
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}

@@ -35,3 +35,4 @@ git*
 /docker-compose.override.yml
 /arangodb_arm64.conf
 config.moon
+static/cache/**/*
