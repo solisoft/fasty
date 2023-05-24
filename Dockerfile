@@ -58,7 +58,7 @@ RUN npm install -g yarn@1.22.11 \
     @riotjs/cli@6.0.5 \
     @babel/core@7.15.5 \
     terser@5.7.2 \
-    tailwindcss@3.0.23 \
+    tailwindcss@3.3.2 \
     autoprefixer@10.3.4 \
     postcss@8.3.6
 
