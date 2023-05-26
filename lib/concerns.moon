@@ -7,6 +7,7 @@ stringy = require 'stringy'
 import http_get from require 'lib.http_client'
 import web_sanitize from require 'web_sanitize'
 import aql, document_get from require 'lib.arango'
+import write_cache, read_cache from require 'lib.cache'
 import encode_with_secret from require 'lapis.util.encoding'
 import from_json, to_json, trim, unescape, slugify from require 'lapis.util'
 import table_deep_merge, to_timestamp, get_nested from require 'lib.utils'
@@ -20,22 +21,6 @@ escape_pattern = (text)->
 capture = (url)->
   ret = ngx.location.capture(url)
   ret.body if ret.status == 200
---------------------------------------------------------------------------------
-write_cache = (filename, content, db_name, ttl) ->
-  aql(
-    db_name,
-    "INSERT
-      { _key: @key, value: @value, expire_date: DATE_ADD(DATE_NOW(), @ttl, 'seconds') }
-      INTO cache",
-    { key: slugify(filename), value: content, ttl: tonumber(ttl) }
-  )
-
---------------------------------------------------------------------------------
-read_cache = (db_name, filename) ->
-  cache = { status: 404 }
-  document = document_get(db_name, "cache/" .. slugify(filename))
-  cache = { status: 200, body: document.value } unless document.error
-  cache
 --------------------------------------------------------------------------------
 check_git_layout = (git_folder, db_name, slug, key)->
   layout = { _key: key, html: "@raw_yield@yield" }
