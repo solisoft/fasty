@@ -21,21 +21,20 @@ capture = (url)->
   ret = ngx.location.capture(url)
   ret.body if ret.status == 200
 --------------------------------------------------------------------------------
-write_cache = (filename, content, db_name) ->
-  lfs.mkdir("static/cache/#{db_name}")
-  file = io.open(filename , "w+")
-  io.output(file)
-  io.write(content)
-  io.close(file)
+write_cache = (filename, content, db_name, ttl) ->
+  aql(
+    db_name,
+    "INSERT
+      { _key: @key, value: @value, expire_date: DATE_ADD(DATE_NOW(), @ttl, 'seconds') }
+      INTO cache",
+    { key: slugify(filename), value: content, ttl: tonumber(ttl) }
+  )
+
 --------------------------------------------------------------------------------
-read_cache = (filename, args) ->
-  cache = { status: 0 }
-  ttl = 0
-  if args['ttl']
-    cache = ngx.location.capture(filename)
-    cache_date = date(cache.header["Last-Modified"])
-    ttl = date.diff(os.date!, cache_date)\spanseconds()
-  cache.ttl = ttl
+read_cache = (db_name, filename) ->
+  cache = { status: 404 }
+  document = document_get(db_name, "cache/" .. slugify(filename))
+  cache = { status: 200, body: document.value } unless document.error
   cache
 --------------------------------------------------------------------------------
 check_git_layout = (git_folder, db_name, slug, key)->
@@ -338,8 +337,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'page'
       cache = { status: 0, ttl: 0 }
       if args['ttl']
-        cache = read_cache("static/cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", args)
-      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        cache = read_cache(db_name, "static/cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html")
+      if cache.status == 200
         output = cache.body
       else
         if history[widget] == nil -- prevent stack level too deep
@@ -361,7 +360,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
           output ..= dynamic_replace(db_name, page_html, global_data, history, params)
           if args['ttl']
-            write_cache("static/cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name)
+            write_cache("static/cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name, args['ttl'])
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
@@ -383,8 +382,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
       page_args = slugify(params.splat or "") if args['splat']
 
       if args['ttl']
-        cache = read_cache("static/cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", args)
-      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        cache = read_cache(db_name, "static/cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html")
+      if cache.status == 200
         output = cache.body
       else
         partial = load_document_by_slug(git_folder, db_name, unescape(item), 'partials', 'etlua')
@@ -442,16 +441,16 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
           output = dynamic_replace(db_name, output, global_data, history, params)
           if args['ttl']
-            write_cache("static/cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", output, db_name)
+            write_cache("static/cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", output, db_name, args['ttl'])
 
     -- {{ riot | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot | demo | mount }}
     -- e.g. {{ riot | demo#demo2 }}
     if action == 'riot'
-      cache = { status: 0, ttl: 0 }
+      cache = { status: 0 }
       if args['ttl']
-        cache = read_cache("static/cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", args)
-      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        cache = read_cache(db_name, "static/cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html")
+      if cache.status == 200
         output = cache.body
       else
         if history[widget] == nil -- prevent stack level too deep
@@ -472,7 +471,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
             output ..= '</script>'
           if args['ttl']
-            write_cache("static/cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name)
+            write_cache("static/cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name, args['ttl'])
 
     -- {{ riot4 | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot4| demo | mount }}
@@ -480,8 +479,8 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'riot4'
       cache = { status: 0, ttl: 0 }
       if args['ttl']
-        cache = read_cache("static/cache/#{db_name}/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", args)
-      if cache.status == 200 and cache.ttl < tonumber(args['ttl'])
+        cache = read_cache(db_name, "static/cache/#{db_name}/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html")
+      if cache.status == 200
         output = cache.body
       else
         if history[widget] == nil -- prevent stack level too deep
@@ -519,7 +518,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..= table.concat(data.js,"\n")
             output ..='</script>'
           if args['ttl']
-            write_cache("static/cache/#{db_name}/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", output, git_folder)
+            write_cache("static/cache/#{db_name}/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", output, git_folder, args['ttl'])
 
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
