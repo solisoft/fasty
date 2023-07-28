@@ -9,8 +9,8 @@ import web_sanitize from require 'web_sanitize'
 import aql, document_get from require 'lib.arango'
 import write_cache, read_cache from require 'lib.cache'
 import encode_with_secret from require 'lapis.util.encoding'
-import from_json, to_json, trim, unescape, slugify from require 'lapis.util'
 import table_deep_merge, to_timestamp, get_nested from require 'lib.utils'
+import from_json, to_json, trim, unescape, slugify from require 'lapis.util'
 --------------------------------------------------------------------------------
 splat_to_table = (splat, sep = '/')-> { k, v for k, v in splat\gmatch "#{sep}?(.-)#{sep}([^#{sep}]+)#{sep}?" }
 --------------------------------------------------------------------------------
@@ -298,11 +298,9 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     -- e.g. {{ settings | chatroom_url }}
     if action == 'settings' and app_settings[item]
       output = app_settings[item]
-
     -- {{ splat | key }}
     -- e.g. {{ splat | salon }}
     if action == 'splat' and splat[item] then output = splat[item]
-
     -- {{ html | key | field }}
     -- {{ html | key }} data will then come from params og_data.json
     -- Using og_data reduce http calls
@@ -322,7 +320,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'page'
       cache = { status: 0, ttl: 0 }
       if args['ttl']
-        cache = read_cache(db_name, "static/cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html")
+        cache = read_cache(db_name, "page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html")
       if cache.status == 200
         output = cache.body
       else
@@ -345,7 +343,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
           output ..= dynamic_replace(db_name, page_html, global_data, history, params)
           if args['ttl']
-            write_cache("static/cache/#{db_name}/page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name, args['ttl'])
+            write_cache("page-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name, args['ttl'])
 
     -- {{ helper | shortcut }}
     -- e.g. {{ helper | hello_world }}
@@ -367,7 +365,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
       page_args = slugify(params.splat or "") if args['splat']
 
       if args['ttl']
-        cache = read_cache(db_name, "static/cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html")
+        cache = read_cache(db_name, "partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html")
       if cache.status == 200
         output = cache.body
       else
@@ -426,7 +424,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
 
           output = dynamic_replace(db_name, output, global_data, history, params)
           if args['ttl']
-            write_cache("static/cache/#{db_name}/partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", output, db_name, args['ttl'])
+            write_cache("partial-#{slugify(item\gsub('/', '-'))}-#{page_args}-#{params.lang}.html", output, db_name, args['ttl'])
 
     -- {{ riot | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot | demo | mount }}
@@ -434,7 +432,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'riot'
       cache = { status: 0 }
       if args['ttl']
-        cache = read_cache(db_name, "static/cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html")
+        cache = read_cache(db_name, "riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html")
       if cache.status == 200
         output = cache.body
       else
@@ -456,7 +454,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..= "document.addEventListener('turbolinks:load', function() { riot.mount('#{table.concat(data.names, ", ")}') });"
             output ..= '</script>'
           if args['ttl']
-            write_cache("static/cache/#{db_name}/riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name, args['ttl'])
+            write_cache("riot-#{slugify(item\gsub('/', '-'))}-#{params.lang}.html", output, db_name, args['ttl'])
 
     -- {{ riot4 | slug(#slug2...) | <mount> || <url> }}
     -- e.g. {{ riot4| demo | mount }}
@@ -464,7 +462,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
     if action == 'riot4'
       cache = { status: 0, ttl: 0 }
       if args['ttl']
-        cache = read_cache(db_name, "static/cache/#{db_name}/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html")
+        cache = read_cache(db_name, "riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html")
       if cache.status == 200
         output = cache.body
       else
@@ -503,7 +501,7 @@ dynamic_replace = (db_name, html, global_data, history, params)->
             output ..= table.concat(data.js,"\n")
             output ..='</script>'
           if args['ttl']
-            write_cache("static/cache/#{db_name}/riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", output, git_folder, args['ttl'])
+            write_cache("riot4-#{slugify(item\gsub('/', '-'))}-#{dataset}-#{params.lang}.html", output, git_folder, args['ttl'])
 
     -- {{ spa | slug }} -- display a single page application
     -- e.g. {{ spa | account }}
