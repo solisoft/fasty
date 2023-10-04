@@ -145,9 +145,8 @@ class FastyImages extends lapis.Application
         status: 401, 'Not authorized'
   }
 
-  [file_upload: '/file/upload/ckeditor']: respond_to {
+  [file_upload_ckeditor: '/file/upload/ckeditor']: respond_to {
     POST: =>
-      print(to_json(@params))
       load_settings(@)
       if @req.headers['X-Session-Id'] and is_valid_jwt(@req.headers['X-Session-Id'])
         if file = @params.upload
