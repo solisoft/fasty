@@ -15,7 +15,7 @@ RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/v
     && ./configure \
     && make && make install && ldconfig && cd .. && rm -Rf vips-*
 
-ARG OPENRESTY_VERSION=1.21.4.1
+ARG OPENRESTY_VERSION=1.21.4.2
 
 RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar xf openresty-${OPENRESTY_VERSION}.tar.gz \
@@ -58,7 +58,7 @@ RUN npm install -g yarn@1.22.11 \
     @riotjs/cli@6.0.5 \
     @babel/core@7.15.5 \
     terser@5.7.2 \
-    tailwindcss@3.0.23 \
+    tailwindcss@3.3.2 \
     autoprefixer@10.3.4 \
     postcss@8.3.6
 

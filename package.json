@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "arangojs": "^7.2.0",
+    "lodash": "^4.17.21",
     "tailwindcss-empty": "^1.0.0"
   }
 }
