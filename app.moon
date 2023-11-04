@@ -43,7 +43,6 @@ load_settings = ()=>
     last_db_connect = os.time(os.date("!*t"))
 
   unless global_data[sub_domain]
-
     jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
     all_domains = list_databases! if all_domains == nil
     if all_domains["db_#{sub_domain}"] == nil
