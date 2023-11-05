@@ -5,15 +5,26 @@ RUN apt-get -qq update && apt-get -qqy install vim zlib1g-dev libreadline-dev \
     libncurses5-dev libpcre3-dev libssl-dev gcc perl make git-core \
     libsass-dev glib2.0-dev libexpat1-dev \
     libjpeg-dev libwebp-dev libpng-dev libexif-dev libgif-dev wget \
-    libx265-dev libde265-dev libheif-dev autoconf cmake build-essential
+    libx265-dev libde265-dev libheif-dev build-essential pkg-config libglib2.0-dev python3-pip libgirepository1.0-dev
 
-ARG VIPS_VERSION=8.13.3
+RUN pip3 install --user meson
+RUN pip3 install --user ninja
 
-RUN wget https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz \
-    && tar -xf vips-${VIPS_VERSION}.tar.gz \
-    && cd vips-${VIPS_VERSION} \
-    && ./configure \
-    && make && make install && ldconfig && cd .. && rm -Rf vips-*
+RUN mv ~/.local/bin/meson /usr/bin/meson
+RUN mv ~/.local/bin/ninja /usr/bin/ninja
+
+ARG VIPS_VERSION=8.14.5
+
+RUN wget https://github.com/libvips/libvips/archive/refs/tags/v${VIPS_VERSION}.tar.gz \
+    && tar -xf v${VIPS_VERSION}.tar.gz \
+    && cd libvips-${VIPS_VERSION} \
+    && meson build \
+    && cd build \
+    && meson compile \
+    && meson test \
+    && meson install
+
+RUN rm -Rf libvips-${VIPS_VERSION}
 
 ARG OPENRESTY_VERSION=1.21.4.2
 
@@ -34,7 +45,7 @@ RUN wget https://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz \
     && ./configure && make \
     && make install && cd .. && rm -Rf luarocks-*
 
-ARG LAPIS_VERSION=1.13.0
+ARG LAPIS_VERSION=1.16.0
 RUN luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis $LAPIS_VERSION
 RUN luarocks install moonscript
 RUN luarocks install lapis-console
