@@ -23,7 +23,7 @@ var domain = null
 var sync = null
 var updated_by_users = []
 var tokens = {}
-console.log("fasty@0.0.54")
+console.log("fasty@0.0.55")
 
 function findFilesInDir(startPath,filter){
 
@@ -372,18 +372,33 @@ if(argv.compile) {
           var dbname = argv.db || path[0]
 
           if (path[2] == "apis" && path[4] != "package-lock.json") {
-            console.log("Upgrading API endpoint /" + path[3])
             execSync("cd " + path.slice(0, 4).join("/") + " && npm i")
-            execSync("foxx uninstall --database "+ dbname +" --server fasty /" + path[3])
+
             try {
-              execSync("foxx install --database "+ dbname +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
+              execSync("foxx show --database "+ dbname +" --server fasty /" + path[3])
+              try {
+                console.log("Upgrading API endpoint /" + path[3] + "...")
+                execSync("foxx replace --database "+ dbname +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
+              } catch(e) {
+                notifier.notify({
+                  title: "Fasty :: Error",
+                  message: "Can't install endpoint",
+                  sound: "Basso"
+                })
+              }
             } catch(e) {
-              notifier.notify({
-                title: "Fasty :: Error",
-                message: "Can't install endpoint",
-                sound: "Basso"
-              })
+              try {
+                console.log("Installing API endpoint /" + path[3] + "...")
+                execSync("foxx install --database "+ dbname +" --server fasty /" + path[3] + " " + path.slice(0, 4).join("/"))
+              } catch(e) {
+                notifier.notify({
+                  title: "Fasty :: Error",
+                  message: "Can't install endpoint",
+                  sound: "Basso"
+                })
+              }
             }
+
             console.log("Done")
             /*
             console.log("Running Tests")
