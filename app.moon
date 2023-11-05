@@ -39,19 +39,21 @@ define_subdomain = ()=>
 load_settings = ()=>
   if (os.time(os.date("!*t")) - last_db_connect) > (config.db_ttl and config.db_ttl or 10) -- reconnect each 10 seconds
     jwt[sub_domain] = nil
+    global_data[sub_domain] = nil
     last_db_connect = os.time(os.date("!*t"))
 
-  jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
-  all_domains = list_databases! if all_domains == nil
-  if all_domains["db_#{sub_domain}"] == nil
-    no_db[sub_domain] = true
-  else
-    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)['result'][1]
-    global_data[sub_domain]['partials'] = {}
+  unless global_data[sub_domain]
+    jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
+    all_domains = list_databases! if all_domains == nil
+    if all_domains["db_#{sub_domain}"] == nil
+      no_db[sub_domain] = true
+    else
+      global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)['result'][1]
+      global_data[sub_domain]['partials'] = {}
 
-    settings[sub_domain] = global_data[sub_domain].settings[1]
-    site_settings = from_json(settings[sub_domain].home)
-    git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or "git/db_#{sub_domain}"
+      settings[sub_domain] = global_data[sub_domain].settings[1]
+      site_settings = from_json(settings[sub_domain].home)
+      git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or "git/db_#{sub_domain}"
 
 --------------------------------------------------------------------------------
 lua_files = (path)=>
