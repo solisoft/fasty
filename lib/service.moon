@@ -68,7 +68,7 @@ install_script = (sub_domain, name)->
 deploy_site = (sub_domain, settings)->
   config = require('lapis.config').get!
   db_config = require('lapis.config').get("db_#{config._name}")
-  path = "dump/#{sub_domain[1]}/"
+  path = "dump/#{sub_domain}/"
   home = from_json(settings.home)
   deploy_to = stringy.split(settings.deploy_secret, '#')
 
