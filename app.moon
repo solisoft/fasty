@@ -3,7 +3,6 @@ sass        = require 'sass'
 lapis       = require 'lapis'
 stringy     = require 'stringy'
 shell       = require 'resty.shell'
-encoding    = require 'lapis.util.encoding'
 app_config  = require "lapis.config"
 config      = app_config.get!
 db_config   = app_config.get("db_#{config._name}")
@@ -13,6 +12,7 @@ import write_cache, read_cache from require 'lib.cache'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import after_dispatch from require 'lapis.nginx.context'
 import write_content, read_file from require 'lib.service'
+import hmac_sha1, encode_base64  from require 'lapis.util.encoding'
 import uuid, check_valid_lang, define_content_type, table_deep_merge from require 'lib.utils'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
 import trim, from_json, to_json, unescape, slugify from require 'lapis.util'
@@ -166,7 +166,11 @@ class extends lapis.Application
       if is_auth(@, settings[sub_domain], infos)
         if html ~= 'null' and trim(html) != '' then
           if page_content_type ~= "application/pdf" then
-            content_type: page_content_type, html, status: status
+            etag = encode_base64(hmac_sha1(html, ''))
+            if etag == @req.headers['If-None-Match'] then
+              status: 304
+            else
+              content_type: page_content_type, html, status: status, headers: { 'Etag': etag }
           else -- convert html data to pdf
             filename = "#{uuid!}.html"
             write_content "print/#{filename}", html

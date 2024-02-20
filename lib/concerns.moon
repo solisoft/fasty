@@ -582,16 +582,16 @@ dynamic_replace = (db_name, html, global_data, history, params)->
         filename = stringy.split(item, "/")
         filename = filename[#filename]
         cache = ngx.location.capture("/#{git_folder}/cache/#{filename}")
-        print cache.status
         if cache.status == 200
           output = cache.body
         else
           output = http_get(item)
           lfs.mkdir("#{git_folder}/cache")
           file = io.open("#{git_folder}/cache/#{filename}" , "w+")
-          io.output(file)
-          io.write(output)
-          io.close(file)
+          if file
+            io.output(file)
+            io.write(output)
+            io.close(file)
       output
 
 
