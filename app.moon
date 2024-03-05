@@ -3,18 +3,19 @@ sass        = require 'sass'
 lapis       = require 'lapis'
 stringy     = require 'stringy'
 shell       = require 'resty.shell'
-encoding    = require 'lapis.util.encoding'
 app_config  = require "lapis.config"
 config      = app_config.get!
 db_config   = app_config.get("db_#{config._name}")
 
 import aqls from require 'lib.aqls'
+import write_cache, read_cache from require 'lib.cache'
 import basic_auth, is_auth from require 'lib.basic_auth'
 import after_dispatch from require 'lapis.nginx.context'
 import write_content, read_file from require 'lib.service'
+import hmac_sha1, encode_base64  from require 'lapis.util.encoding'
 import uuid, check_valid_lang, define_content_type, table_deep_merge from require 'lib.utils'
 import auth_arangodb, aql, list_databases from require 'lib.arango'
-import trim, from_json, to_json, unescape from require 'lapis.util'
+import trim, from_json, to_json, unescape, slugify from require 'lapis.util'
 import dynamic_replace, dynamic_page, page_info, splat_to_table
        load_page_by_slug, load_redirection, prepare_bindvars from require 'lib.concerns'
 
@@ -38,20 +39,22 @@ define_subdomain = ()=>
 load_settings = ()=>
   if (os.time(os.date("!*t")) - last_db_connect) > (config.db_ttl and config.db_ttl or 10) -- reconnect each 10 seconds
     jwt[sub_domain] = nil
+    global_data[sub_domain] = nil
     last_db_connect = os.time(os.date("!*t"))
 
-  jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
-  all_domains = list_databases! if all_domains == nil
-  if all_domains["db_#{sub_domain}"] == nil
-    no_db[sub_domain] = true
-  else
-    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
-    global_data[sub_domain]['partials'] = {}
+  unless global_data[sub_domain]
+    jwt[sub_domain] = auth_arangodb(sub_domain, db_config) if jwt[sub_domain] == nil or all_domains == nil
+    all_domains = list_databases! if all_domains == nil
+    if all_domains["db_#{sub_domain}"] == nil
+      no_db[sub_domain] = true
+    else
+      global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)['result'][1]
+      global_data[sub_domain]['partials'] = {}
 
-    settings[sub_domain] = global_data[sub_domain].settings[1]
-    site_settings = from_json(settings[sub_domain].home)
-    git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or "git/db_#{sub_domain}"
-    
+      settings[sub_domain] = global_data[sub_domain].settings[1]
+      site_settings = from_json(settings[sub_domain].home)
+      git_folder[sub_domain] = site_settings['git_folder'] and site_settings['git_folder'] or "git/db_#{sub_domain}"
+
 --------------------------------------------------------------------------------
 lua_files = (path)=>
   for file in lfs.dir(path) do
@@ -103,61 +106,71 @@ class extends lapis.Application
       render: "error_#{status}" , status: status, headers: headers
   ------------------------------------------------------------------------------
   display_page = (slug=nil, status=200)=>
-    db_name           = "db_#{sub_domain}"
-    
-    asset = ngx.location.capture("/#{git_folder[sub_domain]}/public/#{@req.parsed_url.path}")
+    db_name = "db_#{sub_domain}"
+    asset   = ngx.location.capture("/#{git_folder[sub_domain]}/public/#{@req.parsed_url.path}")
+    html    = ''
+
     if asset.status == 200
       content_type: define_content_type(@req.parsed_url.path), status: 200, asset.body, headers: { 'expires': expire_at! }
     else
       slug              = @params.slug if slug == nil
       slug              = unescape(slug)
       page_content_type = define_content_type(slug)
-      slug = slug\gsub(".pdf", "") if page_content_type == "application/pdf"
+      slug              = slug\gsub(".pdf", "") if page_content_type == "application/pdf"
       @params.lang      = check_valid_lang(settings[sub_domain].langs, @params.lang)
       @session.lang     = @params.lang
-      redirection       = load_redirection(db_name, @params)
-      current_page      = load_page_by_slug(git_folder[sub_domain], db_name, slug, @params.lang)
-
       used_lang         = @params.lang
 
+      cache = read_cache(db_name, @req.parsed_url.path)
       infos = page_info(git_folder[sub_domain], db_name, @params.slug, @params.lang)
 
-      if current_page == nil then
-        used_lang = stringy.split(settings[sub_domain].langs, ',')[1]
-        infos = page_info(git_folder[sub_domain], db_name, @params.slug, used_lang)
-        current_page = load_page_by_slug(git_folder[sub_domain], db_name, slug, used_lang)
-
-      html = ''
-
-      if @params.splat and table.getn(stringy.split(@params.splat, '/')) % 2 == 1
-        @params.splat = "slug/#{@params.splat}"
-
-      if infos == nil
-        infos = { 'page': {}, 'folder': {} }
+      if cache.status == 200
+        html = cache.body
       else
-        current_page.item = table_deep_merge(current_page.item, infos.page)
+        redirection       = load_redirection(db_name, @params)
+        current_page      = load_page_by_slug(git_folder[sub_domain], db_name, slug, @params.lang)
 
-      if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
-        splat = {}
-        splat = splat_to_table(@params.splat) if @params.splat
-        bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
-        @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)[1]
+        if current_page == nil then
+          used_lang = stringy.split(settings[sub_domain].langs, ',')[1]
+          infos = page_info(git_folder[sub_domain], db_name, @params.slug, used_lang)
+          current_page = load_page_by_slug(git_folder[sub_domain], db_name, slug, used_lang)
 
-      if redirection == nil then
-        params_lang = @params.lang
-        @params.lang = used_lang
+        if @params.splat and table.getn(stringy.split(@params.splat, '/')) % 2 == 1
+          @params.splat = "slug/#{@params.splat}"
 
-        html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
-        @params.lang = params_lang
-      else
-        html = redirection
+        if infos == nil
+          infos = { 'page': {}, 'folder': {} }
+        else
+          current_page.item = table_deep_merge(current_page.item, infos.page)
 
-      html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
+        if infos.page.og_aql and infos.page.og_aql[@params.lang] and infos.page.og_aql[@params.lang] != ''
+          splat = {}
+          splat = splat_to_table(@params.splat) if @params.splat
+          bindvars = prepare_bindvars(splat, infos.page.og_aql[@params.lang], @params.lang)
+          @params.og_data = aql(db_name, infos.page.og_aql[@params.lang], bindvars)['result'][1]
+
+        if redirection == nil then
+          params_lang = @params.lang
+          @params.lang = used_lang
+
+          html = dynamic_page(db_name, current_page, @params, global_data[sub_domain])
+          @params.lang = params_lang
+        else
+          html = redirection
+
+        html = dynamic_replace(db_name, html, global_data[sub_domain], {}, @params)
+        if infos.page.ttl
+          write_cache(@req.parsed_url.path, html, db_name, infos.page.ttl)
+
       basic_auth(@, settings[sub_domain], infos) -- check if website need a basic auth
       if is_auth(@, settings[sub_domain], infos)
         if html ~= 'null' and trim(html) != '' then
           if page_content_type ~= "application/pdf" then
-            content_type: page_content_type, html, status: status
+            etag = encode_base64(hmac_sha1(html, ''))
+            if etag == @req.headers['If-None-Match'] then
+              status: 304
+            else
+              content_type: page_content_type, html, status: status, headers: { 'Etag': etag }
           else -- convert html data to pdf
             filename = "#{uuid!}.html"
             write_content "print/#{filename}", html

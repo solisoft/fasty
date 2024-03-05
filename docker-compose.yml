@@ -16,11 +16,12 @@ services:
     links:
       - arangodb:arangodb
     networks:
-      brian:
+      fasty:
 
   cms:
-    build: .
-    #image: solisoft/fasty
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: /bin/bash -c "cd /var/www && lapis server"
     ports:
       - 8081:8080
@@ -32,12 +33,13 @@ services:
     links:
       - arangodb:arangodb
     networks:
-      brian:
+      fasty:
         ipv4_address: 14.12.0.7
 
   cms_prod:
-    #build: .
-    image: solisoft/fasty
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     command: /bin/bash -c "cd /var/www && moonc *.moon && moonc **/*.moon && lapis server production"
     ports:
@@ -49,17 +51,16 @@ services:
     links:
       - arangodb:arangodb
     networks:
-      brian:
+      fasty:
         ipv4_address: 14.12.0.8
 
   arangodb:
     image: arangodb:latest
-    platform: linux/x86_64
     restart: always
     environment:
       ARANGO_ROOT_PASSWORD: password
     networks:
-      brian:
+      fasty:
         ipv4_address: 14.12.0.6
     ports:
       - 8529:8529
@@ -75,7 +76,7 @@ volumes:
   node_modules_resize:
 
 networks:
-  brian:
+  fasty:
     ipam:
       config:
         - subnet: 14.12.0.0/24

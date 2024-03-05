@@ -75,7 +75,7 @@ check_file = (params) ->
   db_name = "db_" .. encoding.decode_base64(params._from) if params._from
   upload = aql(
     db_name, 'FOR u IN uploads FILTER u.uuid == @key RETURN u', { "key": params.uuid }
-  )[1]
+  )['result'][1]
   load_original_from_cloud upload.path if upload
   upload
 --------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ load_settings = () =>
   if all_domains["db_#{sub_domain}"] == nil
     no_db[sub_domain] = true
   else
-    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)[1]
+    global_data[sub_domain] = aql("db_#{sub_domain}", aqls.settings)['result'][1]
     global_data[sub_domain]['partials'] = {}
 
     settings[sub_domain] = global_data[sub_domain].settings[1]
@@ -145,9 +145,8 @@ class FastyImages extends lapis.Application
         status: 401, 'Not authorized'
   }
 
-  [file_upload: '/file/upload/ckeditor']: respond_to {
+  [file_upload_ckeditor: '/file/upload/ckeditor']: respond_to {
     POST: =>
-      print(to_json(@params))
       load_settings(@)
       if @req.headers['X-Session-Id'] and is_valid_jwt(@req.headers['X-Session-Id'])
         if file = @params.upload

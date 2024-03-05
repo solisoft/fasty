@@ -26,7 +26,7 @@ RUN wget https://github.com/libvips/libvips/archive/refs/tags/v${VIPS_VERSION}.t
 
 RUN rm -Rf libvips-${VIPS_VERSION}
 
-ARG OPENRESTY_VERSION=1.25.3.1
+ARG OPENRESTY_VERSION=1.21.4.2
 
 RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar xf openresty-${OPENRESTY_VERSION}.tar.gz \
@@ -69,17 +69,17 @@ RUN npm install -g yarn@1.22.11 \
     @riotjs/cli@6.0.5 \
     @babel/core@7.15.5 \
     terser@5.7.2 \
-    tailwindcss@3.3.2 \
+    tailwindcss@3.0.23 \
     autoprefixer@10.3.4 \
     postcss@8.3.6
 
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
-RUN apt-get -qqy install ./wkhtmltox_0.12.6-1.focal_amd64.deb
-RUN rm wkhtmltox_0.12.6-1.focal_amd64.deb
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_arm64.deb
+RUN apt-get -qqy install ./wkhtmltox_0.12.6-1.focal_arm64.deb
+RUN rm wkhtmltox_0.12.6-1.focal_arm64.deb
 
-RUN wget https://download.arangodb.com/arangodb310/Community/Linux/arangodb3-client_3.10.2-1_amd64.deb
-RUN apt-get -qqy install ./arangodb3-client_3.10.2-1_amd64.deb
-RUN rm arangodb3-client_3.10.2-1_amd64.deb
+RUN wget https://download.arangodb.com/arangodb310/Community/Linux/arangodb3-client_3.10.2-1_arm64.deb
+RUN apt-get -qqy install ./arangodb3-client_3.10.2-1_arm64.deb
+RUN rm arangodb3-client_3.10.2-1_arm64.deb
 
 WORKDIR /var/www
 

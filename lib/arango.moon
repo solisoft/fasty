@@ -1,9 +1,6 @@
-cjson = require 'cjson.safe'
-
+http  = require 'lapis.nginx.http'
 import table_merge, table_deep_merge from require 'lib.utils'
-
-from_json = (str) -> cjson.decode(str)
-to_json   = (obj) -> cjson.encode(obj)
+import to_json, from_json from require 'lapis.util'
 
 jwt       = ""
 db_config = {}
@@ -31,7 +28,6 @@ list_databases = ()->
 --------------------------------------------------------------------------------
 auth_arangodb = (db_name, cfg)->
   db_config = cfg
-  print db_config.url
   body, status_code = http_request(
     "#{db_config.url}_open/auth", "POST",
     to_json({ username: db_config.login, password: db_config.pass })
@@ -43,6 +39,7 @@ raw_aql = (db_name, stm)->
   body, status_code = api_run(db_name, '/cursor', 'POST', stm)
   result    = body['result']
   has_more  = body['hasMore']
+  extra  = body['extra']
 
   if body['error'] then
     print(status_code)
@@ -51,14 +48,14 @@ raw_aql = (db_name, stm)->
 
   while has_more
     body      = api_run(db_name, "/cursor/#{body["id"]}", 'PUT')
-    result    = table_merge(result,  body['result'])
+    result    = table_merge(result, body['result'])
     has_more  = body['hasMore']
 
   result = {} if result == nil
-  result
+  { result: result, extra: extra }
 --------------------------------------------------------------------------------
 aql = (db_name, str, bindvars = {}, options = {})->
-  raw_aql(db_name, table_deep_merge({ query: str, cache: true, bindVars: bindvars }, options))
+  raw_aql(db_name, { query: str, cache: true, bindVars: bindvars, options: options })
 --------------------------------------------------------------------------------
 with_params = (db_name, method, handle, params)->
   api_run(db_name, "/document/#{handle}", method, params)

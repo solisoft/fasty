@@ -17,7 +17,7 @@ router.get('/:type', function (req, res) {
   let collection = "datasets"
   if(req.pathParams.type == "_widgets") collection = "widgets"
 
-  let bindvars = { type: type, "@collection": collection }
+  let bindvars = { "@collection": collection }
 
   if (req.queryParams.search) {
     let key = req.queryParams.search.split('@')[0]
@@ -35,6 +35,7 @@ router.get('/:type', function (req, res) {
 
   let type = req.pathParams.type == "_widgets" ? "widgets" : req.pathParams.type
   let bindvars_count = { type: type, "@collection": collection }
+  bindvars.type = type
 
   let i = 0
   _.each(req.queryParams, function (v, k) {

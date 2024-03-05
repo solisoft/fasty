@@ -28,7 +28,7 @@
     "riot-route": "^3.1.1",
     "sass": "^1.28.0",
     "sass-brunch": "3.0.1",
-    "select2": "4.0.3",
+    "select2": "4.0.6",
     "uglify-js": "^2.7.0",
     "uglify-js-brunch": "^2.0.1"
   },
