@@ -26,7 +26,7 @@ RUN wget https://github.com/libvips/libvips/archive/refs/tags/v${VIPS_VERSION}.t
 
 RUN rm -Rf libvips-${VIPS_VERSION}
 
-ARG OPENRESTY_VERSION=1.21.4.2
+ARG OPENRESTY_VERSION=1.25.3.1
 
 RUN wget https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar xf openresty-${OPENRESTY_VERSION}.tar.gz \
