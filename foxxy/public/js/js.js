@@ -934,7 +934,10 @@ require.register("js/editor.js", function(exports, require, module) {
                     success: function (data) {
                       data = JSON.parse(data)
                       setTimeout(function () {
-                        var picture = '<picture>'
+                        var alignment = $(self).find("select[data-name=img-alignment").val()
+                        if(alignment == "left") alignment = "start"
+                        if(alignment == "right") alignment = "end"
+                        var picture = '<picture class="flex justify-'+ alignement +'">'
                         picture += "\n"+'  <source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
                         picture += "\n"+'  <source media="(max-width: 480px)" srcset="/asset/r/' + data.filename + '/480?_from='+ btoa(subdomain) +'">'
                         picture += "\n"+'  <source media="(max-width: 799px)" srcset="/asset/r/' + data.filename + '/799.webp?_from='+ btoa(subdomain) +'" type="image/webp">'
