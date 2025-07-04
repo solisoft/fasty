@@ -128,7 +128,8 @@ class FastyImages extends lapis.Application
           upload = {
             'c_at': os.time(os.date("!*t")) * 1000,
             'uuid': _uuid, 'root': path, 'filename': file.filename, 'path': path .. '/' .. filename,
-            'length': #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
+            'length': #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url,
+            'locale': @req.headers['foxx-locale']
           }
 
           if @params.id
@@ -228,7 +229,8 @@ class FastyImages extends lapis.Application
           upload = {
             c_at: os.time(os.date("!*t")) * 1000,
             uuid: _uuid, root: path, filename: file, path: path .. '/' .. filename,
-            length: #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url
+            length: #content, url: url, ext: ext, mime: define_content_type(ext), google_url: google_url,
+            locale: @req.headers['foxx-locale']
           }
 
           doc_key = document_post("db_#{sub_domain}", "uploads", upload)._key
@@ -263,8 +265,18 @@ class FastyImages extends lapis.Application
 
       disposition = 'inline'
       disposition = "attachement; filename=\"#{upload.filename}\"" if @params.dl
+      -- Get content length for the response
+      content_length = res.body and #res.body or 0
 
-      res.body, content_type: define_content_type(ext), headers: { 'Accept-Ranges': 'bytes', 'Content-Disposition': disposition, "expires": expire_at! }
+      -- Add Content-Length header to the response
+      headers = {
+        'Accept-Ranges': 'bytes',
+        'Content-Disposition': disposition,
+        'Content-Length': tostring(content_length),
+        "expires": expire_at!
+      }
+
+      res.body, content_type: define_content_type(ext), headers: headers
     else
       'no asset found!', status: 404
   ------------------------------------------------------------------------------
