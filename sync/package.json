@@ -12,7 +12,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@riotjs/compiler": "^5.4.2",
+    "@riotjs/compiler": "^9.4.9",
     "chokidar": "^3.5.3",
     "colors": "^1.4.0",
     "js-yaml": "^3.14.1",
